@@ -1,0 +1,71 @@
+/* 
+  Localizable.strings
+  iOSAnixart
+
+  Created by Toilettrauma on 18.08.2024.
+  
+*/
+
+/* AUTH STRINGS */
+"app.auth.login_field.placeholder" = "Email или имя пользователя";
+"app.auth.password_field.placeholder" = "Пароль";
+"app.auth.login_button.normal.title" = "Войти";
+"app.auth.forgot_button.title" = "Забыли пароль?";
+"app.auth.signup_button.title" = "Зарегистрироваться";
+"app.auth.login_field.error_invalid.text" = "Неверное имя пользователя или Email";
+"app.auth.login_field.error_empty.text" = "Поле не может быть пусто";
+"app.auth.password_field.error_invalid.text" = "Неверный пароль";
+"app.auth.password_field.error_empty.text" = "Пароль не может быть пуст";
+
+"app.restore.login_field.placeholder" = "Email или имя пользователя";
+"app.restore.password_field.placeholder" = "Новый пароль";
+"app.restore.password_re_field.placeholder" = "Повторите пароль";
+"app.restore.restore_button.normal.title" = "Продолжить";
+"app.restore.login_field.error_invalid.text" = "Неверное имя пользователя или Email";
+"app.restore.login_field.error_empty.text" = "Поле не может быть пусто";
+"app.restore.password_field.error_short.text" = "Пароль слишком короткий";
+"app.restore.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
+"app.restore.password_field.error_long.text" = "Пароль слишком длинный";
+"app.restore.password_re_field.error_not_equal.text" = "Пароль не совпадает";
+
+"app.signup.login_field.placeholder" = "Имя пользователя";
+"app.signup.email_field.placeholder" = "Email";
+"app.signup.password_field.placeholder" = "Пароль";
+"app.signup.password_re_field.placeholder" = "Повторите пароль";
+"app.signup.signup_button.normal.title" = "Создать";
+"app.signup.login_field.error_empty.text" = "Имя пользователя не может быть пусто";
+"app.signup.login_field.error_long.text" = "Имя пользователя слишком длинное";
+"app.signup.email_field.error_empty.text" = "Email не может быть пуст";
+"app.signup.email_field.error_invalid.text" = "Недопустимый Email";
+"app.signup.password_field.error_short.text" = "Пароль слишком короткий";
+"app.signup.password_field.error_long.text" = "Пароль слишком длинный";
+"app.signup.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
+"app.signup.password_re_field.error_not_equal.text" = "Пароль не совпадает";
+
+/* MAIN STRINGS */
+"app.main_tab_bar.main_tab.title" = "Главная";
+"app.main_tab_bar.discover_tab.title" = "Обзор";
+"app.main_tab_bar.bookmarks_tab.title" = "Закладки";
+"app.main_tab_bar.profile_tab.title" = "Профиль";
+
+/* DISCOVER */
+"app.discover.option.popular.name" = "Популярное";
+"app.discover.option.schedule.name" = "Расписание";
+"app.discover.option.collections.name" = "Коллекции";
+"app.discover.option.filter.name" = "Фильтр";
+"app.discover.option.random.name" = "Случайное";
+
+/* RELEASES */
+"app.release.play_button.title" = "Воспроизвести";
+"app.release.add_list_button.menu.title" = "В список";
+"app.release.state.none.title" = "Не указано";
+"app.release.state.watching.title" = "Смотрю";
+"app.release.state.plan.title" = "В планах";
+"app.release.state.watched.title" = "Просмотрено";
+"app.release.state.deffered.title" = "Отложено";
+"app.release.state.dropped.title" = "Брошено";
+
+"app.type_select.nav_item.title" = "Озвучка";
+"app.type_select.cell.ep_count.name" = "эп.";
+
+"app.source_select.nav_item.title" = "Источник";
