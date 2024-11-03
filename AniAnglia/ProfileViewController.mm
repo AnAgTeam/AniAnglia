@@ -27,7 +27,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor cyanColor];
+    self.view.backgroundColor = [UIColor blackColor];
 }
 
 @end
