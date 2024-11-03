@@ -57,7 +57,10 @@
     _main_nav_controller = [[UINavigationController alloc] initWithRootViewController:[MainViewController new]];
     _discover_nav_controller = [[UINavigationController alloc] initWithRootViewController:[DiscoverViewController new]];
     _bookmarks_nav_controller = [[UINavigationController alloc] initWithRootViewController:[BookmarksViewController new]];
-    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:[ProfileViewController new]];
+    UIStoryboard *mainStoryboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
+    UIViewController *vc = [mainStoryboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
+
+    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:vc];
     [_main_nav_controller setToolbarHidden:YES];
     [_main_nav_controller setToolbarHidden:YES];
     [_bookmarks_nav_controller setToolbarHidden:YES];
