@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EF4941042C72383500832A6C /* AppUIColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppUIColor.h */; };
-		EF4941062C7238B700832A6C /* AppUIColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppUIColor.mm */; };
+		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
+		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
 		EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941142C723F8600832A6C /* CoreGraphics.framework */; };
 		EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */; };
@@ -78,8 +78,8 @@
 /* Begin PBXFileReference section */
 		EF0D4FF72C71294800745318 /* boost_container.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_container.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_container.xcframework; sourceTree = "<group>"; };
 		EF0D4FF82C71294800745318 /* boost_json.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_json.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_json.xcframework; sourceTree = "<group>"; };
-		EF4941032C72383500832A6C /* AppUIColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppUIColor.h; sourceTree = "<group>"; };
-		EF4941052C7238B700832A6C /* AppUIColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppUIColor.mm; sourceTree = "<group>"; };
+		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
+		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		EF4941142C723F8600832A6C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibanixartApi.mm; sourceTree = "<group>"; };
@@ -1376,8 +1376,8 @@
 		EF44D0D22CD6A3D600C8B608 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				EF4941032C72383500832A6C /* AppUIColor.h */,
-				EF4941052C7238B700832A6C /* AppUIColor.mm */,
+				EF4941032C72383500832A6C /* AppColor.h */,
+				EF4941052C7238B700832A6C /* AppColor.mm */,
 				EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */,
 				EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */,
 				EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */,
@@ -3417,7 +3417,7 @@
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
-				EF4941062C7238B700832A6C /* AppUIColor.mm in Sources */,
+				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
@@ -3425,7 +3425,7 @@
 				EF5A3CD02C7FA1AB00B4F637 /* BookmarksViewController.mm in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
-				EF4941042C72383500832A6C /* AppUIColor.h in Sources */,
+				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,

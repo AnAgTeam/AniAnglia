@@ -8,44 +8,66 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@protocol AppColorScheme
--(UIColor*)darkColor1;
--(UIColor*)darkColor2;
--(UIColor*)darkColor3;
--(UIColor*)darkPrimaryColor;
--(UIColor*)darkSecondaryColor;
--(UIColor*)darkTextColor;
--(UIColor*)lightColor1;
--(UIColor*)lightColor2;
--(UIColor*)lightColor3;
--(UIColor*)lightPrimaryColor;
--(UIColor*)lightSecondaryColor;
--(UIColor*)lightTextColor;
+@protocol AppColorTheme
+-(UIColor*)backgroundColor;
+-(UIColor*)foregroundColor1;
+-(UIColor*)foregroundColor2;
+-(UIColor*)primaryColor;
+-(UIColor*)secondaryColor;
+-(UIColor*)alertColor;
+-(UIColor*)successColor;
+-(UIColor*)idleColor;
+-(UIColor*)textColor;
+-(UIColor*)textSecondaryColor;
+-(UIColor*)textShyColor;
 @end
 
-@interface AppDefaultColorScheme : NSObject <AppColorScheme>
--(UIColor*)darkColor1;
--(UIColor*)darkColor2;
--(UIColor*)darkColor3;
--(UIColor*)darkPrimaryColor;
--(UIColor*)darkSecondaryColor;
--(UIColor*)lightColor1;
--(UIColor*)lightColor2;
--(UIColor*)lightColor3;
--(UIColor*)lightPrimaryColor;
--(UIColor*)lightSecondaryColor;
+@interface AppDefaultDarkTheme : NSObject <AppColorTheme>
+-(UIColor*)backgroundColor;
+-(UIColor*)foregroundColor1;
+-(UIColor*)foregroundColor2;
+-(UIColor*)primaryColor;
+-(UIColor*)secondaryColor;
+-(UIColor*)alertColor;
+-(UIColor*)successColor;
+-(UIColor*)idleColor;
+-(UIColor*)textColor;
+-(UIColor*)textSecondaryColor;
+-(UIColor*)textShyColor;
 @end
+
+@interface AppDefaultLightTheme : NSObject <AppColorTheme>
+-(UIColor*)backgroundColor;
+-(UIColor*)foregroundColor1;
+-(UIColor*)foregroundColor2;
+-(UIColor*)primaryColor;
+-(UIColor*)secondaryColor;
+-(UIColor*)alertColor;
+-(UIColor*)successColor;
+-(UIColor*)idleColor;
+-(UIColor*)textColor;
+-(UIColor*)textSecondaryColor;
+-(UIColor*)textShyColor;
+@end
+
+typedef UIColor*(^app_theme_color_getter_t)(id<AppColorTheme>);
 
 @interface AppColorProvider : NSObject
++(id<AppColorTheme>)getThemeForStyle:(UIUserInterfaceStyle)style;
++(void)setTheme:(id<AppColorTheme>)theme forStyle:(UIUserInterfaceStyle)style;
++(UIColor*)colorFromThemeDynamic:(app_theme_color_getter_t)getter;
 
-+(id<AppColorScheme>)getScheme;
-+(void)setScheme:(id<AppColorScheme>)scheme;
-
-+(UIColor*)backColor1;
-+(UIColor*)backColor2;
-+(UIColor*)backColor3;
++(UIColor*)backgroundColor;
++(UIColor*)foregroundColor1;
++(UIColor*)foregroundColor2;
 +(UIColor*)primaryColor;
 +(UIColor*)secondaryColor;
-+(UIColor*)textColor;
 
++(UIColor*)alertColor;
++(UIColor*)successColor;
++(UIColor*)idleColor;
+
++(UIColor*)textColor;
++(UIColor*)textSecondaryColor;
++(UIColor*)textShyColor;
 @end

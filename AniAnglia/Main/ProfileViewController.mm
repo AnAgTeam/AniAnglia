@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ProfileViewController.h"
+#import "AppColor.h"
 
 @interface ProfileViewController ()
 
@@ -27,7 +28,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor cyanColor];
+    self.view.backgroundColor = [AppColorProvider primaryColor];
 }
 
 @end

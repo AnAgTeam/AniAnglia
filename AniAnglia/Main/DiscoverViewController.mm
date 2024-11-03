@@ -10,7 +10,7 @@
 #import "ReleaseViewController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
@@ -80,19 +80,15 @@
     self.layer.cornerRadius = 12.0;
     self.layer.masksToBounds = YES;
     _image_view = [[UIImageView alloc] initWithFrame:frame];
-    _image_view.backgroundColor = [UIColor darkGrayColor];
     _image_view.image = nil;
     _title = [UILabel new];
     _title.translatesAutoresizingMaskIntoConstraints = NO;
-    _title.textColor = [UIColor whiteColor];
     [_title setFont:[UIFont boldSystemFontOfSize:_title.font.pointSize]];
-    _title.layer.shadowColor = [UIColor blackColor].CGColor;
     _title.layer.shadowRadius = 2.2;
     _title.layer.shadowOffset = CGSizeMake(0, 0);
     _title.layer.shadowOpacity = 1.0;
     _desc = [UILabel new];
     _desc.translatesAutoresizingMaskIntoConstraints = NO;
-    _desc.textColor = [UIColor lightGrayColor];
     _desc.numberOfLines = 2;
     [self setBackgroundView:_image_view];
     [self addSubview:_desc];
@@ -105,7 +101,20 @@
     [_desc.heightAnchor constraintLessThanOrEqualToConstant:50.0].active = YES;
     [_desc.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
     [_desc.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-5.0].active = YES;
+    
+    [self setupLayout];
+    
     return self;
+}
+
+-(void)setupLayout {
+    /*
+      MAYBE CHANGE TO STATIC COLORS
+     */
+    _image_view.backgroundColor = [AppColorProvider foregroundColor1];
+    _title.textColor = [AppColorProvider textColor];
+    _title.shadowColor = [AppColorProvider backgroundColor];
+    _desc.textColor = [AppColorProvider textSecondaryColor];
 }
 
 @end
@@ -178,7 +187,6 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_activity_ind.widthAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
     [_activity_ind.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
     [_activity_ind.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
-    // _activity_ind.backgroundColor = [UIColor cyanColor];
     _activity_ind.transform = CGAffineTransformMakeScale(2.5, 2.5);
     [_activity_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -208,7 +216,9 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_collection_view setDelegate:self];
     [_collection_view setDataSource:self];
     _collection_view.showsHorizontalScrollIndicator = NO;
-    
+}
+
+-(void)setupLayout {
     _collection_view.backgroundColor = [UIColor clearColor];
 }
 
@@ -255,13 +265,13 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_name_label.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
     [_name_label.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
--(void)setupDarkLayout {
+-(void)setupLayout {
     self.backgroundColor = [UIColor clearColor];
-    _image_view.tintColor = [UIColor whiteColor];
-    _name_label.textColor = [UIColor whiteColor];
+    _image_view.tintColor = [AppColorProvider textColor];
+    _name_label.textColor = [AppColorProvider textColor];
 }
 
 @end
@@ -367,10 +377,9 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
-    // _interesting_view.backgroundColor = [UIColor greenColor];
-    _interesting_view.backgroundColor = [AppUIColor darkColor1];
-    _options_view.backgroundColor = [AppUIColor darkColor1];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+    _interesting_view.backgroundColor = [AppColorProvider foregroundColor1];
+    _options_view.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
 -(void)didSelectInterestingCell:(long long)release_id {

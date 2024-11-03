@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "MainViewController.h"
+#import "AppColor.h"
 
 @interface MainViewController ()
 
@@ -27,7 +28,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 @end

@@ -6,115 +6,181 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "AppUIColor.h"
+#import "AppColor.h"
 
-@implementation AppDefaultColorScheme
-
--(UIColor*)darkColor1 {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.1, 0.1, 0.1, 1.0)];
+@implementation AppDefaultDarkTheme
+-(UIColor*)backgroundColor {
+    return [UIColor systemBackgroundColor];
 }
--(UIColor*)darkColor2 {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.15, 0.15, 0.15, 1.0)];
+-(UIColor*)foregroundColor1 {
+    return [UIColor secondarySystemBackgroundColor];
 }
--(UIColor*)darkColor3 {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.22, 0.22, 0.22, 1.0)];
+-(UIColor*)foregroundColor2 {
+    return [UIColor tertiarySystemBackgroundColor];
 }
--(UIColor*)darkPrimaryColor {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.126, 0.294, 0.757, 1.0)];
+-(UIColor*)primaryColor {
+    return [UIColor systemBlueColor];
 }
--(UIColor*)darkSecondaryColor {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.757, 0.126, 0.126, 1.0)];
+-(UIColor*)secondaryColor {
+    return [UIColor systemRedColor];
 }
--(UIColor*)darkTextColor {
+-(UIColor*)alertColor {
+    return [UIColor systemRedColor];
+}
+-(UIColor*)successColor {
+    return [UIColor systemGreenColor];
+}
+-(UIColor*)idleColor {
+    return [UIColor systemOrangeColor];
+}
+-(UIColor*)textColor {
     return [UIColor whiteColor];
 }
--(UIColor*)lightColor1 {
-    return [UIColor whiteColor];
+-(UIColor*)textSecondaryColor {
+    return [UIColor lightGrayColor];
 }
--(UIColor*)lightColor2 {
-    return [UIColor whiteColor];
+-(UIColor*)textShyColor {
+    return [UIColor grayColor];
 }
--(UIColor*)lightColor3 {
-    return [UIColor whiteColor];
-}
--(UIColor*)lightPrimaryColor {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.126, 0.294, 0.757, 1.0)];
-}
--(UIColor*)lightSecondaryColor {
-    return [UIColor colorWithCGColor:CGColorCreateGenericRGB(0.757, 0.126, 0.126, 1.0)];
-}
--(UIColor*)lightTextColor {
-    return [UIColor blackColor];
-}
-
 @end
 
+@implementation AppDefaultLightTheme
+-(UIColor*)backgroundColor {
+    return [UIColor systemBackgroundColor];
+}
+-(UIColor*)foregroundColor1 {
+    return [UIColor secondarySystemBackgroundColor];
+}
+-(UIColor*)foregroundColor2 {
+    return [UIColor tertiarySystemBackgroundColor];
+}
+-(UIColor*)primaryColor {
+    return [UIColor systemBlueColor];
+}
+-(UIColor*)secondaryColor {
+    return [UIColor systemRedColor];
+}
+-(UIColor*)alertColor {
+    return [UIColor systemRedColor];
+}
+-(UIColor*)successColor {
+    return [UIColor systemGreenColor];
+}
+-(UIColor*)idleColor {
+    return [UIColor systemOrangeColor];
+}
+-(UIColor*)textColor {
+    return [UIColor blackColor];
+}
+-(UIColor*)textSecondaryColor {
+    return [UIColor darkGrayColor];
+}
+-(UIColor*)textShyColor {
+    return [UIColor grayColor];
+}
+@end
+
+struct AppThemes {
+    id<AppColorTheme> light;
+    id<AppColorTheme> dark;
+};
 @implementation AppColorProvider
 static UIUserInterfaceStyle default_style = UIUserInterfaceStyleDark;
-static id<AppColorScheme> app_scheme = [AppDefaultColorScheme new];
+static AppThemes app_themes = {
+    .light = [AppDefaultLightTheme new],
+    .dark = [AppDefaultDarkTheme new]
+};
 
-typedef UIColor*(^color_getter_t)();
-+(UIColor*) colorFromSchemeWithLightGetter:(color_getter_t)light_getter darkGetter: (color_getter_t)dark_getter {
++(id<AppColorTheme>)getThemeForStyle:(UIUserInterfaceStyle)style {
+    auto getTheme = [](const UIUserInterfaceStyle style) -> id<AppColorTheme> {
+        switch (style) {
+            case UIUserInterfaceStyleLight:
+                return app_themes.light;
+            case UIUserInterfaceStyleDark:
+                return app_themes.dark;
+            default:
+                return nil;
+        }
+    };
+    id<AppColorTheme> theme = getTheme(style);
+    if (!theme) {
+        // Unspecified
+        theme = getTheme(default_style);
+    }
+    return theme;
+}
++(void)setTheme:(id<AppColorTheme>)theme forStyle:(UIUserInterfaceStyle)style {
+    switch (style) {
+        case UIUserInterfaceStyleLight:
+            app_themes.light = theme;
+            return;
+        case UIUserInterfaceStyleDark:
+            app_themes.dark = theme;
+            return;
+        default:
+            return;
+    }
+}
++(UIColor*)colorFromThemeDynamic:(app_theme_color_getter_t)getter {
     return [UIColor colorWithDynamicProvider:^UIColor*(UITraitCollection* trait_collection) {
-        UIUserInterfaceStyle style = trait_collection.userInterfaceStyle;
-        if (style == UIUserInterfaceStyleUnspecified) {
-            style = default_style;
-        }
-        if (style == UIUserInterfaceStyleDark) {
-            return dark_getter();
-        }
-        return light_getter();
+        id<AppColorTheme> theme = [self getThemeForStyle:trait_collection.userInterfaceStyle];
+        return getter(theme);
     }];
 }
 
-+(id<AppColorScheme>)getScheme {
-    return app_scheme;
-}
-+(void)setScheme:(id<AppColorScheme>)scheme {
-    app_scheme = scheme;
-}
-
-+(UIColor*)backColor1 {
-    return [AppColorProvider colorFromSchemeWithLightGetter:^{
-        return [app_scheme lightColor1];
-    } darkGetter:^{
-        return [app_scheme darkColor1];
++(UIColor*)backgroundColor {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme backgroundColor];
     }];
 }
-+(UIColor*)backColor2 {
-    return [AppColorProvider colorFromSchemeWithLightGetter:^{
-        return [app_scheme lightColor2];
-    } darkGetter:^{
-        return [app_scheme darkColor2];
++(UIColor*)foregroundColor1 {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme foregroundColor1];
     }];
 }
-+(UIColor*)backColor3 {
-    return [AppColorProvider colorFromSchemeWithLightGetter:^{
-        return [app_scheme lightColor3];
-    } darkGetter:^{
-        return [app_scheme darkColor3];
++(UIColor*)foregroundColor2 {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme foregroundColor2];
     }];
 }
 +(UIColor*)primaryColor {
-    return [AppColorProvider colorFromSchemeWithLightGetter:^{
-        return [app_scheme lightPrimaryColor];
-    } darkGetter:^{
-        return [app_scheme darkPrimaryColor];
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme primaryColor];
     }];
 }
 +(UIColor*)secondaryColor {
-    return [AppColorProvider colorFromSchemeWithLightGetter:^{
-        return [app_scheme lightSecondaryColor];
-    } darkGetter:^{
-        return [app_scheme darkSecondaryColor];
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme secondaryColor];
+    }];
+}
++(UIColor*)alertColor {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme alertColor];
+    }];
+}
++(UIColor*)successColor {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme successColor];
+    }];
+}
++(UIColor*)idleColor {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme idleColor];
     }];
 }
 +(UIColor*)textColor {
-    return [AppColorProvider colorFromSchemeWithLightGetter:^{
-        return [app_scheme lightTextColor];
-    } darkGetter:^{
-        return [app_scheme darkTextColor];
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme textColor];
     }];
 }
-
++(UIColor*)textSecondaryColor {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme textSecondaryColor];
+    }];
+}
++(UIColor*)textShyColor {
+    return [AppColorProvider colorFromThemeDynamic:^UIColor*(id<AppColorTheme> theme){
+        return [theme textShyColor];
+    }];
+}
 @end

@@ -8,7 +8,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>
 #import "PlayerViewController.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
 
@@ -89,7 +89,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 }
 
 -(void)setup {
-    [self setupDarkLayout];
+    [self setupLayout];
     
     [self loadStreams];
 }
@@ -100,8 +100,8 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     [_player_view_controller.player play];
 }
 
--(void)setupDarkLayout {
-    _player_view_controller.view.backgroundColor = [UIColor blackColor];
+-(void)setupLayout {
+    _player_view_controller.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 -(AVPlayerViewController*)getPlayer {

@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BookmarksViewController.h"
+#import "AppColor.h"
 
 @interface BookmarksViewController ()
 
@@ -27,7 +28,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
 @end
