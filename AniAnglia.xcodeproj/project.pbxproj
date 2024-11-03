@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EF4941042C72383500832A6C /* AppUIColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppUIColor.h */; };
-		EF4941062C7238B700832A6C /* AppUIColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppUIColor.mm */; };
+		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
+		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
 		EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941142C723F8600832A6C /* CoreGraphics.framework */; };
 		EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */; };
@@ -78,8 +78,8 @@
 /* Begin PBXFileReference section */
 		EF0D4FF72C71294800745318 /* boost_container.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_container.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_container.xcframework; sourceTree = "<group>"; };
 		EF0D4FF82C71294800745318 /* boost_json.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_json.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_json.xcframework; sourceTree = "<group>"; };
-		EF4941032C72383500832A6C /* AppUIColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppUIColor.h; sourceTree = "<group>"; };
-		EF4941052C7238B700832A6C /* AppUIColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppUIColor.mm; sourceTree = "<group>"; };
+		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
+		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		EF4941142C723F8600832A6C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibanixartApi.mm; sourceTree = "<group>"; };
@@ -1327,7 +1327,70 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		EF5A3CB52C7F9A8100B4F637 /* Auth */ = {
+		EF44D0CE2CD6A36800C8B608 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				EF5A3CBA2C7F9C0800B4F637 /* MainTabBarController.h */,
+				EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */,
+				EF5A3CC72C7FA0F800B4F637 /* MainViewController.h */,
+				EF5A3CCB2C7FA18A00B4F637 /* MainViewController.mm */,
+				EF5A3CC82C7FA11F00B4F637 /* DiscoverViewController.h */,
+				EF5A3CCD2C7FA19C00B4F637 /* DiscoverViewController.mm */,
+				EF5A3CC92C7FA13500B4F637 /* BookmarksViewController.h */,
+				EF5A3CCF2C7FA1AB00B4F637 /* BookmarksViewController.mm */,
+				EF5A3CCA2C7FA16D00B4F637 /* ProfileViewController.h */,
+				EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		EF44D0CF2CD6A39200C8B608 /* Releases */ = {
+			isa = PBXGroup;
+			children = (
+				EFB158A92C80F6460070E833 /* ReleaseViewController.h */,
+				EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */,
+				EFD505DF2CAB4B4D00E87BF1 /* TypeSelectViewController.h */,
+				EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */,
+				EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */,
+				EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */,
+				EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */,
+				EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */,
+				EFA1F93E2CB4922200555A26 /* PlayerViewController.h */,
+				EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */,
+			);
+			path = Releases;
+			sourceTree = "<group>";
+		};
+		EF44D0D02CD6A3AE00C8B608 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				EF8B01B32C7015A300423ECD /* main.mm */,
+				EF60AC752C6FB2FE00CD33A8 /* SceneDelegate.h */,
+				EF8B01B12C7015A200423ECD /* SceneDelegate.mm */,
+				EF60AC722C6FB2FE00CD33A8 /* AppDelegate.h */,
+				EF60AC732C6FB2FE00CD33A8 /* AppDelegate.mm */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		EF44D0D22CD6A3D600C8B608 /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				EF4941032C72383500832A6C /* AppColor.h */,
+				EF4941052C7238B700832A6C /* AppColor.mm */,
+				EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */,
+				EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */,
+				EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */,
+				EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */,
+				EF5A3CB12C7F928400B4F637 /* AppDataController.h */,
+				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
+				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
+				EFD505E02CAC401700E87BF1 /* StringCvt.mm */,
+			);
+			path = Misc;
+			sourceTree = "<group>";
+		};
+		EF44D0D32CD6A3F600C8B608 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
 				EFBF59B72C768D12008F1967 /* AuthNavigationController.h */,
@@ -1341,36 +1404,7 @@
 				EF875C842C79025400DAECB1 /* AuthChecker.h */,
 				EF875C852C79026700DAECB1 /* AuthChecker.mm */,
 			);
-			name = Auth;
-			sourceTree = "<group>";
-		};
-		EF5A3CB62C7F9AEE00B4F637 /* Misc */ = {
-			isa = PBXGroup;
-			children = (
-				EF4941032C72383500832A6C /* AppUIColor.h */,
-				EF4941052C7238B700832A6C /* AppUIColor.mm */,
-				EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */,
-				EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */,
-				EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */,
-				EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */,
-				EF5A3CB12C7F928400B4F637 /* AppDataController.h */,
-				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
-				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
-				EFD505E02CAC401700E87BF1 /* StringCvt.mm */,
-			);
-			name = Misc;
-			sourceTree = "<group>";
-		};
-		EF5A3CB72C7F9B9500B4F637 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				EF8B01B32C7015A300423ECD /* main.mm */,
-				EF60AC752C6FB2FE00CD33A8 /* SceneDelegate.h */,
-				EF8B01B12C7015A200423ECD /* SceneDelegate.mm */,
-				EF60AC722C6FB2FE00CD33A8 /* AppDelegate.h */,
-				EF60AC732C6FB2FE00CD33A8 /* AppDelegate.mm */,
-			);
-			name = Core;
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		EF5F00032CCE956700EA11BB /* intrusive */ = {
@@ -2530,40 +2564,6 @@
 			path = AniAnglia/Libraries;
 			sourceTree = "<group>";
 		};
-		EF5FFDBB2CBC436B00EA11BB /* Releases */ = {
-			isa = PBXGroup;
-			children = (
-				EFB158A92C80F6460070E833 /* ReleaseViewController.h */,
-				EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */,
-				EFD505DF2CAB4B4D00E87BF1 /* TypeSelectViewController.h */,
-				EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */,
-				EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */,
-				EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */,
-				EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */,
-				EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */,
-				EFA1F93E2CB4922200555A26 /* PlayerViewController.h */,
-				EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */,
-			);
-			name = Releases;
-			sourceTree = "<group>";
-		};
-		EF5FFDBC2CBC449900EA11BB /* Main */ = {
-			isa = PBXGroup;
-			children = (
-				EF5A3CBA2C7F9C0800B4F637 /* MainTabBarController.h */,
-				EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */,
-				EF5A3CC72C7FA0F800B4F637 /* MainViewController.h */,
-				EF5A3CCB2C7FA18A00B4F637 /* MainViewController.mm */,
-				EF5A3CC82C7FA11F00B4F637 /* DiscoverViewController.h */,
-				EF5A3CCD2C7FA19C00B4F637 /* DiscoverViewController.mm */,
-				EF5A3CC92C7FA13500B4F637 /* BookmarksViewController.h */,
-				EF5A3CCF2C7FA1AB00B4F637 /* BookmarksViewController.mm */,
-				EF5A3CCA2C7FA16D00B4F637 /* ProfileViewController.h */,
-				EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */,
-			);
-			name = Main;
-			sourceTree = "<group>";
-		};
 		EF5FFDD82CCE956700EA11BB /* boost */ = {
 			isa = PBXGroup;
 			children = (
@@ -3302,11 +3302,11 @@
 			isa = PBXGroup;
 			children = (
 				EF5FFDC12CCE88A300EA11BB /* Localizable.strings */,
-				EF5FFDBC2CBC449900EA11BB /* Main */,
-				EF5FFDBB2CBC436B00EA11BB /* Releases */,
-				EF5A3CB72C7F9B9500B4F637 /* Core */,
-				EF5A3CB62C7F9AEE00B4F637 /* Misc */,
-				EF5A3CB52C7F9A8100B4F637 /* Auth */,
+				EF44D0D02CD6A3AE00C8B608 /* Core */,
+				EF44D0D32CD6A3F600C8B608 /* Auth */,
+				EF44D0D22CD6A3D600C8B608 /* Misc */,
+				EF44D0CF2CD6A39200C8B608 /* Releases */,
+				EF44D0CE2CD6A36800C8B608 /* Main */,
 				EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */,
 				EF60AC832C6FB30100CD33A8 /* Info.plist */,
 			);
@@ -3417,7 +3417,7 @@
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
-				EF4941062C7238B700832A6C /* AppUIColor.mm in Sources */,
+				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
@@ -3425,7 +3425,7 @@
 				EF5A3CD02C7FA1AB00B4F637 /* BookmarksViewController.mm in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
-				EF4941042C72383500832A6C /* AppUIColor.h in Sources */,
+				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
@@ -3505,14 +3505,10 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
-					"-I/Users/toilettrauma/AniAnglia/Libraries/include",
-					"-I/Users/toilettrauma/AniAnglia/Libraries/include_libanixart",
+					"-I./AniAnglia/Libraries/include",
+					"-I./AniAnglia/Libraries/include_libanixart",
 				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-I/Users/toilettrauma/Desktop/myAppFrameworks/include",
-					"-I/Users/toilettrauma/Desktop/myAppFrameworks/include_libanixart",
-				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";
 				SDKROOT = iphoneos;
 			};
@@ -3569,14 +3565,10 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
-					"-I/Users/toilettrauma/AniAnglia/Libraries/include",
-					"-I/Users/toilettrauma/AniAnglia/Libraries/include_libanixart",
+					"-I./AniAnglia/Libraries/include",
+					"-I./AniAnglia/Libraries/include_libanixart",
 				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-I/Users/toilettrauma/Desktop/myAppFrameworks/include",
-					"-I/Users/toilettrauma/Desktop/myAppFrameworks/include_libanixart",
-				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;

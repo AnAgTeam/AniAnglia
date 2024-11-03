@@ -9,7 +9,7 @@
 #import "SignUpViewController.h"
 #import "UITextErrorField.h"
 #import "AuthNavigationController.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "AuthChecker.h"
 
 @interface SignUpViewController ()
@@ -137,16 +137,16 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
-    _login_field.textColor = [UIColor lightGrayColor];
-    _login_field.backgroundColor = [AppUIColor darkColor1];
-    _email_field.textColor = [UIColor lightGrayColor];
-    _email_field.backgroundColor = [AppUIColor darkColor1];
-    _password_field.textColor = [UIColor lightGrayColor];
-    _password_field.backgroundColor = [AppUIColor darkColor1];
-    _password_re_field.textColor = [UIColor lightGrayColor];
-    _password_re_field.backgroundColor = [AppUIColor darkColor1];
-    _signup_button.backgroundColor = [AppUIColor primaryColor];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+    _login_field.textColor = [AppColorProvider textShyColor];
+    _login_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _email_field.textColor = [AppColorProvider textShyColor];
+    _email_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _password_field.textColor = [AppColorProvider textShyColor];
+    _password_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _password_re_field.textColor = [AppColorProvider textShyColor];
+    _password_re_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _signup_button.backgroundColor = [AppColorProvider primaryColor];
 }
 
 -(IBAction)signupButtonTapped:(id)sender {

@@ -7,7 +7,7 @@
 
 #import "SourceSelectViewController.h"
 #import "LibanixartApi.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "StringCvt.h"
 #import "EpisodeSelectViewController.h"
 
@@ -51,11 +51,11 @@
     [_name_label.widthAnchor constraintEqualToAnchor:self.widthAnchor multiplier:0.35].active = YES;
     [_name_label.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
--(void)setupDarkLayout {
-    self.backgroundColor = [UIColor blackColor];
-    _name_label.textColor = [UIColor whiteColor];
+-(void)setupLayout {
+    self.backgroundColor = [AppColorProvider backgroundColor];
+    _name_label.textColor = [AppColorProvider textColor];
 }
 
 @end
@@ -132,7 +132,7 @@
     [_loading_ind.topAnchor constraintEqualToSystemSpacingBelowAnchor:self.view.bottomAnchor multiplier:0.5].active = YES;
     [_loading_ind.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
     
-    [self preSetupDarkLayout];
+    [self preSetupLayout];
     
     [self loadSources];
 }
@@ -153,7 +153,7 @@
     
     [self addTableTypeHeader];
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
 -(void)addTableTypeHeader {
@@ -178,13 +178,13 @@
     _table_view.tableHeaderView = header_view;
 }
 
--(void)preSetupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+-(void)preSetupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
--(void)setupDarkLayout {
-    _table_view.backgroundColor = [UIColor blackColor];
-    _type_name_label.textColor = [UIColor whiteColor];
+-(void)setupLayout {
+    _table_view.backgroundColor = [AppColorProvider backgroundColor];
+    _type_name_label.textColor = [AppColorProvider textColor];
 }
 
 @end
