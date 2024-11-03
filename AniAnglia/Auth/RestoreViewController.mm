@@ -9,7 +9,7 @@
 #import "RestoreViewController.h"
 #import "AuthNavigationController.h"
 #import "UITextErrorField.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 
 @interface RestoreViewController ()
 @property(nonatomic, retain) AuthNavigationController* auth_nav_controller;
@@ -107,18 +107,18 @@
     _restore_button.layer.cornerRadius = 8.0;
     [_restore_button addTarget:self action:@selector(restoreButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
--(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
-    _login_field.textColor = [UIColor lightGrayColor];
-    _login_field.backgroundColor = [AppUIColor darkColor1];
-    _password_field.textColor = [UIColor lightGrayColor];
-    _password_field.backgroundColor = [AppUIColor darkColor1];
-    _password_re_field.textColor = [UIColor lightGrayColor];
-    _password_re_field.backgroundColor = [AppUIColor darkColor1];
-    _restore_button.backgroundColor = [AppUIColor primaryColor];
+-(void)setupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+    _login_field.textColor = [AppColorProvider textShyColor];
+    _login_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _password_field.textColor = [AppColorProvider textShyColor];
+    _password_field.backgroundColor = [AppColorProvider backgroundColor];
+    _password_re_field.textColor = [AppColorProvider textShyColor];
+    _password_re_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _restore_button.backgroundColor = [AppColorProvider primaryColor];
 }
 
 -(IBAction)restoreButtonTapped:(id)sender {

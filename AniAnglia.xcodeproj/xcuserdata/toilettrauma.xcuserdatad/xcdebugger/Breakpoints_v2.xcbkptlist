@@ -36,5 +36,51 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "250F07B6-54B4-44D4-94C3-70F59A5B8A29"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "AniAnglia/Misc/AppColor.mm"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "82"
+            endingLineNumber = "82"
+            landmarkName = "unknown"
+            landmarkType = "0">
+            <Locations>
+               <Location
+                  uuid = "250F07B6-54B4-44D4-94C3-70F59A5B8A29 - 8c41c4dc03bf4e19"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "AppThemes::~AppThemes()"
+                  moduleName = "AniAngliaXIX"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/toilettrauma/Documents/AniAnglia/AniAnglia/Misc/AppColor.mm"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "83"
+                  endingLineNumber = "83">
+               </Location>
+               <Location
+                  uuid = "250F07B6-54B4-44D4-94C3-70F59A5B8A29 - 8c41c4dc03bf4e19"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "AppThemes::~AppThemes()"
+                  moduleName = "AniAngliaXIX"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/toilettrauma/Documents/AniAnglia/AniAnglia/Misc/AppColor.mm"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "83"
+                  endingLineNumber = "83">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

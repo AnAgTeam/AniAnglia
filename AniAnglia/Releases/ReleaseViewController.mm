@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "ReleaseViewController.h"
 #import "LibanixartApi.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "AppDataController.h"
 #import "StringCvt.h"
 #import "TypeSelectViewController.h"
@@ -142,7 +142,7 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_release_loading_ind.topAnchor constraintEqualToSystemSpacingBelowAnchor:_content_view.bottomAnchor multiplier:0.5].active = YES;
     [_release_loading_ind.centerXAnchor constraintEqualToAnchor:_content_view.centerXAnchor].active = YES;
     
-    [self preSetupDarkLayout];
+    [self preSetupLayout];
     
     if (_release_info) {
         [self setupReleaseView];
@@ -242,20 +242,19 @@ static NSArray* RELEASE_LIST_STATES = @[
     
      [_release_image_view tryLoad];
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
--(void)preSetupDarkLayout {
+-(void)preSetupLayout {
     self.view.backgroundColor = [UIColor blackColor];
 }
 
--(void)setupDarkLayout {
-    _title_label.textColor = [UIColor whiteColor];
-    _orig_title_label.textColor = [UIColor grayColor];
-    //_add_list_button.layer.borderColor = [UIColor grayColor].CGColor;
-    _add_list_button.backgroundColor = [UIColor darkGrayColor];
-    _bookmark_button.layer.borderColor = [UIColor grayColor].CGColor;
-    _play_button.backgroundColor = [AppUIColor primaryColor];
+-(void)setupLayout {
+    _title_label.textColor = [AppColorProvider textColor];
+    _orig_title_label.textColor = [AppColorProvider textColor];
+    _add_list_button.backgroundColor = [AppColorProvider foregroundColor1];
+    _bookmark_button.layer.borderColor = [AppColorProvider foregroundColor1].CGColor;
+    _play_button.backgroundColor = [AppColorProvider primaryColor];
 }
 
 -(void)addListMenuSelected:(NSInteger)index {

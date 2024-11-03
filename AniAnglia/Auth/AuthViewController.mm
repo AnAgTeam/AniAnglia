@@ -6,7 +6,7 @@
 //
 
 #import "AuthViewController.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "UITextErrorField.h"
 #import "AuthNavigationController.h"
 #import "LibanixartApi.h"
@@ -129,15 +129,15 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
-    _login_field.textColor = [UIColor lightGrayColor];
-    _login_field.backgroundColor = [AppUIColor darkColor1];
-    _password_field.textColor = [UIColor lightGrayColor];
-    _password_field.backgroundColor = [AppUIColor darkColor1];
-    _login_button.backgroundColor = [AppUIColor primaryColor];
-    [_login_button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [_forgot_button setTitleColor:[AppUIColor primaryColor] forState:UIControlStateNormal];
-    [_signup_button setTitleColor:[AppUIColor primaryColor] forState:UIControlStateNormal];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+    _login_field.textColor = [AppColorProvider textShyColor];
+    _login_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _password_field.textColor = [AppColorProvider textShyColor];
+    _password_field.backgroundColor = [AppColorProvider foregroundColor1];
+    _login_button.backgroundColor = [AppColorProvider primaryColor];
+    [_login_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
+    [_forgot_button setTitleColor:[AppColorProvider primaryColor] forState:UIControlStateNormal];
+    [_signup_button setTitleColor:[AppColorProvider primaryColor] forState:UIControlStateNormal];
 }
 
 -(IBAction)loginButtonTapped:(id)sender {

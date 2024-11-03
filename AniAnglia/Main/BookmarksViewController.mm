@@ -1,18 +1,19 @@
 //
-//  MainViewController.m
+//  BookmarksViewController.m
 //  iOSAnixart
 //
 //  Created by Toilettrauma on 28.08.2024.
 //
 
 #import <Foundation/Foundation.h>
-#import "MainViewController.h"
+#import "BookmarksViewController.h"
+#import "AppColor.h"
 
-@interface MainViewController ()
+@interface BookmarksViewController ()
 
 @end
 
-@implementation MainViewController
+@implementation BookmarksViewController
 
 -(void)viewDidLoad {
     [super viewDidLoad];
@@ -27,7 +28,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
 @end

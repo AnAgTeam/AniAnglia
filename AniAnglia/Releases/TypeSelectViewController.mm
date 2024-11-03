@@ -7,7 +7,7 @@
 
 #import "TypeSelectViewController.h"
 #import "LibanixartApi.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "StringCvt.h"
 #import "SourceSelectViewController.h"
 
@@ -77,14 +77,14 @@
     [_view_count_label.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
     _view_count_label.textAlignment = NSTextAlignmentRight;
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
--(void)setupDarkLayout {
-    self.backgroundColor = [UIColor blackColor];
-    _name_label.textColor = [UIColor whiteColor];
-    _ep_count_label.textColor = [UIColor lightGrayColor];
-    _view_count_label.textColor = [UIColor lightGrayColor];
-    _view_image_view.tintColor = [UIColor lightGrayColor];
+-(void)setupLayout {
+    self.backgroundColor = [AppColorProvider backgroundColor];
+    _name_label.textColor = [AppColorProvider textColor];
+    _ep_count_label.textColor = [AppColorProvider textSecondaryColor];
+    _view_count_label.textColor = [AppColorProvider textSecondaryColor];
+    _view_image_view.tintColor = [AppColorProvider textSecondaryColor];
 }
 
 @end
@@ -153,7 +153,7 @@
     [_loading_ind.topAnchor constraintEqualToSystemSpacingBelowAnchor:self.view.bottomAnchor multiplier:0.5].active = YES;
     [_loading_ind.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
     
-    [self preSetupDarkLayout];
+    [self preSetupLayout];
     
     [self loadTypes];
 }
@@ -172,15 +172,15 @@
     [_table_view setDataSource:self];
     [_table_view registerClass:TypeViewCell.class forCellReuseIdentifier:[TypeViewCell getIndentifier]];
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
--(void)preSetupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+-(void)preSetupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
--(void)setupDarkLayout {
-    _table_view.backgroundColor = [UIColor blackColor];
+-(void)setupLayout {
+    _table_view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 - (void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {

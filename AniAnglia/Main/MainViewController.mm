@@ -1,18 +1,19 @@
 //
-//  ProfileViewController.m
+//  MainViewController.m
 //  iOSAnixart
 //
 //  Created by Toilettrauma on 28.08.2024.
 //
 
 #import <Foundation/Foundation.h>
-#import "ProfileViewController.h"
+#import "MainViewController.h"
+#import "AppColor.h"
 
-@interface ProfileViewController ()
+@interface MainViewController ()
 
 @end
 
-@implementation ProfileViewController
+@implementation MainViewController
 
 -(void)viewDidLoad {
     [super viewDidLoad];
@@ -27,7 +28,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 @end

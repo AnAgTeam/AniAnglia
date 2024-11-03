@@ -7,7 +7,7 @@
 
 #import "EpisodeSelectViewController.h"
 #import "LibanixartApi.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 #import "StringCvt.h"
 #import "PlayerViewController.h"
 
@@ -58,8 +58,8 @@
     [self setupDarkLayout];
 }
 -(void)setupDarkLayout {
-    self.backgroundColor = [UIColor blackColor];
-    _name_label.textColor = [UIColor whiteColor];
+    self.backgroundColor = [AppColorProvider backgroundColor];
+    _name_label.textColor = [AppColorProvider textColor];
 }
 
 @end
@@ -130,7 +130,7 @@
     [_loading_ind.topAnchor constraintEqualToSystemSpacingBelowAnchor:self.view.bottomAnchor multiplier:0.5].active = YES;
     [_loading_ind.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
     
-    [self preSetupDarkLayout];
+    [self preSetupLayout];
     
     [self loadEpisodes];
 }
@@ -151,7 +151,7 @@
     
     [self addTableTypeHeader];
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
 -(void)addTableTypeHeader {
@@ -176,13 +176,13 @@
     _table_view.tableHeaderView = header_view;
 }
 
--(void)preSetupDarkLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+-(void)preSetupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
--(void)setupDarkLayout {
-    _table_view.backgroundColor = [UIColor blackColor];
-    _type_name_label.textColor = [UIColor whiteColor];
+-(void)setupLayout {
+    _table_view.backgroundColor = [AppColorProvider backgroundColor];
+    _type_name_label.textColor = [AppColorProvider textColor];
 }
 
 - (void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {

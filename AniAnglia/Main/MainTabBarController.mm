@@ -11,7 +11,7 @@
 #import "DiscoverViewController.h"
 #import "BookmarksViewController.h"
 #import "ProfileViewController.h"
-#import "AppUIColor.h"
+#import "AppColor.h"
 
 @interface MainTabBarController ()
 @end
@@ -57,20 +57,23 @@
     _main_nav_controller = [[UINavigationController alloc] initWithRootViewController:[MainViewController new]];
     _discover_nav_controller = [[UINavigationController alloc] initWithRootViewController:[DiscoverViewController new]];
     _bookmarks_nav_controller = [[UINavigationController alloc] initWithRootViewController:[BookmarksViewController new]];
-    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:[ProfileViewController new]];
+    UIStoryboard *mainStoryboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
+    UIViewController *vc = [mainStoryboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
+
+    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:vc];
     [_main_nav_controller setToolbarHidden:YES];
     [_main_nav_controller setToolbarHidden:YES];
     [_bookmarks_nav_controller setToolbarHidden:YES];
     [_profile_nav_controller setToolbarHidden:YES];
     
     [self setupTabs];
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
--(void)setupDarkLayout {
-    self.tabBar.unselectedItemTintColor = [UIColor lightGrayColor];
-    self.tabBar.tintColor = [AppUIColor primaryColor];
-    self.tabBar.backgroundColor = [UIColor blackColor];
+-(void)setupLayout {
+    self.tabBar.unselectedItemTintColor = [AppColorProvider textSecondaryColor];
+    self.tabBar.tintColor = [AppColorProvider primaryColor];
+    self.tabBar.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 @end
