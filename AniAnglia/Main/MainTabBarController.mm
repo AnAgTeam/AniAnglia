@@ -35,9 +35,9 @@
     _main_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[MainViewController new] filterEnabled:YES];
     _discover_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[DiscoverViewController new] filterEnabled:YES];
     _bookmarks_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[BookmarksViewController new] filterEnabled:YES];
-//    UIStoryboard *profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
-//    UIViewController *profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
-    _profile_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[ProfileViewController new] filterEnabled:NO];
+    UIStoryboard *profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
+    UIViewController *profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
+    _profile_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:profile_view_controller filterEnabled:NO];
     
     [self setupTabs];
     [self setupLayout];

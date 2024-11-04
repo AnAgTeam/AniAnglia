@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */; };
+		CEA6E87E2CD7D57E00D4588F /* ProfileStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -78,6 +79,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileStoryboard.storyboard; sourceTree = "<group>"; };
 		EF0D4FF72C71294800745318 /* boost_container.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_container.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_container.xcframework; sourceTree = "<group>"; };
 		EF0D4FF82C71294800745318 /* boost_json.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_json.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_json.xcframework; sourceTree = "<group>"; };
 		EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppSearchController.mm; sourceTree = "<group>"; };
@@ -1350,6 +1352,7 @@
 				EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */,
 				EFD5CD6D2CD8436F00A1E057 /* NavigationAndSearchController.h */,
 				EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */,
+				CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -3403,6 +3406,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEA6E87E2CD7D57E00D4588F /* ProfileStoryboard.storyboard in Resources */,
 				EF60AC7F2C6FB30100CD33A8 /* Assets.xcassets in Resources */,
 				EF5FFDC32CCE88A300EA11BB /* Localizable.strings in Resources */,
 			);
@@ -3594,7 +3598,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4G5LGK558P;
+				DEVELOPMENT_TEAM = G9LA7PKTZX;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -3607,7 +3611,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3621,7 +3625,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4G5LGK558P;
+				DEVELOPMENT_TEAM = G9LA7PKTZX;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -3634,7 +3638,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
