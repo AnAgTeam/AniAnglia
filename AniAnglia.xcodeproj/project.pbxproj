@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -53,6 +54,7 @@
 		EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */; };
 		EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E02CAC401700E87BF1 /* StringCvt.mm */; };
 		EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */; };
+		EFD5CD6C2CD8436000A1E057 /* NavigationAndSearchController.m in Sources */ = {isa = PBXBuildFile; fileRef = EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -78,6 +80,8 @@
 /* Begin PBXFileReference section */
 		EF0D4FF72C71294800745318 /* boost_container.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_container.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_container.xcframework; sourceTree = "<group>"; };
 		EF0D4FF82C71294800745318 /* boost_json.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_json.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_json.xcframework; sourceTree = "<group>"; };
+		EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppSearchController.mm; sourceTree = "<group>"; };
+		EF44D0D62CD7FD2500C8B608 /* AppSearchController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppSearchController.h; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
 		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -1301,6 +1305,8 @@
 		EFD505E02CAC401700E87BF1 /* StringCvt.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StringCvt.mm; sourceTree = "<group>"; };
 		EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
+		EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NavigationAndSearchController.m; sourceTree = "<group>"; };
+		EFD5CD6D2CD8436F00A1E057 /* NavigationAndSearchController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NavigationAndSearchController.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1340,6 +1346,10 @@
 				EF5A3CCF2C7FA1AB00B4F637 /* BookmarksViewController.mm */,
 				EF5A3CCA2C7FA16D00B4F637 /* ProfileViewController.h */,
 				EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */,
+				EF44D0D62CD7FD2500C8B608 /* AppSearchController.h */,
+				EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */,
+				EFD5CD6D2CD8436F00A1E057 /* NavigationAndSearchController.h */,
+				EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -3408,6 +3418,7 @@
 				EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */,
 				EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */,
 				EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */,
+				EFD5CD6C2CD8436000A1E057 /* NavigationAndSearchController.m in Sources */,
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
@@ -3417,6 +3428,7 @@
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
+				EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */,
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,

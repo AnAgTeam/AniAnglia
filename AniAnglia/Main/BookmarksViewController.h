@@ -6,8 +6,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NavigationAndSearchController.h"
 
-@interface BookmarksViewController : UIViewController
+@interface BookmarksViewController : UIViewController <NavigationSearchDelegate>
 
 @end
 

@@ -28,7 +28,7 @@
 }
 
 -(void)setupDarkLayout {
-    self.view.backgroundColor = [AppColorProvider foregroundColor1];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 @end

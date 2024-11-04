@@ -11,6 +11,7 @@
 #import "LibanixartApi.h"
 #import "StringCvt.h"
 #import "AppColor.h"
+#import "AppSearchController.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
@@ -327,14 +328,22 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     
     [self setupView];
 }
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+//    [self.navigationController setNavigationBarHidden:NO];
+}
 
 -(void)setupView {
+    NavigationSearchController* nav_search_controller = (NavigationSearchController*)self.navigationController;
+    self.navigationItem.titleView = nav_search_controller.search_bar;
+    
     _scroll_view = [UIScrollView new];
     [self.view addSubview:_scroll_view];
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
     [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
     [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor].active = YES;
+    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
     [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     
     _content_view = [UIView new];
@@ -382,7 +391,17 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     _options_view.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
+-(void)searchBarFilterButtonPressed {
+    NSLog(@"Search filter button pressed");
+}
+
+-(void)search:(NSString *)query {
+    NSLog(@"Search query: %@", query);
+}
+
+
 -(void)didSelectInterestingCell:(long long)release_id {
+    [self.navigationController setNavigationBarHidden:NO];
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release_id] animated:YES];
 }
 

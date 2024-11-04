@@ -54,6 +54,7 @@
 "app.discover.option.collections.name" = "Коллекции";
 "app.discover.option.filter.name" = "Фильтр";
 "app.discover.option.random.name" = "Случайное";
+"app.discover.search_bar.placeholder" = "Найти релиз...";
 
 /* RELEASES */
 "app.release.play_button.title" = "Воспроизвести";

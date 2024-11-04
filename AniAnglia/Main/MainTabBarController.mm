@@ -12,6 +12,7 @@
 #import "BookmarksViewController.h"
 #import "ProfileViewController.h"
 #import "AppColor.h"
+#import "NavigationAndSearchController.h"
 
 @interface MainTabBarController ()
 @end
@@ -28,6 +29,18 @@
     [super viewDidLoad];
     
     [self setupView];
+}
+
+-(void)setupView {
+    _main_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[MainViewController new] filterEnabled:YES];
+    _discover_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[DiscoverViewController new] filterEnabled:YES];
+    _bookmarks_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[BookmarksViewController new] filterEnabled:YES];
+//    UIStoryboard *profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
+//    UIViewController *profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
+    _profile_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[ProfileViewController new] filterEnabled:NO];
+    
+    [self setupTabs];
+    [self setupLayout];
 }
 
 -(void)setupTabs {
@@ -51,20 +64,6 @@
             _profile_nav_controller
         ]
     ];
-}
-
--(void)setupView {
-    _main_nav_controller = [[UINavigationController alloc] initWithRootViewController:[MainViewController new]];
-    _discover_nav_controller = [[UINavigationController alloc] initWithRootViewController:[DiscoverViewController new]];
-    _bookmarks_nav_controller = [[UINavigationController alloc] initWithRootViewController:[BookmarksViewController new]];
-    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:[ProfileViewController new]];
-    [_main_nav_controller setToolbarHidden:YES];
-    [_main_nav_controller setToolbarHidden:YES];
-    [_bookmarks_nav_controller setToolbarHidden:YES];
-    [_profile_nav_controller setToolbarHidden:YES];
-    
-    [self setupTabs];
-    [self setupLayout];
 }
 
 -(void)setupLayout {
