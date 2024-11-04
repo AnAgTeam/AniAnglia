@@ -6,8 +6,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NavigationAndSearchController.h"
 
-@interface ProfileViewController : UIViewController
+@interface ProfileViewController : UIViewController <NavigationSearchDelegate>
 
 @end
 

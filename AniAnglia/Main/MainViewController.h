@@ -6,7 +6,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NavigationAndSearchController.h"
 
-@interface MainViewController : UIViewController
+@interface MainViewController : UIViewController <NavigationSearchDelegate>
 
 @end
