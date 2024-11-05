@@ -151,11 +151,11 @@
     libanixart::Api* api = _api_proxy.api;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            auto profile = api->get_auth().sign_in(login, password);
-            self->_data_controller.token = TO_NSSTRING(profile.token.token);
-            self->_api_proxy.api->set_token(profile.token.token);
+            auto profile = api->auth().sign_in(login, password);
+            self->_data_controller.token = TO_NSSTRING(profile->token.token);
+            self->_api_proxy.api->set_token(profile->token.token);
         }
-        catch (libanixart::ApiSignInError& e) {
+        catch (libanixart::SignInError& e) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (e.code == SignInCode::InvalidLogin) {
                     [self->_login_view showError:NSLocalizedString(@"app.auth.login_field.error_invalid.text", "")];

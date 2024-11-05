@@ -178,7 +178,7 @@ namespace libanixart::codes {
 			CommentIsTooShort = 5,
 			CommentIsTooLong = 6,
 			CommentLimitReached = 7,
-			InBlocklist = 8
+			InBlockList = 8
 		};
 		enum class CollectionCommentDeleteCode {
 			GENERIC_CODES,
@@ -272,6 +272,12 @@ namespace libanixart::codes {
 			GENERIC_CODES,
 			VkNotBound = 2
 		};
+		enum class AddToBlockListCode {
+			GENERIC_CODES
+		};
+		enum class RemoveFromBlockListCode {
+			GENERIC_CODES
+		};
 	};
 	namespace release {
 		enum class DeleteVoteReleaseCode {
@@ -296,9 +302,9 @@ namespace libanixart::codes {
 			CommentIsTooShort = 5,
 			CommentIsTooLong = 6,
 			CommentLimitReached = 7,
-			InBlocklist = 8
+			InBlockList = 8
 		};
-		enum class ReleaseCommentDeleteCode {
+		enum class ReleaseCommentRemoveCode {
 			GENERIC_CODES,
 			CommentNotFound = 2,
 			CommentNotOwned = 3

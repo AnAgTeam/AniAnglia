@@ -2,6 +2,8 @@
 #include "ApiAuth.hpp"
 #include "ApiSearch.hpp"
 #include "ApiEpisodes.hpp"
+#include "ApiProfiles.hpp"
+#include "ApiReleases.hpp"
 
 namespace libanixart {
 	class Api {
@@ -14,9 +16,11 @@ namespace libanixart {
 		void set_verbose(const bool& api_verbose, const bool& sess_verbose);
 
 		const ApiSession& get_session() const;
-		ApiAuth& get_auth();
-		ApiSearch& get_search();
-		ApiEpisodes get_episodes();
+		ApiAuth& auth();
+		ApiSearch& search();
+		ApiEpisodes episodes();
+		ApiProfiles& profiles();
+		ApiReleases& releases();
 
 	private:
 		std::string _token;
@@ -24,6 +28,8 @@ namespace libanixart {
 		ApiAuth _auth;
 		ApiSearch _search;
 		ApiEpisodes _episodes;
+		ApiProfiles _profiles;
+		ApiReleases _releases;
 	};
 	/* used when language is static variable */
 	extern int api_init(std::string_view lang);

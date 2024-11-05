@@ -12,7 +12,7 @@
 #import "BookmarksViewController.h"
 #import "ProfileViewController.h"
 #import "AppColor.h"
-#import "NavigationAndSearchController.h"
+#import "NavSearchViewController.h"
 
 @interface MainTabBarController ()
 @end
@@ -32,12 +32,16 @@
 }
 
 -(void)setupView {
-    _main_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[MainViewController new] filterEnabled:YES];
-    _discover_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[DiscoverViewController new] filterEnabled:YES];
-    _bookmarks_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:[BookmarksViewController new] filterEnabled:YES];
-    UIStoryboard *profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
-    UIViewController *profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
-    _profile_nav_controller = [[NavigationSearchController alloc] initWithDelegateRootViewController:profile_view_controller filterEnabled:NO];
+    UIViewController* main_view_controller = [[NavigationSearchViewController alloc] initWithDelegate:[MainViewController new] filterEnabled:YES];
+    _main_nav_controller = [[UINavigationController alloc] initWithRootViewController:main_view_controller];
+    UIViewController* discover_view_controller = [[NavigationSearchViewController alloc] initWithDelegate:[DiscoverViewController new] filterEnabled:YES];
+    _discover_nav_controller = [[UINavigationController alloc] initWithRootViewController:discover_view_controller];
+    UIViewController* bookmarks_view_controller = [[NavigationSearchViewController alloc] initWithDelegate:[BookmarksViewController new] filterEnabled:YES];
+    _bookmarks_nav_controller = [[UINavigationController alloc] initWithRootViewController:bookmarks_view_controller];
+    UIStoryboard* profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
+    ProfileViewController* profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
+    profile_view_controller.search_delegate = profile_view_controller;
+    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:profile_view_controller];
     
     [self setupTabs];
     [self setupLayout];

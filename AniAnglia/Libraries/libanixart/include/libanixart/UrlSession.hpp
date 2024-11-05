@@ -17,6 +17,7 @@ namespace libanixart {
 	using MultipartPart = utilspp::clone_ptr<curlpp::FormPart>;
 	using MultipartFilePart = curlpp::FormParts::File;
 	using MultipartContentPart = curlpp::FormParts::Content;
+	/* This class must contain pointer and auto delete it*/
 	using MultipartForms = curlpp::Forms;
 
 	class UrlSession {

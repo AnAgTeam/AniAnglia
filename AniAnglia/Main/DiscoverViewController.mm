@@ -192,7 +192,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_activity_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_interest_arr = api_proxy.api->get_search().interesting().get();
+            self->_interest_arr = api_proxy.api->search().interesting().get();
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self setupCollectionView];
             });
@@ -334,10 +334,7 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 //    [self.navigationController setNavigationBarHidden:NO];
 }
 
--(void)setupView {
-    NavigationSearchController* nav_search_controller = (NavigationSearchController*)self.navigationController;
-    self.navigationItem.titleView = nav_search_controller.search_bar;
-    
+-(void)setupView {    
     _scroll_view = [UIScrollView new];
     [self.view addSubview:_scroll_view];
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;

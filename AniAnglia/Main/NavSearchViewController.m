@@ -6,18 +6,28 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "NavigationAndSearchController.h"
+#import "NavSearchViewController.h"
 
-@interface NavigationSearchController ()
-@property(atomic) BOOL filter_enabled;;
+@interface NavigationSearchViewController ()
 @property(nonatomic, retain) UISearchController* search_controller;
 @property(nonatomic, retain) UIBarButtonItem* search_cancel_bar_item;
 @property(nonatomic, retain) UIBarButtonItem* search_filter_bar_item;
 @end
 
-@implementation NavigationSearchController : UINavigationController
--(instancetype)initWithDelegateRootViewController:(UIViewController<NavigationSearchDelegate>*)view_controller filterEnabled:(BOOL)filter_enabled {
-    self = [super initWithRootViewController:view_controller];
+@implementation NavigationSearchViewController
+
+-(instancetype)init {
+    self = [super init];
+    
+    _filter_enabled = NO;
+    _search_delegate = nil;
+    [self setupSearchBar];
+    
+    return self;
+}
+
+-(instancetype)initWithDelegate:(id<NavigationSearchDelegate>)view_controller filterEnabled:(BOOL)filter_enabled {
+    self = [super init];
     
     _filter_enabled = filter_enabled;
     _search_delegate = view_controller;
@@ -26,18 +36,18 @@
     return self;
 }
 
-//-(void)viewDidLoad {
-//    [super viewDidLoad];
-//    [self setupSearchBar];
-//}
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    [self setupSearchBar];
+}
 
 -(void)setupSearchBar {
     _search_controller = [UISearchController new];
     _search_controller.hidesNavigationBarDuringPresentation = NO;
     _search_controller.searchBar.showsCancelButton = NO;
     [_search_controller.searchBar setDelegate:self];
-//    _search_delegate.navigationItem.titleView = _search_controller.searchBar;
-//    self.hidesBarsOnSwipe = YES;
+    self.navigationItem.titleView = _search_controller.searchBar;
+    self.navigationController.hidesBarsOnSwipe = YES;
     _search_cancel_bar_item = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"chevron.left"] style:UIBarButtonItemStylePlain target:self action:@selector(searchBarCancelButtonPressed:)];
     if (_filter_enabled) {
         _search_filter_bar_item = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"slider.horizontal.3"] style:UIBarButtonItemStylePlain target:self action:@selector(searchBarFilterButtonPressed:)];
@@ -52,17 +62,17 @@
 
 -(void)cancelSearchBar {
     [_search_controller.searchBar endEditing:YES];
-    _search_delegate.navigationItem.leftBarButtonItem = nil;
-    _search_delegate.navigationItem.rightBarButtonItem = nil;
+    self.navigationItem.leftBarButtonItem = nil;
+    self.navigationItem.rightBarButtonItem = nil;
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)search_bar {
-    self.hidesBarsOnSwipe = NO;
-    _search_delegate.navigationItem.leftBarButtonItem = _search_cancel_bar_item;
-    _search_delegate.navigationItem.rightBarButtonItem = _search_filter_bar_item;
+    self.navigationController.hidesBarsOnSwipe = NO;
+    self.navigationItem.leftBarButtonItem = _search_cancel_bar_item;
+    self.navigationItem.rightBarButtonItem = _search_filter_bar_item;
 }
 -(void)searchBarTextDidEndEditing:(UISearchBar *)search_bar {
-    self.hidesBarsOnSwipe = YES;
+    self.navigationController.hidesBarsOnSwipe = YES;
     if ([search_bar.text length] > 0) {
         [_search_delegate search:search_bar.text];
     }

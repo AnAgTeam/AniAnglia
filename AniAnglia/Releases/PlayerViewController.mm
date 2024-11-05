@@ -47,7 +47,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 -(void)loadStreams {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            auto ep_target = self->_api_proxy.api->get_episodes().get_episode_target(self->_release_id, self->_source_id, static_cast<int32_t>(self->_source_position));
+            auto ep_target = self->_api_proxy.api->episodes().get_episode_target(self->_release_id, self->_source_id, static_cast<int32_t>(self->_source_position));
             self->_streams_arr = self->_api_proxy.parsers->extract_info(ep_target->url);
             auto selected_stream = choose_quality(self->_streams_arr, preferred_quality);
             self->_selected_stream_url = [NSURL URLWithString:TO_NSSTRING(selected_stream)];

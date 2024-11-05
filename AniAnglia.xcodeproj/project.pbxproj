@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */; };
 		CEA6E87E2CD7D57E00D4588F /* ProfileStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */; };
+		EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -20,20 +20,6 @@
 		EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CCD2C7FA19C00B4F637 /* DiscoverViewController.mm */; };
 		EF5A3CD02C7FA1AB00B4F637 /* BookmarksViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CCF2C7FA1AB00B4F637 /* BookmarksViewController.mm */; };
 		EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */; };
-		EF5F02B72CCE95C700EA11BB /* boost_container.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; };
-		EF5F02B82CCE95C700EA11BB /* boost_container.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EF5F02B92CCE95C700EA11BB /* boost_json.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; };
-		EF5F02BA2CCE95C700EA11BB /* boost_json.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EF5F02BC2CCE95D400EA11BB /* boost_regex.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; };
-		EF5F02BD2CCE95D400EA11BB /* boost_regex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EF5F02BE2CCE95D400EA11BB /* boost_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; };
-		EF5F02BF2CCE95D400EA11BB /* boost_system.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EF5F02C02CCE95F100EA11BB /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
-		EF5F02C12CCE95F100EA11BB /* curl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EF5F02C22CCE95F200EA11BB /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
-		EF5F02C32CCE95F200EA11BB /* curlpp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EF5F02C42CCE95F200EA11BB /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; };
-		EF5F02C52CCE95F200EA11BB /* libanixart.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EF5FFDC32CCE88A300EA11BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = EF5FFDC12CCE88A300EA11BB /* Localizable.strings */; };
 		EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF60AC732C6FB2FE00CD33A8 /* AppDelegate.mm */; };
 		EF60AC7F2C6FB30100CD33A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */; };
@@ -55,23 +41,37 @@
 		EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */; };
 		EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E02CAC401700E87BF1 /* StringCvt.mm */; };
 		EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */; };
-		EFD5CD6C2CD8436000A1E057 /* NavigationAndSearchController.m in Sources */ = {isa = PBXBuildFile; fileRef = EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */; };
+		EFD5CD6C2CD8436000A1E057 /* NavSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */; };
+		EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; };
+		EFD5CD6F2CDABD1700A1E057 /* boost_container.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; };
+		EFD5CD712CDABD1700A1E057 /* boost_json.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; };
+		EFD5CD732CDABD1700A1E057 /* boost_regex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; };
+		EFD5CD752CDABD1700A1E057 /* boost_system.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
+		EFD5CD782CDABD3800A1E057 /* curl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
+		EFD5CD7A2CDABD3800A1E057 /* curlpp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; };
+		EFD5CD7C2CDABD5900A1E057 /* libanixart.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		EF5F02BB2CCE95C800EA11BB /* Embed Frameworks */ = {
+		EFD5CD762CDABD1800A1E057 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EF5F02B82CCE95C700EA11BB /* boost_container.xcframework in Embed Frameworks */,
-				EF5F02C52CCE95F200EA11BB /* libanixart.xcframework in Embed Frameworks */,
-				EF5F02C32CCE95F200EA11BB /* curlpp.xcframework in Embed Frameworks */,
-				EF5F02BA2CCE95C700EA11BB /* boost_json.xcframework in Embed Frameworks */,
-				EF5F02BF2CCE95D400EA11BB /* boost_system.xcframework in Embed Frameworks */,
-				EF5F02BD2CCE95D400EA11BB /* boost_regex.xcframework in Embed Frameworks */,
-				EF5F02C12CCE95F100EA11BB /* curl.xcframework in Embed Frameworks */,
+				EFD5CD6F2CDABD1700A1E057 /* boost_container.xcframework in Embed Frameworks */,
+				EFD5CD7C2CDABD5900A1E057 /* libanixart.xcframework in Embed Frameworks */,
+				EFD5CD7A2CDABD3800A1E057 /* curlpp.xcframework in Embed Frameworks */,
+				EFD5CD712CDABD1700A1E057 /* boost_json.xcframework in Embed Frameworks */,
+				EFD5CD752CDABD1700A1E057 /* boost_system.xcframework in Embed Frameworks */,
+				EFD5CD732CDABD1700A1E057 /* boost_regex.xcframework in Embed Frameworks */,
+				EFD5CD782CDABD3800A1E057 /* curl.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,8 +80,6 @@
 
 /* Begin PBXFileReference section */
 		CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileStoryboard.storyboard; sourceTree = "<group>"; };
-		EF0D4FF72C71294800745318 /* boost_container.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_container.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_container.xcframework; sourceTree = "<group>"; };
-		EF0D4FF82C71294800745318 /* boost_json.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_json.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_json.xcframework; sourceTree = "<group>"; };
 		EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppSearchController.mm; sourceTree = "<group>"; };
 		EF44D0D62CD7FD2500C8B608 /* AppSearchController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppSearchController.h; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
@@ -1276,7 +1274,6 @@
 		EF60AC832C6FB30100CD33A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EF70960B2C77A56500C95429 /* RestoreViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RestoreViewController.mm; sourceTree = "<group>"; };
 		EF70960D2C77A57200C95429 /* RestoreViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RestoreViewController.h; sourceTree = "<group>"; };
-		EF875C7C2C78F90C00DAECB1 /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = ../Desktop/myAppFrameworks/libanixart.xcframework; sourceTree = "<group>"; };
 		EF875C7F2C78FB7400DAECB1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EF875C812C78FC7B00DAECB1 /* SignUpViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SignUpViewController.h; sourceTree = "<group>"; };
 		EF875C822C78FCB500DAECB1 /* SignUpViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SignUpViewController.mm; sourceTree = "<group>"; };
@@ -1285,7 +1282,6 @@
 		EF8B01B12C7015A200423ECD /* SceneDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SceneDelegate.mm; sourceTree = "<group>"; };
 		EF8B01B22C7015A200423ECD /* AuthViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthViewController.mm; sourceTree = "<group>"; };
 		EF8B01B32C7015A300423ECD /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
-		EF8B05CB2C70221000423ECD /* curlpp.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = curlpp.xcframework; path = ../Desktop/myAppFrameworks/curlpp.xcframework; sourceTree = "<group>"; };
 		EF8BFF7E2C70060600423ECD /* curl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = curl.xcframework; path = /Users/toilettrauma/AniAnglia/../Desktop/myAppFrameworks/curl.xcframework; sourceTree = "<absolute>"; };
 		EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EpisodeSelectViewController.mm; sourceTree = "<group>"; };
 		EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EpisodeSelectViewController.h; sourceTree = "<group>"; };
@@ -1300,15 +1296,13 @@
 		EFBF59B72C768D12008F1967 /* AuthNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthNavigationController.h; sourceTree = "<group>"; };
 		EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextErrorField.mm; sourceTree = "<group>"; };
 		EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITextErrorField.h; sourceTree = "<group>"; };
-		EFCE2CDA2C714EDE004ACF64 /* boost_system.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_system.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_system.xcframework; sourceTree = "<group>"; };
-		EFD505DA2CAB47A400E87BF1 /* boost_regex.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = boost_regex.xcframework; path = ../Desktop/myAppFrameworks/boost/boost_regex.xcframework; sourceTree = "<group>"; };
 		EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TypeSelectViewController.mm; sourceTree = "<group>"; };
 		EFD505DF2CAB4B4D00E87BF1 /* TypeSelectViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TypeSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E02CAC401700E87BF1 /* StringCvt.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StringCvt.mm; sourceTree = "<group>"; };
 		EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
-		EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NavigationAndSearchController.m; sourceTree = "<group>"; };
-		EFD5CD6D2CD8436F00A1E057 /* NavigationAndSearchController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NavigationAndSearchController.h; sourceTree = "<group>"; };
+		EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NavSearchViewController.m; sourceTree = "<group>"; };
+		EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NavSearchViewController.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1316,18 +1310,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EF5F02C02CCE95F100EA11BB /* curl.xcframework in Frameworks */,
+				EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */,
 				EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */,
-				EF5F02B72CCE95C700EA11BB /* boost_container.xcframework in Frameworks */,
-				EF5F02BE2CCE95D400EA11BB /* boost_system.xcframework in Frameworks */,
-				EF5F02BC2CCE95D400EA11BB /* boost_regex.xcframework in Frameworks */,
+				EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */,
+				EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */,
+				EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */,
 				EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */,
 				EF875C802C78FB7400DAECB1 /* Security.framework in Frameworks */,
-				EF5F02C22CCE95F200EA11BB /* curlpp.xcframework in Frameworks */,
+				EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */,
 				EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */,
-				EF5F02B92CCE95C700EA11BB /* boost_json.xcframework in Frameworks */,
+				EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */,
 				EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */,
-				EF5F02C42CCE95F200EA11BB /* libanixart.xcframework in Frameworks */,
+				EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */,
 				EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1350,8 +1344,8 @@
 				EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */,
 				EF44D0D62CD7FD2500C8B608 /* AppSearchController.h */,
 				EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */,
-				EFD5CD6D2CD8436F00A1E057 /* NavigationAndSearchController.h */,
-				EFD5CD6B2CD8436000A1E057 /* NavigationAndSearchController.m */,
+				EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */,
+				EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */,
 				CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */,
 			);
 			path = Main;
@@ -3336,12 +3330,6 @@
 				EF875C7F2C78FB7400DAECB1 /* Security.framework */,
 				EF4941142C723F8600832A6C /* CoreGraphics.framework */,
 				EF4941122C723F0700832A6C /* UIKit.framework */,
-				EF875C7C2C78F90C00DAECB1 /* libanixart.xcframework */,
-				EFCE2CDA2C714EDE004ACF64 /* boost_system.xcframework */,
-				EF0D4FF72C71294800745318 /* boost_container.xcframework */,
-				EFD505DA2CAB47A400E87BF1 /* boost_regex.xcframework */,
-				EF0D4FF82C71294800745318 /* boost_json.xcframework */,
-				EF8B05CB2C70221000423ECD /* curlpp.xcframework */,
 				EF8BFF7E2C70060600423ECD /* curl.xcframework */,
 			);
 			name = Frameworks;
@@ -3357,7 +3345,7 @@
 				EF60AC6B2C6FB2FE00CD33A8 /* Sources */,
 				EF60AC6C2C6FB2FE00CD33A8 /* Frameworks */,
 				EF60AC6D2C6FB2FE00CD33A8 /* Resources */,
-				EF5F02BB2CCE95C800EA11BB /* Embed Frameworks */,
+				EFD5CD762CDABD1800A1E057 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3422,7 +3410,7 @@
 				EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */,
 				EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */,
 				EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */,
-				EFD5CD6C2CD8436000A1E057 /* NavigationAndSearchController.m in Sources */,
+				EFD5CD6C2CD8436000A1E057 /* NavSearchViewController.m in Sources */,
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
@@ -3522,7 +3510,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-I./AniAnglia/Libraries/include",
-					"-I./AniAnglia/Libraries/include_libanixart",
+					"-I./AniAnglia/Libraries/libanixart/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";
@@ -3582,7 +3570,7 @@
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
 					"-I./AniAnglia/Libraries/include",
-					"-I./AniAnglia/Libraries/include_libanixart",
+					"-I./AniAnglia/Libraries/libanixart/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";
@@ -3598,7 +3586,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = G9LA7PKTZX;
+				DEVELOPMENT_TEAM = 4G5LGK558P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -3611,7 +3599,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3625,7 +3613,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = G9LA7PKTZX;
+				DEVELOPMENT_TEAM = 4G5LGK558P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -3638,7 +3626,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
