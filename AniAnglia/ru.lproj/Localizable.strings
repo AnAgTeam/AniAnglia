@@ -48,16 +48,19 @@
 "app.main_tab_bar.bookmarks_tab.title" = "Закладки";
 "app.main_tab_bar.profile_tab.title" = "Профиль";
 
+"app.main.search_bar.placeholder" = "Найти релиз...";
+
 /* DISCOVER */
+"app.discover.search_bar.placeholder" = "Найти релиз...";
 "app.discover.option.popular.name" = "Популярное";
 "app.discover.option.schedule.name" = "Расписание";
 "app.discover.option.collections.name" = "Коллекции";
 "app.discover.option.filter.name" = "Фильтр";
 "app.discover.option.random.name" = "Случайное";
-"app.discover.search_bar.placeholder" = "Найти релиз...";
 
 /* RELEASES */
-"app.release.play_button.title" = "Воспроизвести";
+"app.releases.search_bar.placeholder" = "Найти релиз...";
+"app.release.play_button.title" = "Смотреть";
 "app.release.add_list_button.menu.title" = "В список";
 "app.release.state.none.title" = "Не указано";
 "app.release.state.watching.title" = "Смотрю";
@@ -70,3 +73,9 @@
 "app.type_select.cell.ep_count.name" = "эп.";
 
 "app.source_select.nav_item.title" = "Источник";
+
+/* BOOKMARKS */
+"app.bookmarks.search_bar.placeholder" = "Найти закладку...";
+
+/* PROFILE */
+"app.profile.search_bar.placeholder" = "Найти пользователя...";

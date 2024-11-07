@@ -22,17 +22,19 @@
     // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
     // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
     
-    UIWindow* window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene*)scene];
-    
     if (self.window == nil) {
+        UIWindow* window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene*)scene];
+        
 //        AuthNavigationController* nav_controller = [AuthNavigationController new];
         MainTabBarController* root_controller = [MainTabBarController new];
+        root_controller.modalPresentationStyle = UIModalPresentationFullScreen;
         
         [window setRootViewController: root_controller];
     
         self.window = window;
+        
+        [window makeKeyAndVisible];
     }
-    [window makeKeyAndVisible];
 }
 
 

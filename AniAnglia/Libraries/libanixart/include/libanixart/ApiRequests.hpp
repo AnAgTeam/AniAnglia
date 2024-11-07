@@ -19,7 +19,7 @@ namespace libanixart {
 		std::string data;
 		std::string type;
 	};
-	class ApiPostMiltipartRequest {
+	class ApiPostMultipartRequest {
 	public:
 		std::string sub_url;
 		UrlParameters params = UrlParameters();
@@ -73,10 +73,64 @@ namespace libanixart {
 			extern ApiPostRequest create();
 			extern ApiGetRequest remove();
 			extern ApiPostRequest edit();
-			extern ApiPostMiltipartRequest edit_image(const int64_t& collection_id, const MultipartPart& image, const std::string& token);
+			extern ApiPostMultipartRequest edit_image(const int64_t& collection_id, const MultipartPart& image, const std::string& token);
 			extern ApiGetRequest release_add();
 			extern ApiGetRequest releases();
-		}
+		};
+		namespace profile {
+			extern ApiGetRequest change_login_history(const int64_t& profile_id, const int32_t& page, const std::string& token);
+			extern ApiPostRequest process(const int64_t& profile_id, const ProfileProcessRequest& request, const std::string& token);
+			extern ApiGetRequest profile(const int64_t& profile_id, const std::string& token);
+			extern ApiGetRequest social(const int64_t& profile_id, const std::string& token);
+		};
+		namespace profile::blockList {
+			extern ApiGetRequest add_to_block_list(const int64_t& profile_id, const std::string& token);
+			extern ApiGetRequest block_list(const int32_t& page, const std::string& token);
+			extern ApiGetRequest remove_from_block_list(const int64_t& profile_id, const std::string& token);
+		};
+		namespace profile::friends {
+			extern ApiGetRequest friends(const int64_t& profile_id, const int32_t& page, const std::string& token);
+			extern ApiGetRequest recommendations(const std::string& token);
+			extern ApiGetRequest request_hide(const int64_t& profile_id, const std::string& token);
+			extern ApiGetRequest request_remove(const int64_t& profile_id, const std::string& token);
+			extern ApiGetRequest request_send(const int64_t& profile_id, const std::string& token);
+			extern ApiGetRequest requests_in(const int32_t& page, const std::string& token);
+			extern ApiGetRequest requests_in_last(const std::string& token);
+			extern ApiGetRequest requests_out(const int32_t& page, const std::string& token);
+			extern ApiGetRequest requests_out_last(const std::string& token);
+		};
+		namespace profile::list {
+			extern ApiGetRequest add(const int32_t& status, const int64_t& release_id, const std::string& token);
+			extern ApiGetRequest remove(const int32_t& status, const int64_t& release_id, const std::string& token);
+			extern ApiGetRequest profile_list(const int32_t& status, const int32_t& page, const int32_t& sort, const std::string& token);
+			extern ApiGetRequest profile_list_by_profile(const int64_t& profile_id, const int32_t& status, const int32_t& page, const int32_t& sort, const std::string& token);
+		};
+		namespace profile::preferences {
+			extern ApiPostMultipartRequest avatar_edit(const MultipartPart& image, const std::string& token);
+			extern ApiGetRequest change_email(const std::string& current_password, const std::string& current_email, const std::string& new_email, const std::string& token);
+			extern ApiGetRequest change_email_confirm(const std::string& current_password, const std::string& token);
+			extern ApiPostRequest change_login(const std::string& login, const std::string& token);
+			extern ApiPostRequest change_login_info(const std::string& token);
+			extern ApiGetRequest change_password(const std::string& current_password, const std::string& new_password, const std::string& token);
+			extern ApiPostRequest google_bind(const std::string& google_id_token, const std::string& token);
+			extern ApiPostRequest google_unbind(const std::string& token);
+			extern ApiGetRequest my(const std::string& token);
+			extern ApiPostRequest privacy_counts_edit(const PrivacyEditRequest& request, const std::string& token);
+			extern ApiPostRequest privacy_friend_request_edit(const PrivacyEditRequest& request, const std::string& token);
+			extern ApiPostRequest privacy_social_edit(const PrivacyEditRequest& request, const std::string& token);
+			extern ApiPostRequest privacy_stats_edit(const PrivacyEditRequest& request, const std::string& token);
+			extern ApiGetRequest social(const std::string& token);
+			extern ApiPostRequest social_pages_edit(const SocialPagesEditRequest& request, const std::string& token);
+			extern ApiGetRequest status_remove(const std::string& token);
+			extern ApiPostRequest status_edit(const StatusEditRequest& request, const std::string& token);
+			extern ApiPostRequest vk_bind(const std::string& vk_access_token, const std::string& token);
+			extern ApiPostRequest vk_unbind(const std::string& token);
+		};
+		namespace profile::releaseVote {
+			extern ApiGetRequest all_release_unvoted(const int32_t& page, const std::string& token);
+			extern ApiGetRequest all_release_voted(const int64_t& profile_id, const int32_t& page, const std::string& token);
+			extern ApiGetRequest last_release_unvoted(const std::string& token);
+		};
 		namespace commentVotes {
 
 		};
@@ -106,7 +160,7 @@ namespace libanixart {
 			extern ApiPostRequest watch(const int64_t& release_id, const int64_t& source_id, const std::string& token);
 			extern ApiPostRequest watch(const int64_t& release_id, const int64_t& source_id, const int32_t& position, const std::string& token);
 		};
-		namespace imporing {
+		namespace importing {
 			
 		};
 		namespace exporting {
@@ -126,11 +180,38 @@ namespace libanixart {
 			extern ApiPostRequest report(const int64_t& release_id, const ReleaseReportRequest& request, const std::string& token);
 			extern ApiGetRequest vote(const int64_t& release_id, const int32_t& vote, const std::string& token);
 		};
-		namespace release::platform {
+		namespace release::comment {
+			extern ApiPostRequest add(const int64_t& release_id, const ReleaseCommentAddRequest& request, const std::string& token);
+			extern ApiGetRequest comment(const int64_t& release_id, const std::string& token);
+			extern ApiGetRequest comments(const int64_t& release_id, const int32_t& page, const int32_t& sort, const std::string& token);
+			extern ApiGetRequest remove(const int64_t& comment_id, const std::string& token);
+			extern ApiPostRequest edit(const int64_t& comment_id, const ReleaseCommentEditRequest& request, const std::string& token);
+			extern ApiPostRequest process(const int64_t& comment_id, const ReleaseCommentProcessRequest& request, const std::string& token);
+			extern ApiGetRequest profile_comments(const int64_t& profile_id, const int32_t& page, const int32_t& sort, const std::string& token);
+			extern ApiPostRequest replies(const int64_t& comment_id, const int32_t& page, const int32_t& sort, const std::string& token);
+			extern ApiPostRequest report(const int64_t& comment_id, const ReleaseCommentReportRequest& request, const std::string& token);
+			extern ApiGetRequest vote(const int64_t& comment_id, const int32_t& vote, const std::string& token);
+		};
+		namespace release::streamingPlatform {
 			extern ApiGetRequest release_streaming_platform(const int64_t& release_id);
 		};
 		namespace release::video {
+			extern ApiGetRequest categories();
+			extern ApiGetRequest category(const int64_t& release_id, const int64_t& category_id, const int32_t& page);
 			extern ApiGetRequest main(const int64_t& release_id);
+			extern ApiGetRequest profile_video(const int64_t& profile_id, const int32_t& page, const std::string& token);
+			extern ApiGetRequest video(const int64_t& release_id, const int32_t& page);
+		};
+		namespace release::video::appeal {
+			extern ApiPostRequest add(const ReleaseVideoAppealRequest& request, const std::string& token);
+			extern ApiGetRequest appeals(const int32_t& page, const std::string& token);
+			extern ApiGetRequest appeals(const std::string& token);
+			extern ApiPostRequest remove(const int64_t& appeal_id, const std::string& token);
+		};
+		namespace release::video::favorite {
+			extern ApiGetRequest add(const int64_t& release_id, const std::string& token);
+			extern ApiGetRequest remove(const int64_t& release_id, const std::string& token);
+			extern ApiGetRequest favorites(const int64_t& profile_id, const int32_t& page, const std::string& token);
 		};
 		namespace search {
 			extern ApiPostRequest collection_search(const int32_t& page, const SearchRequest& search_request, const std::string& token);

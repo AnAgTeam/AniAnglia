@@ -10,6 +10,8 @@
 
 /* Idea from tgbot-cpp */
 namespace libanixart::json {
+    using time_point = std::chrono::system_clock::time_point;
+
     template<typename T>
     class Nullable {
     public:
@@ -38,6 +40,7 @@ namespace libanixart::json {
     };
     class InlineJson {
     public:
+        // OBJECTS
         static inline void open_object(std::string& json_str) {
             json_str += '{';
         }
@@ -116,6 +119,8 @@ namespace libanixart::json {
                 append_object(json_str, key, "null");
             }
         }
+        template<>
+        inline void append(std::string& json_str, const std::string& key, const time_point& value) { append_number(json_str, key, TimeTools::to_timestamp(value)); }
 
         // ARRAYS
 
@@ -182,6 +187,8 @@ namespace libanixart::json {
         inline void append(std::string& json_str, const std::string& value) { append(json_str, std::string_view(value)); }
         template<>
         inline void append(std::string& json_str, const char* value) { append(json_str, std::string_view(value)); }
+        template<>
+        inline void append(std::string& json_str, const time_point& value) { append_number(json_str, TimeTools::to_timestamp(value)); }
 
         static inline void close_array(std::string& json_str) {
             json_str[json_str.length() - 1] = ']';
@@ -307,6 +314,16 @@ namespace libanixart::json {
             for (auto& value : json_arr) {
                 vec.push_back(std::make_shared<T>(value.as_object()));
             }
+        }
+        template<typename T>
+        static std::vector<std::shared_ptr<T>> get_objects_array(JsonObject& object, const std::string_view& key) {
+            std::vector<std::shared_ptr<T>> out;
+            auto& json_arr = get<JsonArray&>(object, key);
+            out.reserve(json_arr.size());
+            for (auto& value : json_arr) {
+                out.push_back(std::make_shared<T>(value.as_object()));
+            }
+            return out;
         }
 
         static inline bool exists(JsonObject& object, const std::string_view& key) {

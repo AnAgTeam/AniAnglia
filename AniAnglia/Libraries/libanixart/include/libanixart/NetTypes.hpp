@@ -8,9 +8,10 @@
 #pragma warning(pop)
 
 namespace libanixart {
-
 	class KeyValue {
 	public:
+		//template<typename T>
+		//KeyValue(const std::string& key, const T& value) : key(key), value(std::to_string(value)) {}
 		KeyValue(const std::string& key, const std::string& value);
 
 		std::string key;

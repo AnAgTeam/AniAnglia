@@ -3,10 +3,6 @@
 #include "ApiTypes.hpp"
 
 namespace libanixart {
-	using enums::EpisodesSort;
-	using types::Episode;
-	using types::EpisodeType;
-	using types::EpisodeSource;
 	class ApiEpisodes {
 	public:
 		ApiEpisodes(const ApiSession& session, const std::string& token);

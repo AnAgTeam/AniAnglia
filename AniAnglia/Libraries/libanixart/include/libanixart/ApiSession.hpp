@@ -13,7 +13,7 @@ namespace libanixart {
 
 		JsonObject api_request(const ApiPostRequest& request) const;
 		JsonObject api_request(const ApiGetRequest& request) const;
-		JsonObject api_request(const ApiPostMiltipartRequest& request) const;
+		JsonObject api_request(const ApiPostMultipartRequest& request) const;
 
 	private:
 		bool _is_verbose;

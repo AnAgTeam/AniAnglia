@@ -104,7 +104,7 @@
     [_loading_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_types_arr = self->_api_proxy.api->get_episodes().get_release_types(self->_release_id);
+            self->_types_arr = self->_api_proxy.api->episodes().get_release_types(self->_release_id);
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self->_loading_ind stopAnimating];
                 [self setupTypesView];

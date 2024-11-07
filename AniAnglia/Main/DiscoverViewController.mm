@@ -81,27 +81,27 @@
     self.layer.cornerRadius = 12.0;
     self.layer.masksToBounds = YES;
     _image_view = [[UIImageView alloc] initWithFrame:frame];
-    _image_view.image = nil;
-    _title = [UILabel new];
-    _title.translatesAutoresizingMaskIntoConstraints = NO;
-    [_title setFont:[UIFont boldSystemFontOfSize:_title.font.pointSize]];
-    _title.layer.shadowRadius = 2.2;
-    _title.layer.shadowOffset = CGSizeMake(0, 0);
-    _title.layer.shadowOpacity = 1.0;
-    _desc = [UILabel new];
-    _desc.translatesAutoresizingMaskIntoConstraints = NO;
-    _desc.numberOfLines = 2;
     [self setBackgroundView:_image_view];
+    _image_view.image = nil;
+    _desc = [UILabel new];
     [self addSubview:_desc];
-    [self addSubview:_title];
-    [_title.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
-    [_title.heightAnchor constraintEqualToConstant:15.0].active = YES;
-    [_title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
-    [_title.bottomAnchor constraintEqualToAnchor:_desc.topAnchor constant:-2.0].active = YES;
     [_desc.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
     [_desc.heightAnchor constraintLessThanOrEqualToConstant:50.0].active = YES;
     [_desc.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
     [_desc.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-5.0].active = YES;
+    _desc.translatesAutoresizingMaskIntoConstraints = NO;
+    _desc.numberOfLines = 2;
+    _title = [UILabel new];
+    [self addSubview:_title];
+    _title.translatesAutoresizingMaskIntoConstraints = NO;
+    [_title.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
+    [_title.heightAnchor constraintEqualToConstant:15.0].active = YES;
+    [_title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
+    [_title.bottomAnchor constraintEqualToAnchor:_desc.topAnchor constant:-2.0].active = YES;
+    [_title setFont:[UIFont boldSystemFontOfSize:_title.font.pointSize]];
+    _title.layer.shadowRadius = 2.2;
+    _title.layer.shadowOffset = CGSizeMake(0, 0);
+    _title.layer.shadowOpacity = 1.0;
     
     [self setupLayout];
     
@@ -112,7 +112,7 @@
     /*
       MAYBE CHANGE TO STATIC COLORS
      */
-    _image_view.backgroundColor = [AppColorProvider foregroundColor1];
+    _image_view.backgroundColor = [UIColor clearColor];
     _title.textColor = [AppColorProvider textColor];
     _title.shadowColor = [AppColorProvider backgroundColor];
     _desc.textColor = [AppColorProvider textSecondaryColor];
@@ -192,7 +192,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_activity_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_interest_arr = api_proxy.api->get_search().interesting().get();
+            self->_interest_arr = api_proxy.api->search().interesting().get();
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self setupCollectionView];
             });
@@ -217,6 +217,8 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_collection_view setDelegate:self];
     [_collection_view setDataSource:self];
     _collection_view.showsHorizontalScrollIndicator = NO;
+    
+    [self setupLayout];
 }
 
 -(void)setupLayout {
@@ -322,6 +324,12 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 @implementation DiscoverViewController
 
+-(void)loadView {
+//    [super loadView];
+    
+    _scroll_view = [UIScrollView new];
+    self.view = _scroll_view;
+}
 
 -(void)viewDidLoad {
     [super viewDidLoad];
@@ -334,17 +342,14 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 //    [self.navigationController setNavigationBarHidden:NO];
 }
 
--(void)setupView {
-    NavigationSearchController* nav_search_controller = (NavigationSearchController*)self.navigationController;
-    self.navigationItem.titleView = nav_search_controller.search_bar;
+-(void)setupView {    
     
-    _scroll_view = [UIScrollView new];
-    [self.view addSubview:_scroll_view];
-    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+//    [self.view addSubview:_scroll_view];
+//    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
+//    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+//    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+//    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
+//    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     
     _content_view = [UIView new];
     [_scroll_view addSubview:_content_view];

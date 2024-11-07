@@ -94,7 +94,7 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_release_loading_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_release_info = self->_api_proxy.api->get_search().get_release(self->_release_id);
+            self->_release_info = self->_api_proxy.api->releases().get_release(self->_release_id);
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self->_release_loading_ind stopAnimating];
                 [self setupReleaseView];

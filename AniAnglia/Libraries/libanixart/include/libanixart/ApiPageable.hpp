@@ -71,10 +71,7 @@ namespace libanixart {
 
 		std::vector<TTypePtr> do_parse_request() {
 			JsonObject resp = this->do_request(_current_page);
-			PageableCode code = static_cast<PageableCode>(ParseJson::get<int64_t>(resp, "code"));
-			if (code != PageableCode::Success) {
-				throw PageableError(code);
-			}
+			assert_status_code<PageableCode, PageableError>(resp);
 			_current_page = ParseJson::get<int32_t>(resp, "current_page");
 			_total_page_count = ParseJson::get<int32_t>(resp, "total_page_count");
 			_total_count = ParseJson::get<int64_t>(resp, "total_count");
