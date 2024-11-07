@@ -30,7 +30,7 @@
     // setup audio
     AVAudioSession* audio_sess = [AVAudioSession sharedInstance];
     [audio_sess setCategory:AVAudioSessionCategoryPlayback error:nil];
-    [audio_sess setActive:YES error:nil];
+    [audio_sess setActive:NO error:nil];
     // light status bar
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     

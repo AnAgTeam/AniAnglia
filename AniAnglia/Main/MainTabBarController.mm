@@ -31,35 +31,29 @@
     [self setupView];
 }
 
+-(UINavigationController*)tabWithViewController:(NavigationSearchViewController<NavigationSearchDelegate>*)view_controller filterEnabled:(BOOL)filter_enabled title:(NSString*)local_title image:(NSString*)image_sys_name searchBarPlaceholder:(NSString*)local_search_ph{
+    view_controller.search_delegate = view_controller;
+    view_controller.filter_enabled = filter_enabled;
+    UINavigationController* nav_controller = [[UINavigationController alloc] initWithRootViewController:view_controller];
+    nav_controller.tabBarItem.title = NSLocalizedString(local_title, "");
+    nav_controller.tabBarItem.image = [UIImage systemImageNamed:image_sys_name];
+    nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:[NSString stringWithFormat:@"%@.fill", image_sys_name]];
+    view_controller.search_bar.placeholder = NSLocalizedString(local_search_ph, "");
+    return nav_controller;
+}
+
 -(void)setupView {
-    UIViewController* main_view_controller = [[NavigationSearchViewController alloc] initWithDelegate:[MainViewController new] filterEnabled:YES];
-    _main_nav_controller = [[UINavigationController alloc] initWithRootViewController:main_view_controller];
-    UIViewController* discover_view_controller = [[NavigationSearchViewController alloc] initWithDelegate:[DiscoverViewController new] filterEnabled:YES];
-    _discover_nav_controller = [[UINavigationController alloc] initWithRootViewController:discover_view_controller];
-    UIViewController* bookmarks_view_controller = [[NavigationSearchViewController alloc] initWithDelegate:[BookmarksViewController new] filterEnabled:YES];
-    _bookmarks_nav_controller = [[UINavigationController alloc] initWithRootViewController:bookmarks_view_controller];
-    UIStoryboard* profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
-    ProfileViewController* profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
-    profile_view_controller.search_delegate = profile_view_controller;
-    _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:profile_view_controller];
-    
     [self setupTabs];
     [self setupLayout];
 }
 
 -(void)setupTabs {
-    _main_nav_controller.tabBarItem.title = NSLocalizedString(@"app.main_tab_bar.main_tab.title", "");
-    _main_nav_controller.tabBarItem.image = [UIImage systemImageNamed:@"house"];
-    _main_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"house.fill"];
-    _discover_nav_controller.tabBarItem.title = NSLocalizedString(@"app.main_tab_bar.discover_tab.title", "");
-    _discover_nav_controller.tabBarItem.image = [UIImage systemImageNamed:@"safari"];
-    _discover_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"safari.fill"];
-    _bookmarks_nav_controller.title = NSLocalizedString(@"app.main_tab_bar.bookmarks_tab.title", "");
-    _bookmarks_nav_controller.tabBarItem.image = [UIImage systemImageNamed:@"bookmark"];
-    _bookmarks_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"bookmark.fill"];
-    _profile_nav_controller.tabBarItem.title = NSLocalizedString(@"app.main_tab_bar.profile_tab.title", "");
-    _profile_nav_controller.tabBarItem.image = [UIImage systemImageNamed:@"person"];
-    _profile_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"person.fill"];
+    _main_nav_controller = [self tabWithViewController:[MainViewController new] filterEnabled:YES title:@"app.main_tab_bar.main_tab.title" image:@"house" searchBarPlaceholder:@"app.main.search_bar.placeholder"];
+    _discover_nav_controller = [self tabWithViewController:[DiscoverViewController new] filterEnabled:YES title:@"app.main_tab_bar.discover_tab.title" image:@"safari" searchBarPlaceholder:@"app.discover.search_bar.placeholder"];
+    _bookmarks_nav_controller = [self tabWithViewController:[MainViewController new] filterEnabled:NO title:@"app.main_tab_bar.bookmarks_tab.title" image:@"bookmark" searchBarPlaceholder:@"app.bookmarks.search_bar.placeholder"];
+    UIStoryboard* profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
+    ProfileViewController* profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
+    _profile_nav_controller = [self tabWithViewController:profile_view_controller filterEnabled:NO title:@"app.main_tab_bar.profile_tab.title" image:@"person" searchBarPlaceholder:@"app.profile.search_bar.placeholder"];
     
     [self setViewControllers:@[
             _main_nav_controller,

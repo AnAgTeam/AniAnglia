@@ -15,9 +15,8 @@
 @interface NavigationSearchViewController : UIViewController <UISearchBarDelegate>
 @property(nonatomic, weak) id<NavigationSearchDelegate> search_delegate;
 @property(atomic) BOOL filter_enabled;
-@property(nonatomic, readonly, getter = searchBar) UISearchBar* search_bar;
+@property(nonatomic) UISearchBar* search_bar;
 
 -(instancetype)init;
 -(instancetype)initWithDelegate:(id<NavigationSearchDelegate>)view_controller filterEnabled:(BOOL)filter_enabled;
--(UISearchBar*)searchBar;
 @end
