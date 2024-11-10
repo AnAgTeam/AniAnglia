@@ -20,9 +20,9 @@
     
     _user_defaults = [NSUserDefaults standardUserDefaults];
     [_user_defaults registerDefaults:@{
+        @"search_history": @[],
         @"token": @""
     }];
-    [self readToken];
     
     return self;
 }
@@ -35,10 +35,30 @@
     [self writeToken:token];
 }
 -(NSString*)readToken {
-    return [_user_defaults objectForKey:@"token"];
+    return [_user_defaults stringForKey:@"token"];
 }
 -(void)writeToken:(NSString*)token {
     [_user_defaults setObject:token forKey:@"token"];
+}
+-(NSArray<NSString*>*)getSearchHistory {
+    return [_user_defaults arrayForKey:@"search_history"];
+}
+-(void)addSearchHistoryItem:(NSString*)item {
+    NSMutableArray<NSString*>* history = [[_user_defaults arrayForKey:@"search_history"] mutableCopy];
+    for (NSString* history_item in history) {
+        if ([history_item isEqual:item]) {
+            [history removeObject:history_item];
+            break;
+        }
+    }
+    [history insertObject:item atIndex:0];
+    [_user_defaults setObject:history forKey:@"search_history"];
+}
+-(NSUInteger)getSearchHistoryLength {
+    return [[self getSearchHistory] count];
+}
+-(NSString*)getSearchHistoryItemAtIndex:(NSUInteger)index {
+    return [[self getSearchHistory] objectAtIndex:index];
 }
 
 +(instancetype)sharedInstance {

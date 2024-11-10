@@ -16,6 +16,10 @@
 
 -(NSString*)getToken;
 -(void)setToken:(NSString*)token;
+-(NSArray<NSString*>*)getSearchHistory;
+-(void)addSearchHistoryItem:(NSString*)item;
+-(NSUInteger)getSearchHistoryLength;
+-(NSString*)getSearchHistoryItemAtIndex:(NSUInteger)index;
 
 +(instancetype)sharedInstance;
 @end

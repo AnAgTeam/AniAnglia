@@ -8,13 +8,15 @@
 #import <UIKit/UIKit.h>
 
 @protocol NavigationSearchDelegate
+@optional
 -(void)searchBarFilterButtonPressed;
 -(void)search:(NSString*)query;
 @end
 
-@interface NavigationSearchViewController : UIViewController <UISearchBarDelegate>
-@property(nonatomic, weak) id<NavigationSearchDelegate> search_delegate;
+@interface NavigationSearchViewController : UIViewController <UISearchBarDelegate, UITableViewDelegate, UITableViewDataSource>
+@property(nonatomic, weak, setter = setSearchDelegate:) id<NavigationSearchDelegate> search_delegate;
 @property(atomic) BOOL filter_enabled;
+@property(atomic) BOOL history_enabled;
 @property(nonatomic) UISearchBar* search_bar;
 
 -(instancetype)init;

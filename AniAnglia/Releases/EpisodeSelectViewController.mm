@@ -97,13 +97,13 @@
 //-(NSInteger)numberOfSectionsInTableView:(UITableView *)table_view {
 //    return 1;
 //}
-- (NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
+-(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
     return _episodes_arr.size();
 }
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 50;
 }
-- (UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
+-(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
     EpisodeViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[EpisodeViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
     cell.name_label.text = TO_NSSTRING(_episodes_arr[index]->name);
@@ -185,7 +185,7 @@
     _type_name_label.textColor = [AppColorProvider textColor];
 }
 
-- (void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
+-(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
@@ -194,7 +194,7 @@
     [self presentViewController:_player_controller.player animated:YES completion:nil];
 }
 
-- (UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
+-(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
     
     UIContextualAction* download_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL actionPerformed)) {
         [self cellDownloadButtonActionPressed:[index_path item]];

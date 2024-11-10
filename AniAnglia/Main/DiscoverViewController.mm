@@ -324,12 +324,12 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 @implementation DiscoverViewController
 
--(void)loadView {
-//    [super loadView];
-    
-    _scroll_view = [UIScrollView new];
-    self.view = _scroll_view;
-}
+//-(void)loadView {
+////    [super loadView];
+//    
+//    _scroll_view = [UIScrollView new];
+//    self.view = _scroll_view;
+//}
 
 -(void)viewDidLoad {
     [super viewDidLoad];
@@ -343,13 +343,13 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 }
 
 -(void)setupView {    
-    
-//    [self.view addSubview:_scroll_view];
-//    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
-//    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-//    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-//    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-//    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+    _scroll_view = [UIScrollView new];
+    [self.view addSubview:_scroll_view];
+    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
+    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     
     _content_view = [UIView new];
     [_scroll_view addSubview:_content_view];

@@ -3599,7 +3599,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3626,7 +3626,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
