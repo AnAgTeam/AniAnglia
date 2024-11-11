@@ -44,7 +44,21 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 
 @implementation PlayerController
 
--(void)loadStreams {
+-(instancetype)init {
+    self = [super init];
+    
+    _release_id = -1;
+    _source_id = -1;
+    _source_position = -1;
+    _api_proxy = [LibanixartApi sharedInstance];
+    _player_view_controller = [AVPlayerViewController new];
+    [_player_view_controller setDelegate:self];
+    [self setupLayout];
+    
+    return self;
+}
+
+-(void)loadStreamsAndAutoPlay:(BOOL)auto_play{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
             auto ep_target = self->_api_proxy.api->episodes().get_episode_target(self->_release_id, self->_source_id, static_cast<int32_t>(self->_source_position));
@@ -52,7 +66,9 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
             auto selected_stream = choose_quality(self->_streams_arr, preferred_quality);
             self->_selected_stream_url = [NSURL URLWithString:TO_NSSTRING(selected_stream)];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self setupPlayer];
+                if (auto_play) {
+                    [self runPlayer];
+                }
             });
         } catch (libanixart::ApiError& e) {
             // error
@@ -69,34 +85,39 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     });
 }
 
--(instancetype)initWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position {
-    self = [super init];
-    
+-(void)playWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position autoShow:(BOOL)auto_show {
     _release_id = release_id;
     _source_id = source_id;
     _source_position = position;
-    _api_proxy = [LibanixartApi sharedInstance];
-
-    _player_view_controller = [AVPlayerViewController new];
+    
 //    _pip_controller = [AVPictureInPictureController alloc] init;
     
     _player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
     
     [_pip_controller setDelegate:self];
-    [self setup];
-    
-    return self;
+    [self loadStreamsAndAutoPlay:YES];
+    [self showPlayer];
 }
 
--(void)setup {
-    [self setupLayout];
-    
-    [self loadStreams];
+-(void)showAndRunPlayer {
+    [self showPlayer];
+    [self runPlayer];
 }
 
--(void)setupPlayer {
+-(void)showPlayer {
+    UIViewController* top_view_controller = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    while (top_view_controller.presentedViewController) {
+        top_view_controller = top_view_controller.presentedViewController;
+    }
+    if ([top_view_controller isKindOfClass:UINavigationController.class]) {
+        top_view_controller = [((UINavigationController*)top_view_controller) topViewController];
+    }
+    
+    [top_view_controller presentViewController:_player_view_controller animated:YES completion:^{}];
+}
+
+-(void)runPlayer {
     _player_view_controller.player = [AVPlayer playerWithURL:_selected_stream_url];
-    
     [_player_view_controller.player play];
 }
 
@@ -106,6 +127,20 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 
 -(AVPlayerViewController*)getPlayer {
     return _player_view_controller;
+}
+
++(instancetype)sharedInstance {
+    static PlayerController* sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [PlayerController new];
+    });
+    return sharedInstance;
+}
+
+-(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler{
+    [self showPlayer];
+    completion_handler(YES);
 }
 
 @end

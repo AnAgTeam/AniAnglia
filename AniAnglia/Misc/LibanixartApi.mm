@@ -33,7 +33,7 @@
     return _parsers;
 }
 
-+ (instancetype)sharedInstance {
++(instancetype)sharedInstance {
     static LibanixartApi* sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

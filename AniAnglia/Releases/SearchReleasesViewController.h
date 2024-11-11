@@ -5,8 +5,14 @@
 //  Created by Toilettrauma on 10.11.2024.
 //
 
-#ifndef SearchReleasesViewController_h
-#define SearchReleasesViewController_h
+#import <UIKit/UIKit.h>
+#import "LibanixartApi.h"
 
+@protocol SearchReleasesViewDataSource
+-(libanixart::Release::Ptr)getReleaseAtIndex:(NSUInteger)index;
+@end
 
-#endif /* SearchReleasesViewController_h */
+@interface SearchReleasesView : UIView
+@property(nonatomic, weak, setter = setDataSource:) id<SearchReleasesViewDataSource> data_source;
+
+@end

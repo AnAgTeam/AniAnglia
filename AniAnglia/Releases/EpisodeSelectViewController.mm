@@ -190,8 +190,7 @@
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
     libanixart::Episode::Ptr episode = _episodes_arr[index];
-    _player_controller = [[PlayerController alloc] initWithReleaseID:_release_id sourceID:_source_id position:episode->position];
-    [self presentViewController:_player_controller.player animated:YES completion:nil];
+    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES];
 }
 
 -(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {

@@ -8,14 +8,14 @@
 #import <Foundation/Foundation.h>
 #import "SearchReleasesViewController.h"
 
-@interface SearchReleasesViewController ()
+@interface SearchReleasesView()
 
 
 
 @end
 
 
-@implementation SearchReleasesViewController
+@implementation SearchReleasesView
 
 
 

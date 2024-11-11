@@ -32,6 +32,7 @@
         [window setRootViewController: root_controller];
     
         self.window = window;
+        [[UIApplication sharedApplication] delegate].window = window;
         
         [window makeKeyAndVisible];
     }
