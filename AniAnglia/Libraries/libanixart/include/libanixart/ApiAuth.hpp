@@ -9,7 +9,7 @@ namespace libanixart {
 		ApiAuthPending(const ApiSession& session, const std::string& login, const std::string& email, const std::string& password, const std::string& google_id_token, const std::string& vk_access_token, const std::string& hash, const time_point timestamp);
 
 		void resend();
-		Profile::Ptr verify(const std::string& email_code) const;
+		std::pair<Profile::Ptr, ProfileToken> verify(const std::string& email_code) const;
 		bool is_expired() const;
 
 	private:
@@ -29,7 +29,7 @@ namespace libanixart {
 		ApiRestorePending(const ApiSession& session, const std::string email_or_login, const std::string& password, const std::string& hash, const time_point timestamp);
 
 		void resend();
-		Profile::Ptr verify(const std::string& email_code) const;
+		std::pair<Profile::Ptr, ProfileToken> verify(const std::string& email_code) const;
 		bool is_expired() const;
 
 	private:
@@ -51,9 +51,9 @@ namespace libanixart {
 
 		ApiRestorePending restore(const std::string& email_or_username, const std::string& new_password) const;
 
-		Profile::Ptr sign_in(const std::string& username, const std::string& password) const;
-		Profile::Ptr sign_in_google(const std::string& google_id_token) const;
-		Profile::Ptr sign_in_vk(const std::string& vk_access_token) const;
+		std::pair<Profile::Ptr, ProfileToken> sign_in(const std::string& username, const std::string& password) const;
+		std::pair<Profile::Ptr, ProfileToken> sign_in_google(const std::string& google_id_token) const;
+		std::pair<Profile::Ptr, ProfileToken> sign_in_vk(const std::string& vk_access_token) const;
 
 
 	private:

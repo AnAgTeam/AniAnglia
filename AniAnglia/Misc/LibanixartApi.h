@@ -19,5 +19,8 @@
 -(void)dealloc;
 -(libanixart::Api*)getApi;
 -(libanixart::parsers::Parsers*)getParsers;
-+ (instancetype)sharedInstance;
+/* completion executed if block returned TRUE, if returned FALSE or libanixart error catched it isn't executed */
+-(void)performAsyncBlock:(BOOL(^)(libanixart::Api* api))block withUICompletion:(void(^)())completion;
+
++(instancetype)sharedInstance;
 @end

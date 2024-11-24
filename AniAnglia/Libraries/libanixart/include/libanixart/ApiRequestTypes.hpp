@@ -60,7 +60,7 @@ namespace libanixart {
 			std::string serialize() const override;
 
 			std::string query;
-			int32_t search_by = 0;
+			SearchByType search_by = SearchByType::Basic;
 		};
 
 		class DirectLinkRequest : Serializable {

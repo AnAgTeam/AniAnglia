@@ -122,12 +122,11 @@ namespace libanixart::json {
         template<>
         inline void append(std::string& json_str, const std::string& key, const time_point& value) { append_number(json_str, key, TimeTools::to_timestamp(value)); }
 
-        // ARRAYS
-
         static inline void close_object(std::string& json_str) {
             json_str[json_str.length() - 1] = '}';
         }
 
+        // ARRAYS
 
         static inline void open_array(std::string& json_str) {
             json_str += '[';
@@ -235,31 +234,57 @@ namespace libanixart::json {
 
     class ParseJson {
     public:
-        using time_point = std::chrono::system_clock::time_point;
         typedef bool(*PredicateFunc)(JsonObject& object, const std::string_view& key);
+
+        static PredicateFunc DEFAULT_PRED;
 
         static JsonObject NULL_OBJECT;
         static JsonArray NULL_ARRAY;
 
         template<typename TRet>
         static TRet get(JsonObject& object, const std::string_view& key) {
-            return boost::json::value_to<TRet>(object[key]);
+            if (DEFAULT_PRED(object, key)) {
+                return boost::json::value_to<TRet>(object[key]);
+            }
+            else {
+                return TRet();
+            }
         }
         template<>
         static time_point get(JsonObject& object, const std::string_view& key) {
-            return TimeTools::from_timestamp(get<int64_t>(object, key));
+            if (DEFAULT_PRED(object, key)) {
+                return TimeTools::from_timestamp(get<int64_t>(object, key));
+            }
+            else {
+                return TimeTools::from_timestamp(0ULL);
+            }
         }
         template<>
         static JsonObject& get(JsonObject& object, const std::string_view& key) {
-            return object[key].as_object();
+            if (DEFAULT_PRED(object, key)) {
+                return object[key].as_object();
+            }
+            else {
+                return NULL_OBJECT;
+            }
         }
         template<>
         static JsonArray& get(JsonObject& object, const std::string_view& key) {
-            return object[key].as_array();
+            if (DEFAULT_PRED(object, key)) {
+                return object[key].as_array();
+            }
+            else {
+                return NULL_ARRAY;
+            }
         }
         template<typename T>
         static std::shared_ptr<T> object_get(JsonObject& object, const std::string_view& key) {
-            return std::make_shared<T>(object[key].as_object());
+            if (DEFAULT_PRED(object, key)) {
+                return std::make_shared<T>(object[key].as_object());
+            }
+            else {
+                return nullptr;
+            }
         }
         template<typename TRet>
         static TRet get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
@@ -326,6 +351,9 @@ namespace libanixart::json {
             return out;
         }
 
+        static inline bool no_check(JsonObject& object, const std::string_view& key) {
+            return true;
+        }
         static inline bool exists(JsonObject& object, const std::string_view& key) {
             return object.contains(key);
         }

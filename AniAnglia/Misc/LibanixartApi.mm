@@ -32,6 +32,22 @@
 -(libanixart::parsers::Parsers*)getParsers {
     return _parsers;
 }
+-(void)performAsyncBlock:(BOOL(^)(libanixart::Api* api))block withUICompletion:(void(^)())completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        try {
+            BOOL should_call_completion = block(self->_api);
+            if (should_call_completion) {
+                dispatch_async(dispatch_get_main_queue(), completion);
+            }
+        }
+        catch (libanixart::ApiError& e) {
+            NSLog(@"Uncatched libanixart api exception: %s", e.what());
+        }
+        catch (libanixart::JsonError& e) {
+            NSLog(@"Uncatched libanixart api json exception: %s", e.what());
+        }
+    });
+}
 
 +(instancetype)sharedInstance {
     static LibanixartApi* sharedInstance = nil;

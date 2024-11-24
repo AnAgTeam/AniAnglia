@@ -69,6 +69,21 @@ namespace libanixart {
 			Plus = 1,
 			Minus = 2
 		);
+		DECLARE_LOCAL_ENUM(SearchByType,
+			Basic = 0,
+			ByStudio = 1,
+			ByDirector = 2,
+			ByAuthor = 3,
+			ByGenre = 4
+		);
+		DECLARE_LOCAL_ENUM(ReleaseListStatus,
+			NotWatching = 0,
+			Watching = 1,
+			Plan = 2,
+			Watched = 3,
+			HoldOn = 4,
+			Dropped = 5
+		);
 	};
 #undef DECLARE_LOCAL_ENUM
 	using enums::CollectionSort;
@@ -80,6 +95,8 @@ namespace libanixart {
 	using enums::ReleaseCommentsSort;
 	using enums::ProfileCommentsSort;
 	using enums::CommentVoteType;
+	using enums::SearchByType;
+	using enums::ReleaseListStatus;
 
 	using time_point = std::chrono::system_clock::time_point;
 	class ProfileToken {
@@ -102,8 +119,6 @@ namespace libanixart {
 	public:
 		using Ptr = std::shared_ptr<Profile>;
 		Profile(JsonObject& object);
-
-		ProfileToken token;
 
 		int64_t id;
 		std::string login;
@@ -234,6 +249,7 @@ namespace libanixart {
 		std::string year;
 		std::string genres;
 		int32_t rating;
+		double grade;
 		int32_t status_id;
 		int32_t season;
 		std::string release_date;
@@ -281,7 +297,7 @@ namespace libanixart {
 		std::string last_view_episode_type_name;
 
 		std::string note;
-		int32_t profile_list_status;
+		ReleaseListStatus profile_list_status;
 
 		bool is_adult;
 		bool is_deleted;

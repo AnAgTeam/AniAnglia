@@ -19,7 +19,7 @@
 @property(atomic) long source_position;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic) std::unordered_map<std::string, std::string> streams_arr;
-@property(nonatomic) NSURL* selected_stream_url;
+@property(nonatomic, retain) NSURL* selected_stream_url;
 @property(nonatomic, retain) AVPlayerViewController* player_view_controller;
 @property(nonatomic, retain) AVPictureInPictureController* pip_controller;
 @end

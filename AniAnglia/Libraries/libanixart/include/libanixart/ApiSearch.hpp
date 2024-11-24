@@ -8,7 +8,7 @@ namespace libanixart {
 		ApiSearch(const ApiSession& session, const std::string& token);
 
 		FilterPages filter_search(const requests::FilterRequest& filter_request, const int32_t& start_page) const;
-		ReleaseSearchPages release_search(const requests::SearchRequest& request);
+		ReleaseSearchPages release_search(const requests::SearchRequest& request) const;
 		CommentsWeekPages comments_week() const;
 		DiscussingPages discussing() const;
 		InterestingPages interesting() const;

@@ -101,17 +101,8 @@
     SourceViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[SourceViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
     cell.name_label.text = TO_NSSTRING(_sources_arr[index]->name);
-    
 
     return cell;
-}
-
--(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
-    NSLog(@"TableView: didSelectRowAtIndexPath:%@", index_path);
-    NSInteger index = [index_path item];
-    libanixart::EpisodeSource::Ptr& ep_source = _sources_arr[index];
-    
-    [self.navigationController pushViewController:[[EpisodeSelectViewController alloc] initWithReleaseID:_release_id typeID:_type_id typeName:_type_name sourceID:ep_source->id sourceName:TO_NSSTRING(ep_source->name)] animated:YES];
 }
 
 -(void)viewDidLoad {
@@ -185,6 +176,14 @@
 -(void)setupLayout {
     _table_view.backgroundColor = [AppColorProvider backgroundColor];
     _type_name_label.textColor = [AppColorProvider textColor];
+}
+
+-(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
+    NSLog(@"TableView: didSelectRowAtIndexPath:%@", index_path);
+    NSInteger index = [index_path item];
+    libanixart::EpisodeSource::Ptr& ep_source = _sources_arr[index];
+    
+    [self.navigationController pushViewController:[[EpisodeSelectViewController alloc] initWithReleaseID:_release_id typeID:_type_id typeName:_type_name sourceID:ep_source->id sourceName:TO_NSSTRING(ep_source->name)] animated:NO];
 }
 
 @end

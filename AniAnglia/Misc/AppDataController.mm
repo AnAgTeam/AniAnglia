@@ -44,6 +44,10 @@
     return [_user_defaults arrayForKey:@"search_history"];
 }
 -(void)addSearchHistoryItem:(NSString*)item {
+    if ([item length] == 0) {
+        NSLog(@"WARNING: empty history item! (addSearchHistoryItem:)");
+        return;
+    }
     NSMutableArray<NSString*>* history = [[_user_defaults arrayForKey:@"search_history"] mutableCopy];
     for (NSString* history_item in history) {
         if ([history_item isEqual:item]) {

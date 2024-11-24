@@ -34,7 +34,7 @@
 -(UINavigationController*)tabWithViewController:(NavigationSearchViewController<NavigationSearchDelegate>*)view_controller filterEnabled:(BOOL)filter_enabled historyEnabled:(BOOL)history_enabled title:(NSString*)local_title image:(NSString*)image_sys_name searchBarPlaceholder:(NSString*)local_search_ph{
     view_controller.search_delegate = view_controller;
     view_controller.filter_enabled = filter_enabled;
-    view_controller.history_enabled = history_enabled;
+    // view_controller.history_enabled = history_enabled;
     UINavigationController* nav_controller = [[UINavigationController alloc] initWithRootViewController:view_controller];
     nav_controller.tabBarItem.title = NSLocalizedString(local_title, "");
     nav_controller.tabBarItem.image = [UIImage systemImageNamed:image_sys_name];

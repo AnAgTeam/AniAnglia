@@ -185,14 +185,6 @@
     _type_name_label.textColor = [AppColorProvider textColor];
 }
 
--(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
-    NSInteger index = [index_path item];
-    [table_view deselectRowAtIndexPath:index_path animated:YES];
-    
-    libanixart::Episode::Ptr episode = _episodes_arr[index];
-    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES];
-}
-
 -(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
     
     UIContextualAction* download_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL actionPerformed)) {
@@ -211,6 +203,14 @@
         download_action,
         set_viewed_action
     ]];
+}
+
+-(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
+    NSInteger index = [index_path item];
+    [table_view deselectRowAtIndexPath:index_path animated:YES];
+    
+    libanixart::Episode::Ptr episode = _episodes_arr[index];
+    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES];
 }
 
 -(void)cellDownloadButtonActionPressed:(NSInteger)index {
