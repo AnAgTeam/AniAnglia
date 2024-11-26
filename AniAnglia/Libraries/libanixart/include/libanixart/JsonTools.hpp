@@ -15,21 +15,23 @@ namespace libanixart::json {
     template<typename T>
     class Nullable {
     public:
-        Nullable() : _is_null(true), _value(T()) {
+        static_assert(std::is_same_v<std::remove_reference_t<T>, T>, "Don't use references with Nullable<T>");
+
+        Nullable() noexcept(std::is_nothrow_default_constructible_v<T>) : _is_null(true), _value(T()) {
 
         }
         void set(const T& value) {
             _is_null = false;
             _value = value;
         }
-        const T& get() const {
+        const T& get() const noexcept {
             return _value;
         }
-        void clear() {
+        void clear() noexcept(std::is_nothrow_default_constructible_v<T>) {
             _is_null = true;
             _value = T();
         }
-        bool is_null() const {
+        bool is_null() const noexcept {
             return _is_null;
         }
 
@@ -242,94 +244,51 @@ namespace libanixart::json {
         static JsonArray NULL_ARRAY;
 
         template<typename TRet>
+        static TRet strong_get(JsonObject& object, const std::string_view& key) {
+            return boost::json::value_to<TRet>(object[key]);
+
+        }
+        template<>
+        static time_point strong_get(JsonObject& object, const std::string_view& key) {
+            return TimeTools::from_timestamp(get<int64_t>(object, key));
+        }
+        template<>
+        static JsonObject& strong_get(JsonObject& object, const std::string_view& key) {
+            return object[key].as_object();
+
+        }
+        template<>
+        static JsonArray& strong_get(JsonObject& object, const std::string_view& key) {
+            return object[key].as_array();
+        }
+
+        template<typename TRet>
         static TRet get(JsonObject& object, const std::string_view& key) {
-            if (DEFAULT_PRED(object, key)) {
-                return boost::json::value_to<TRet>(object[key]);
-            }
-            else {
-                return TRet();
-            }
-        }
-        template<>
-        static time_point get(JsonObject& object, const std::string_view& key) {
-            if (DEFAULT_PRED(object, key)) {
-                return TimeTools::from_timestamp(get<int64_t>(object, key));
-            }
-            else {
-                return TimeTools::from_timestamp(0ULL);
-            }
-        }
-        template<>
-        static JsonObject& get(JsonObject& object, const std::string_view& key) {
-            if (DEFAULT_PRED(object, key)) {
-                return object[key].as_object();
-            }
-            else {
-                return NULL_OBJECT;
-            }
-        }
-        template<>
-        static JsonArray& get(JsonObject& object, const std::string_view& key) {
-            if (DEFAULT_PRED(object, key)) {
-                return object[key].as_array();
-            }
-            else {
-                return NULL_ARRAY;
-            }
+            return get_if<TRet>(object, key, DEFAULT_PRED);
         }
         template<typename T>
         static std::shared_ptr<T> object_get(JsonObject& object, const std::string_view& key) {
-            if (DEFAULT_PRED(object, key)) {
-                return std::make_shared<T>(object[key].as_object());
-            }
-            else {
-                return nullptr;
-            }
+            return DEFAULT_PRED(object, key) ? std::make_shared<T>(object[key].as_object()) : nullptr;
         }
         template<typename TRet>
         static TRet get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
-            if (predicate(object, key)) {
-                return boost::json::value_to<TRet>(object[key]);
-            }
-            else {
-                return TRet();
-            }
+            return predicate(object, key) ? boost::json::value_to<TRet>(object[key]) : TRet();
         }
         template<>
         static time_point get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
-            if (predicate(object, key)) {
-                return TimeTools::from_timestamp(get<int64_t>(object, key));
-            }
-            else {
-                return TimeTools::from_timestamp(0ULL);
-            }
+            return predicate(object, key) ? TimeTools::from_timestamp(get<int64_t>(object, key)) : TimeTools::from_timestamp(0ULL);
         }
         template<>
         static JsonObject& get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
-            if (predicate(object, key)) {
-                return object[key].as_object();
-            }
-            else {
-                return NULL_OBJECT;
-            }
+            return predicate(object, key) ? object[key].as_object() : NULL_OBJECT;
         }
         template<>
         static JsonArray& get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
-            if (predicate(object, key)) {
-                return object[key].as_array();
-            }
-            else {
-                return NULL_ARRAY;
-            }
+            return predicate(object, key) ? object[key].as_array() : NULL_ARRAY;
         }
         template<typename T>
         static std::shared_ptr<T> object_get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
-            if (predicate(object, key)) {
-                return std::make_shared<T>(object[key].as_object());
-            }
-            else {
-                return nullptr;
-            }
+            return predicate(object, key) ? std::make_shared<T>(object[key].as_object()) : nullptr;
         }
 
         template<typename T>
@@ -364,5 +323,176 @@ namespace libanixart::json {
             return exists(object, key) && not_null(object, key);
         }
     };
+
+/* Not really usefull. Future improvement to pre-alloc json string */
+#if 0
+
+#if defined(__GNUC__)
+#define clz(x) __builtin_clz(x)
+#define ctz(x) __builtin_ctz(x)
+#else defined(_MSC_VER)
+#define clz(x) _lzcnt_u64(x)
+#define ctz(x) _tzcnt_u64(x)
+#endif
+
+    extern const uint8_t power_of_2_digits_count[65];
+
+    /* returns >= len(x) */
+    inline int calc_approx_num_digits(uint64_t x) {
+        size_t leading_zeros = clz(x);
+        return power_of_2_digits_count[leading_zeros];
+    }
+    /* returns >= len(x) */
+    inline int calc_approx_num_digits(int64_t x) {
+        size_t leading_zeros = clz(x >= 0 ? x : -x); // abs
+        return power_of_2_digits_count[leading_zeros] + -(x >> 63); // add 1 if '-' at start
+    }
+
+    class InlineJsonExperimental {
+    public:
+
+        template<typename T>
+        static
+        std::enable_if_t<std::is_same_v<std::remove_reference_t<T>, T>, size_t>
+        get_arg_size(T&& arg) {
+            static_assert(false, "get_arg_size<T> not implemented!");
+        }
+        template<>
+        static size_t get_arg_size(std::string&& arg) { return sizeof('"') + arg.length() + sizeof('"'); }
+        template<>
+        static size_t get_arg_size(std::string_view&& arg) { return sizeof('"') + arg.size() + sizeof('"'); }
+        template<size_t _Size>
+        static size_t get_arg_size(char(&&arg)[_Size]) { return _Size; }
+        template<>
+        static size_t get_arg_size(int8_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(int16_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(int32_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(int64_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(uint8_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(uint16_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(uint32_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
+        template<>
+        static size_t get_arg_size(uint64_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
+        template<typename T>
+        static size_t get_arg_size(Nullable<T>&& arg) { return get_arg_size(std::forward<T>(arg.get())); }
+        template<>
+        static size_t get_arg_size(bool&& arg) { return arg ? 4ULL : 5ULL; }
+
+        template<typename T>
+        static inline void object_append(std::string&& json_str, std::string_view&& key, T&& value) {
+            return object_append_object(json_str, key, value);
+        }
+        template<typename T>
+        static inline void object_append(std::string&& json_str, std::string_view&& key, T*&& value) {
+            return object_append_object(json_str, key, *value);
+        }
+        template<typename T>
+        static void object_append_object(std::string&& json_str, std::string_view&& key, T&& value) {
+            json_str += '"';
+            json_str += key;
+            json_str += R"(":)";
+            json_str += value;
+            json_str += ',';
+        }
+        template<typename T>
+        static void object_append_number(std::string&& json_str, std::string_view&& key, T&& value) {
+            json_str += '"';
+            json_str += key;
+            json_str += R"(":)";
+            json_str += std::to_string(value);
+            json_str += ',';
+        }
+
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, int8_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int8_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, int16_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int16_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, int32_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int32_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, int64_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int64_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, uint8_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint8_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, uint16_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint16_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, uint32_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint32_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, uint64_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint64_t>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, float&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<float>(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, double&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<double>(value)); }
+
+        template<>
+        void object_append(std::string&& json_str, std::string_view&& key, bool&& value) {
+            json_str += '"';
+            json_str += key;
+            json_str += R"(":)";
+            json_str += value ? "true" : "false";
+            json_str += ',';
+        }
+
+        template<>
+        void object_append(std::string&& json_str, std::string_view&& key, std::string_view&& value) {
+            json_str += '"';
+            json_str += key;
+            json_str += R"(":")";
+            json_str += value;
+            json_str += R"(",)";
+        }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, std::string&& value) { object_append(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::string_view(value)); }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, char*&& value) { object_append(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::string_view(value)); }
+        template<typename T>
+        static void object_append(std::string&& json_str, std::string_view&& key, Nullable<T>&& value) {
+            if (!value.is_null()) {
+                object_append(std::forward<std::string>(json_str), std::forward<std::string_view>(key), value.get());
+            }
+            else {
+                object_append_object(std::forward<std::string>(json_str), std::forward<std::string_view>(key), "null");
+            }
+        }
+        template<>
+        inline void object_append(std::string&& json_str, std::string_view&& key, time_point&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), TimeTools::to_timestamp(value)); }
+
+        template<typename TLastArg>
+        static size_t calc_args_size(std::string_view&& key, TLastArg&& arg) {
+            return get_arg_size(std::forward<std::string_view>(key)) + sizeof(':') + get_arg_size(std::forward<TLastArg>(arg));
+        }
+        template<typename TArg, typename ... TOtherArgs>
+        static size_t calc_args_size(std::string_view&& key, TArg&& arg, TOtherArgs&& ... other_args) {
+            return get_arg_size(std::forward<std::string_view>(key)) + sizeof(':') + get_arg_size(std::forward<TArg>(arg)) + sizeof(',') + calc_args_size(std::forward<TOtherArgs>(other_args)...);
+        }
+
+        template<typename TLastArg>
+        static void object_append_arg(std::string&& json_str, std::string_view&& key, TLastArg&& arg) {
+            object_append(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<TLastArg>(arg));
+        }
+        template<typename TArg, typename ... TOtherArgs>
+        static void object_append_arg(std::string&& json_str, std::string_view&& key, TArg&& arg, TOtherArgs&& ... other_args) {
+            object_append(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<TArg>(arg));
+            object_append_arg(std::forward<std::string>(json_str), std::forward<TOtherArgs>(other_args)...);
+        }
+
+        template<typename ... TOtherArgs>
+        static std::string create_object(TOtherArgs&& ... other_args) {
+            std::string out;
+            out.reserve(sizeof('{') + calc_args_size(std::forward<TOtherArgs>(other_args)...) + sizeof('}'));
+            out += '{';
+            object_append_arg(std::forward<std::string>(out), std::forward<TOtherArgs>(other_args)...);
+            out[out.length() - 1] = '}';
+            return out;
+        }
+
+    };
+#endif
 };
 

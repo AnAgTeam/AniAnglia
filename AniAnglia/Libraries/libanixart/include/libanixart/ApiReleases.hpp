@@ -39,6 +39,10 @@ namespace libanixart {
 		void remove_release_from_favorites(const int64_t& release_id);
 		ProfileReleaseVideoFavoritesPages profile_favorites(const int64_t& profile_id, const int32_t& start_page);
 
+		void add_to_history(const int64_t& release_id, const int64_t& source_id, const int32_t& position);
+		void remove_release_from_history(const int64_t& release_id);
+		HistoryPages get_history(const int32_t& start_page);
+
 	private:
 		const ApiSession& _session;
 		const std::string& _token;

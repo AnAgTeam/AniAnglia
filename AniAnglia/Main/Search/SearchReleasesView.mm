@@ -31,6 +31,7 @@
 @implementation SearchReleaseTableViewCell
 
 static const CGFloat RATING_BADGE_HEIGHT = 35;
+static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
 
 +(NSString*)getIndentifier {
     return @"SearchReleaseTableViewCell";
@@ -50,7 +51,7 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     _image_view.translatesAutoresizingMaskIntoConstraints = NO;
     [_image_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
     [_image_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:9].active = YES;
-    [_image_view.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.93].active = YES;
+    [_image_view.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.93 constant:-TOP_BOTTOM_CELL_OFFSET * 2].active = YES;
     [_image_view.widthAnchor constraintEqualToAnchor:_image_view.heightAnchor multiplier:0.56].active = YES;
     _image_view.layer.cornerRadius = 6.0;
     _image_view.clipsToBounds = YES;
@@ -64,25 +65,25 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
 //    [_title_label.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.25].active = YES;
     _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 2;
+    _title_label.font = [_title_label.font fontWithSize:23];
     [_title_label sizeToFit];
-    
-    _description_label = [UILabel new];
-    [self addSubview:_description_label];
-    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_description_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor].active = YES;
-    [_description_label.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
-    [_description_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor].active = YES;
-    [_description_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
-    _description_label.textAlignment = NSTextAlignmentJustified;
-    _description_label.numberOfLines = -1;
     
     _ep_count_label = [UILabel new];
     [self addSubview:_ep_count_label];
     _ep_count_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_ep_count_label.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    [_ep_count_label.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
-    [_ep_count_label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+    [_ep_count_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor].active = YES;
+    [_ep_count_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor].active = YES;
     [_ep_count_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+    
+    _description_label = [UILabel new];
+    [self addSubview:_description_label];
+    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [_description_label.topAnchor constraintEqualToAnchor:_ep_count_label.bottomAnchor].active = YES;
+    [_description_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor].active = YES;
+    [_description_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor].active = YES;
+    [_description_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+    _description_label.textAlignment = NSTextAlignmentJustified;
+    _description_label.numberOfLines = -1;
     
     _rating_label = [UILabel new];
     [self addSubview:_rating_label];
@@ -104,14 +105,37 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     _description_label.textColor = [AppColorProvider textSecondaryColor];
     _ep_count_label.textColor = [AppColorProvider textColor];
     _rating_label.textColor = [AppColorProvider textColor];
-    _rating_label.backgroundColor = [UIColor systemGreenColor];
+    _rating_label.backgroundColor = [UIColor systemGrayColor];
+}
+
+-(void)setEpCount:(NSUInteger)ep_count {
+    _ep_count_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.release_search.ep_count.text", ""), [@(ep_count) stringValue]];
+    [_ep_count_label sizeToFit];
+    [_ep_count_label layoutIfNeeded];
+}
+
+-(void)setRating:(double)rating {
+    rating = round(rating * 10) / 10;
+    _rating_label.text = [@(rating) stringValue];
+    if (rating >= 4) {
+        _rating_label.backgroundColor = [UIColor systemGreenColor];
+    }
+    else if (rating >= 3) {
+        _rating_label.backgroundColor = [UIColor systemOrangeColor];
+    }
+    else if (rating > 0) {
+        _rating_label.backgroundColor = [UIColor systemRedColor];
+    }
+    else {
+        _rating_label.backgroundColor = [UIColor systemGrayColor];
+    }
 }
 
 @end
 
 @implementation SearchReleasesView
 
-static const CGFloat TABLE_CELL_HEIGHT = 160;
+static const CGFloat TABLE_CELL_HEIGHT = 175;
 
 -(instancetype)init {
     self = [super init];
@@ -157,15 +181,15 @@ static const CGFloat TABLE_CELL_HEIGHT = 160;
     
     cell.title_label.text = TO_NSSTRING(release->title_ru);
     cell.description_label.text = TO_NSSTRING(release->description);
-    cell.ep_count_label.text = [@(release->episodes_released) stringValue];
-    cell.rating_label.text = [@(round(release->grade * 10) / 10) stringValue];
+    [cell setEpCount:release->episodes_released];
+    [cell setRating:release->grade];
     [cell.image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(release->image_url)]];
     
     return cell;
 }
 
 -(void)tableView:(UITableView *)table_view
-prefetchRowsAtIndexPaths:(NSArray<NSIndexPath *> *)index_paths {
+prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     NSUInteger item_count = [_table_view numberOfRowsInSection:0];
     NSArray* filtered = [index_paths filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id index_path, NSDictionary *bindings) {
         return [index_path row] >= item_count - 1;

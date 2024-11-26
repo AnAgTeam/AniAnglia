@@ -57,6 +57,7 @@
 "app.discover.option.collections.name" = "Коллекции";
 "app.discover.option.filter.name" = "Фильтр";
 "app.discover.option.random.name" = "Случайное";
+"app.release_search.ep_count.text" = "Кол-во эп";
 
 /* RELEASES */
 "app.releases.search_bar.placeholder" = "Найти релиз...";

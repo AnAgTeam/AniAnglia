@@ -17,7 +17,7 @@ namespace libanixart {
 		UrlParameters params = UrlParameters();
 		std::vector<std::string> headers = {};
 		std::string data;
-		std::string type;
+		std::string_view type;
 	};
 	class ApiPostMultipartRequest {
 	public:
@@ -168,6 +168,11 @@ namespace libanixart {
 		};
 		namespace filter {
 			extern ApiPostRequest filter(const int32_t& page, const FilterRequest& request, const bool& extended_mode, const std::string& token);
+		};
+		namespace history {
+			extern ApiGetRequest add(const int64_t& release_id, const int64_t& source_id, const int32_t& position, const std::string& token);
+			extern ApiGetRequest remove(const int64_t& release_id, const std::string& token);
+			extern ApiGetRequest history(const int32_t& page, const std::string& token);
 		};
 		namespace release {
 			extern ApiGetRequest delete_vote(const int64_t& release_id, const std::string& token);

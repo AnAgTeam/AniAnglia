@@ -18,7 +18,7 @@ namespace libanixart {
 		const ApiSession& get_session() const;
 		ApiAuth& auth();
 		ApiSearch& search();
-		ApiEpisodes episodes();
+		ApiEpisodes& episodes();
 		ApiProfiles& profiles();
 		ApiReleases& releases();
 

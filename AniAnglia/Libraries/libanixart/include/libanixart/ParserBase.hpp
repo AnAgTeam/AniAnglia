@@ -5,7 +5,6 @@
 #include <vector>
 #include <list>
 #include <unordered_map>
-#include <memory>
 
 namespace libanixart::parsers {
 	enum class ParserParameterType {
@@ -32,7 +31,7 @@ namespace libanixart::parsers {
 		}
 
 		virtual bool valid_host(const std::string& host) const = 0;
-		virtual std::string get_name() const = 0;
+		virtual std::string_view get_name() const = 0;
 		virtual std::unordered_map<std::string, std::string> extract_info(const std::string& url, const std::vector<ParserParameter>& params) = 0;
 
 	protected:

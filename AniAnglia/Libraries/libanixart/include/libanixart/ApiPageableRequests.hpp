@@ -399,5 +399,16 @@ namespace libanixart {
         const std::string& _token;
         int64_t _profile_id;
     };
+
+    class HistoryPages : public Pageable<Release> {
+    public:
+        HistoryPages(const ApiSession& session, const std::string& token, const int32_t& page);
+
+    protected:
+        JsonObject do_request(const int32_t& page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+    };
 }
 

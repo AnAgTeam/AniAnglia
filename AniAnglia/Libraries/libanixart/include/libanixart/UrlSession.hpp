@@ -38,7 +38,7 @@ namespace libanixart {
 		void set_cookie_file(const std::string& filename);
 
 		std::string get_request(const std::string& url, const std::vector<std::string>& extra_headers = {}, const UrlParameters& params = UrlParameters()) const;
-		std::string post_request(const std::string& url, const std::string& data, const std::string& content_type, const std::vector<std::string>& extra_headers = {}, const UrlParameters& params = UrlParameters()) const;
+		std::string post_request(const std::string& url, const std::string& data, const std::string_view& content_type, const std::vector<std::string>& extra_headers = {}, const UrlParameters& params = UrlParameters()) const;
 		/* forms have to be valid until request */
 		std::string post_multipart_request(const std::string& url, const MultipartForms& forms, const UrlParameters& params = UrlParameters()) const;
 
