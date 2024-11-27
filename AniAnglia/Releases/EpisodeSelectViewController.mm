@@ -13,10 +13,13 @@
 
 @interface EpisodeViewCell : UITableViewCell
 @property(nonatomic, retain) UILabel* name_label;
+@property(nonatomic, retain) UIImageView* watched_image_view;
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier;
 +(NSString*)getIndentifier;
 -(void)setupDarkLayout;
+
+-(void)setWatchedStatus:(BOOL)is_wached;
 @end
 
 @interface EpisodeSelectViewController ()
@@ -55,11 +58,25 @@
     [_name_label.widthAnchor constraintEqualToAnchor:self.widthAnchor multiplier:0.35].active = YES;
     [_name_label.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
     
+    _watched_image_view = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"eye"]];
+    [self addSubview:_watched_image_view];
+    _watched_image_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [_watched_image_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-5].active = YES;
+    [_watched_image_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
+    [_watched_image_view.widthAnchor constraintEqualToConstant:28].active = YES;
+    [_watched_image_view.heightAnchor constraintEqualToConstant:20].active = YES;
+    _watched_image_view.hidden = YES;
+    
     [self setupDarkLayout];
 }
 -(void)setupDarkLayout {
     self.backgroundColor = [AppColorProvider backgroundColor];
     _name_label.textColor = [AppColorProvider textColor];
+    _watched_image_view.tintColor = [AppColorProvider textSecondaryColor];
+}
+
+-(void)setWatchedStatus:(BOOL)is_wached {
+    _watched_image_view.hidden = !is_wached;
 }
 
 @end
@@ -106,8 +123,9 @@
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
     EpisodeViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[EpisodeViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    cell.name_label.text = TO_NSSTRING(_episodes_arr[index]->name);
-    
+    libanixart::Episode::Ptr episode = _episodes_arr[index];
+    cell.name_label.text = TO_NSSTRING(episode->name);
+    [cell setWatchedStatus:episode->is_watched];
 
     return cell;
 }
@@ -186,38 +204,75 @@
 }
 
 -(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
+    NSInteger index = [index_path item];
     
     UIContextualAction* download_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL actionPerformed)) {
-        [self cellDownloadButtonActionPressed:[index_path item]];
+        [self cellDownloadButtonActionPressed:index_path];
         completion_handler(true);
     }];
     download_action.backgroundColor = [UIColor colorWithRed:0.37 green:0.62 blue:0.63 alpha:1.0];
     download_action.image = [UIImage systemImageNamed:@"arrow.down.to.line"];
-    UIContextualAction* set_viewed_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL actionPerformed)) {
-        [self cellSetViewedActionPressed:[index_path item]];
+    UIContextualAction* change_viewed_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL actionPerformed)) {
+        [self cellChangeViewedActionPressed:index_path];
         completion_handler(true);
     }];
-    set_viewed_action.image = [UIImage systemImageNamed:@"eye"];
+    if (!_episodes_arr[index]->is_watched) {
+        change_viewed_action.image = [UIImage systemImageNamed:@"eye"];
+    } else {
+        change_viewed_action.image = [UIImage systemImageNamed:@"eye.slash"];
+    }
     
     return [UISwipeActionsConfiguration configurationWithActions:@[
         download_action,
-        set_viewed_action
+        change_viewed_action
     ]];
 }
 
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
+    EpisodeViewCell* cell = [table_view cellForRowAtIndexPath:index_path];
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
     libanixart::Episode::Ptr episode = _episodes_arr[index];
     [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES];
+    
+    /* pre set just for instant UI update. Then update to real state */
+    episode->is_watched = YES;
+    [cell setWatchedStatus:YES];
+    
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+        api->episodes().add_watched_episode(self->_release_id, self->_source_id, episode->position);
+        return YES;
+    } withUICompletion:^{
+        episode->is_watched = YES;
+        [cell setWatchedStatus:YES];
+    }];
 }
 
--(void)cellDownloadButtonActionPressed:(NSInteger)index {
-    NSLog(@"cellDownloadButtonActionPressed:%ld", index);
+-(void)cellDownloadButtonActionPressed:(NSIndexPath*)index_path {
+    NSLog(@"cellDownloadButtonActionPressed:%@", index_path);
 }
--(void)cellSetViewedActionPressed:(NSInteger)index {
-    NSLog(@"cellSetViewedActionPressed:%ld", index);
+-(void)cellChangeViewedActionPressed:(NSIndexPath*)index_path {
+    NSInteger index = [index_path item];
+    EpisodeViewCell* cell = [_table_view cellForRowAtIndexPath:index_path];
+    libanixart::Episode::Ptr episode = _episodes_arr[index];
+    
+    BOOL to_set_watched =_episodes_arr[index]->is_watched ^ true;
+    /* pre set just for instant UI update. Then update to real state */
+    episode->is_watched = to_set_watched;
+    [cell setWatchedStatus:to_set_watched];
+    
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+        if (to_set_watched) {
+            api->episodes().add_watched_episode(self->_release_id, self->_source_id, episode->position);
+        } else {
+            api->episodes().remove_watched_episode(self->_release_id, self->_source_id, episode->position);
+        }
+        return YES;
+    } withUICompletion:^{
+        episode->is_watched = to_set_watched;
+        [cell setWatchedStatus:to_set_watched];
+    }];
 }
 
 @end

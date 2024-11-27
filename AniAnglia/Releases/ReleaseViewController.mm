@@ -12,48 +12,7 @@
 #import "AppDataController.h"
 #import "StringCvt.h"
 #import "TypeSelectViewController.h"
-
-@interface UIReleaseImageView : UIImageView
-@property(nonatomic, retain) UIActivityIndicatorView* indicator_view;
-@property(nonatomic, retain) NSURL* image_url;
-
--(instancetype)initWithUrlString:(NSString*)url_str;
--(void)tryLoad;
-@end
-
-@implementation UIReleaseImageView
--(instancetype)initWithUrlString:(NSString*)url_str; {
-    self = [super init];
-    
-    self.image_url = [NSURL URLWithString:url_str];
-    self.indicator_view = [UIActivityIndicatorView new];
-    self.image = nil;
-    self.backgroundColor = [UIColor grayColor];
-    self.layer.masksToBounds = YES;
-    [self addSubview:self.indicator_view];
-    self.indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.indicator_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
-    [self.indicator_view.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
-    self.indicator_view.transform = CGAffineTransformMakeScale(2.5, 2.5);
-    
-    return self;
-}
--(void)tryLoad {
-    [_indicator_view startAnimating];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSData* data = [NSData dataWithContentsOfURL:self.image_url];
-        if (data == nil) {
-            // error
-            return;
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            UIImage* image = [UIImage imageWithData:data];
-            self.image = image;
-            [self.indicator_view stopAnimating];
-        });
-    });
-}
-@end
+#import "LoadableView.h"
 
 @interface ReleaseViewController ()
 @property(nonatomic) NSInteger release_id;
@@ -63,7 +22,7 @@
 
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
-@property(nonatomic, retain) UIReleaseImageView* release_image_view;
+@property(nonatomic, retain) LoadableImageView* release_image_view;
 @property(nonatomic, retain) UILabel* title_label;
 @property(nonatomic, retain) UILabel* orig_title_label;
 @property(nonatomic, retain) UIButton* add_list_button;
@@ -153,7 +112,7 @@ static NSArray* RELEASE_LIST_STATES = @[
 }
 
 -(void)setupReleaseView {
-    _release_image_view = [[UIReleaseImageView alloc] initWithUrlString:TO_NSSTRING(_release_info->image_url)];
+    _release_image_view = [LoadableImageView new];
     [_content_view addSubview:_release_image_view];
     _release_image_view.translatesAutoresizingMaskIntoConstraints = NO;
     [_release_image_view.topAnchor constraintEqualToAnchor:_content_view.topAnchor].active = YES;
@@ -161,6 +120,7 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_release_image_view.heightAnchor constraintEqualToAnchor:_content_view.widthAnchor multiplier:0.9].active = YES;
     [_release_image_view.centerXAnchor constraintEqualToAnchor:_content_view.centerXAnchor].active = YES;
     _release_image_view.layer.cornerRadius = 8.0;
+    _release_image_view.layer.masksToBounds = YES;
     
     _title_label = [UILabel new];
     [_content_view addSubview:_title_label];
@@ -240,21 +200,24 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_content_view setUserInteractionEnabled:YES];
     [_play_button setUserInteractionEnabled:YES];
     
-     [_release_image_view tryLoad];
+    [_release_image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_release_info->image_url)]];
     
     [self setupLayout];
 }
 
 -(void)preSetupLayout {
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 -(void)setupLayout {
     _title_label.textColor = [AppColorProvider textColor];
     _orig_title_label.textColor = [AppColorProvider textColor];
     _add_list_button.backgroundColor = [AppColorProvider foregroundColor1];
+    [_add_list_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _bookmark_button.layer.borderColor = [AppColorProvider foregroundColor1].CGColor;
+    [_bookmark_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _play_button.backgroundColor = [AppColorProvider primaryColor];
+    [_play_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
 }
 
 -(void)addListMenuSelected:(NSInteger)index {

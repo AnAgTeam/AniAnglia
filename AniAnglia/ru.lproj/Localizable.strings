@@ -72,8 +72,8 @@
 
 "app.type_select.nav_item.title" = "Озвучка";
 "app.type_select.cell.ep_count.name" = "эп.";
-
 "app.source_select.nav_item.title" = "Источник";
+"app.episode_select.nav_item.title" = "Серия";
 
 /* BOOKMARKS */
 "app.bookmarks.search_bar.placeholder" = "Найти закладку...";

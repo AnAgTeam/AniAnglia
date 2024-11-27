@@ -190,6 +190,9 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 
 -(void)tableView:(UITableView *)table_view
 prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
+    if (self->_dont_fetch_pages) {
+        return;
+    }
     NSUInteger item_count = [_table_view numberOfRowsInSection:0];
     NSArray* filtered = [index_paths filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id index_path, NSDictionary *bindings) {
         return [index_path row] >= item_count - 1;

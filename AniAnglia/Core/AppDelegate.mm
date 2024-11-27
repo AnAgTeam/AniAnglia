@@ -24,9 +24,6 @@
     libanixart::api_init("ru");
     // OMG, how this patch works ????
     auto _ = libanixart::StringTools::sformat("BLYAAAA");
-    // set token for libanixart
-    std::string token = TO_STDSTRING([AppDataController sharedInstance].token);
-    [LibanixartApi sharedInstance].api->set_token(token);
     // setup audio
     AVAudioSession* audio_sess = [AVAudioSession sharedInstance];
     [audio_sess setCategory:AVAudioSessionCategoryPlayback error:nil];

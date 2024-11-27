@@ -28,16 +28,9 @@
 }
 
 -(NSString*)getToken {
-    return _token;
-}
--(void)setToken:(NSString*)token {
-    _token = token;
-    [self writeToken:token];
-}
--(NSString*)readToken {
     return [_user_defaults stringForKey:@"token"];
 }
--(void)writeToken:(NSString*)token {
+-(void)setToken:(NSString*)token {
     [_user_defaults setObject:token forKey:@"token"];
 }
 -(NSArray<NSString*>*)getSearchHistory {

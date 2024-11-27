@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 #import "LibanixartApi.h"
+#import "AppDataController.h"
+#import "StringCvt.h"
 
 @interface LibanixartApi ()
 @end
@@ -18,6 +20,7 @@
     
     _api = new libanixart::Api();
     _api->set_verbose(false, false);
+    _api->set_token(TO_STDSTRING([[AppDataController sharedInstance] getToken]));
     _parsers = new libanixart::parsers::Parsers();
     
     return self;

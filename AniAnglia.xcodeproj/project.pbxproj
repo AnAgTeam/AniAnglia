@@ -45,41 +45,14 @@
 		EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */; };
 		EFD5CD6C2CD8436000A1E057 /* NavSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */; };
 		EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; };
-		EFD5CD6F2CDABD1700A1E057 /* boost_container.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; };
-		EFD5CD712CDABD1700A1E057 /* boost_json.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; };
-		EFD5CD732CDABD1700A1E057 /* boost_regex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; };
-		EFD5CD752CDABD1700A1E057 /* boost_system.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
-		EFD5CD782CDABD3800A1E057 /* curl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
-		EFD5CD7A2CDABD3800A1E057 /* curlpp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; };
-		EFD5CD7C2CDABD5900A1E057 /* libanixart.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		EFD5CD762CDABD1800A1E057 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				EFD5CD6F2CDABD1700A1E057 /* boost_container.xcframework in Embed Frameworks */,
-				EFD5CD7C2CDABD5900A1E057 /* libanixart.xcframework in Embed Frameworks */,
-				EFD5CD7A2CDABD3800A1E057 /* curlpp.xcframework in Embed Frameworks */,
-				EFD5CD712CDABD1700A1E057 /* boost_json.xcframework in Embed Frameworks */,
-				EFD5CD752CDABD1700A1E057 /* boost_system.xcframework in Embed Frameworks */,
-				EFD5CD732CDABD1700A1E057 /* boost_regex.xcframework in Embed Frameworks */,
-				EFD5CD782CDABD3800A1E057 /* curl.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileStoryboard.storyboard; sourceTree = "<group>"; };
@@ -3368,7 +3341,6 @@
 				EF60AC6B2C6FB2FE00CD33A8 /* Sources */,
 				EF60AC6C2C6FB2FE00CD33A8 /* Frameworks */,
 				EF60AC6D2C6FB2FE00CD33A8 /* Resources */,
-				EFD5CD762CDABD1800A1E057 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

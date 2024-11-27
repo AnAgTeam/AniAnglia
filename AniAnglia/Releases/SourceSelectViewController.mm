@@ -179,7 +179,6 @@
 }
 
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
-    NSLog(@"TableView: didSelectRowAtIndexPath:%@", index_path);
     NSInteger index = [index_path item];
     libanixart::EpisodeSource::Ptr& ep_source = _sources_arr[index];
     

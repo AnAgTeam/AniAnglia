@@ -184,7 +184,6 @@
 }
 
 - (void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
-    NSLog(@"TableView: didSelectRowAtIndexPath:%@", index_path);
     NSInteger index = [index_path item];
     libanixart::EpisodeType::Ptr& type = _types_arr[index];
     SourceSelectViewController* vc = [[SourceSelectViewController alloc] initWithReleaseID:_release_id typeID:type->id typeName:TO_NSSTRING(type->name)];

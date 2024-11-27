@@ -10,7 +10,6 @@
 @interface AppDataController : NSObject {
     NSString* _token;
 }
-@property(nonatomic, retain, setter=setToken:, getter=getToken) NSString* token;
 
 -(instancetype)init;
 
