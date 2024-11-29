@@ -18,7 +18,7 @@
 @protocol SearchReleasesViewDataSource
 -(void)willBeginRequestsWithQuery:(NSString*)query;
 -(void)searchReleasesView:(SearchReleasesView*)releases_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL action_performed))completion_handler;
--(void)searchReleasesView:(SearchReleasesView*)releases_view loadNextPageWithcompletionHandler:(void(^)(BOOL action_performed))completion_handler;
+-(void)searchReleasesView:(SearchReleasesView*)releases_view loadNextPageWithcompletionHandler:(void(^)(BOOL should_continue_fetch))completion_handler;
 -(NSUInteger)numberOfItemsForSearchReleasesView:(SearchReleasesView*)releases_view;
 -(libanixart::Release::Ptr)searchReleasesView:(SearchReleasesView*)releases_view releaseAtIndex:(NSUInteger)index;
 @end

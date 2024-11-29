@@ -1,21 +1,48 @@
 #pragma once
 #include "NetTypes.hpp"
-#include "Tools.hpp"
+#include "TimeTools.hpp"
 
 #include <string>
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 #include <chrono>
+
+#include <concepts>
 
 /* Idea from tgbot-cpp */
 namespace libanixart::json {
     using time_point = std::chrono::system_clock::time_point;
 
     template<typename T>
+    class Nullable;
+
+    template<typename T, typename ... U>
+    concept same_as_any_of = (std::same_as<T, U> || ...);
+
+    template<typename T>
+    concept serializable_to_json_array =
+        std::is_array_v<std::remove_cvref_t<T>> ||
+        std::same_as<std::remove_cvref_t<T>, std::vector<typename T::value_type>> ||
+        std::same_as<std::remove_cvref_t<T>, std::list<typename T::value_type>> ||
+        std::same_as<std::remove_cvref_t<T>, std::set<typename T::value_type>>;
+
+    template<typename T>
+    concept serializable_to_json_object =
+        std::same_as<std::remove_cvref_t<T>, std::map<typename T::key_type, typename T::value_type, typename T::allocator_type>> ||
+        std::same_as<std::remove_cvref_t<T>, std::unordered_map<typename T::key_type, typename T::mapped_type, typename T::hasher, typename T::key_equal, typename T::allocator_type>>;
+
+    template<typename T>
+    concept json_nullable =
+        std::same_as<std::remove_cvref_t<T>, Nullable<typename T::value_type>>;
+
+    template<typename T>
     class Nullable {
     public:
         static_assert(std::is_same_v<std::remove_reference_t<T>, T>, "Don't use references with Nullable<T>");
+        static_assert(!json_nullable<T>, "Cannot derive Nullable<T> from Nullable<T>!");
+        typedef T value_type;
 
         Nullable() noexcept(std::is_nothrow_default_constructible_v<T>) : _is_null(true), _value(T()) {
 
@@ -42,161 +69,67 @@ namespace libanixart::json {
     };
     class InlineJson {
     public:
-        // OBJECTS
         static inline void open_object(std::string& json_str) {
             json_str += '{';
         }
-
-        template<typename T>
-        static inline void append(std::string& json_str, const std::string& key, const T& value) {
-            return append_object(json_str, key, value);
-        }
-        template<typename T>
-        static inline void append(std::string& json_str, const std::string& key, const T* value) {
-            return append_object(json_str, key, *value);
-        }
-        template<typename T>
-        static void append_object(std::string& json_str, const std::string& key, const T& value) {
-            json_str += '"';
-            json_str += key;
-            json_str += R"(":)";
-            json_str += value;
-            json_str += ',';
-        }
-        template<typename T>
-        static void append_number(std::string& json_str, const std::string& key, const T& value) {
-            json_str += '"';
-            json_str += key;
-            json_str += R"(":)";
-            json_str += std::to_string(value);
-            json_str += ',';
-        }
-
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const int& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const long& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const long long& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const unsigned long& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const unsigned long long& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const short& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const unsigned short& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const float& value) { append_number(json_str, key, value); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const double& value) { append_number(json_str, key, value); }
-
-        template<>
-        void append(std::string& json_str, const std::string& key, const bool& value) {
-            json_str += '"';
-            json_str += key;
-            json_str += R"(":)";
-            json_str += value ? "true" : "false";
-            json_str += ',';
-        }
-
-        template<>
-        void append(std::string& json_str, const std::string& key, const std::string_view& value) {
-            json_str += '"';
-            json_str += key;
-            json_str += R"(":")";
-            json_str += value;
-            json_str += R"(",)";
-        }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const std::string& value) { append(json_str, key, std::string_view(value)); }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const char* value) { append(json_str, key, std::string_view(value)); }
-        template<typename T>
-        static void append(std::string& json_str, const std::string& key, const Nullable<T>& value) {
-            if (!value.is_null()) {
-                append(json_str, key, value.get());
-            }
-            else {
-                append_object(json_str, key, "null");
-            }
-        }
-        template<>
-        inline void append(std::string& json_str, const std::string& key, const time_point& value) { append_number(json_str, key, TimeTools::to_timestamp(value)); }
 
         static inline void close_object(std::string& json_str) {
             json_str[json_str.length() - 1] = '}';
         }
 
-        // ARRAYS
-
         static inline void open_array(std::string& json_str) {
             json_str += '[';
         }
-
-        template<typename T>
-        static inline void append(std::string& json_str, const T& value) {
-            return append_object(json_str, value);
-        }
-        template<typename T>
-        static inline void append(std::string& json_str, const T* value) {
-            return append_object(json_str, *value);
-        }
-        template<typename T>
-        static void append_object(std::string& json_str, const T& value) {
-            json_str += value;
-            json_str += ',';
-        }
-        template<typename T>
-        static void append_number(std::string& json_str, const T& value) {
-            json_str += std::to_string(value);
-            json_str += ',';
-        }
-
-        template<>
-        inline void append(std::string& json_str, const int& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const long& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const long long& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const unsigned long& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const unsigned long long& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const short& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const unsigned short& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const float& value) { append_number(json_str, value); }
-        template<>
-        inline void append(std::string& json_str, const double& value) { append_number(json_str, value); }
-
-        template<>
-        inline void append(std::string& json_str, const bool& value) {
-            json_str += value ? "true" : "false";
-            json_str += ',';
-        }
-
-        template<>
-        inline void append(std::string& json_str, const std::string_view& value) {
-            json_str += '"';
-            json_str += value;
-            json_str += R"(",)";
-        }
-        template<>
-        inline void append(std::string& json_str, const std::string& value) { append(json_str, std::string_view(value)); }
-        template<>
-        inline void append(std::string& json_str, const char* value) { append(json_str, std::string_view(value)); }
-        template<>
-        inline void append(std::string& json_str, const time_point& value) { append_number(json_str, TimeTools::to_timestamp(value)); }
 
         static inline void close_array(std::string& json_str) {
             json_str[json_str.length() - 1] = ']';
         }
 
         template<typename T>
-        static std::string serialize_array(T& arr) {
+        static void raw_append(std::string& json_str, T&& value) {
+            typedef std::remove_cvref_t<T> TNoRef;
+            if constexpr (std::same_as<TNoRef, bool>) {
+                json_str += value ? "true" : "false";
+            }
+            else if constexpr ((std::integral<TNoRef> || std::floating_point<TNoRef>) && requires { std::to_string(value); }) {
+                json_str += std::to_string(value);
+            }
+            else if constexpr (requires { InlineJson::serialize(value); }) {
+                json_str += InlineJson::serialize(value);
+            }
+            else if constexpr (std::same_as<TNoRef, time_point>) {
+                json_str += std::to_string(TimeTools::to_timestamp(value));
+            }
+            else if constexpr (same_as_any_of<TNoRef, std::string, std::string_view, char*>) {
+                json_str += '"';
+                json_str += value;
+                json_str += '"';
+            }
+            else if constexpr (std::same_as<TNoRef, Nullable<typename TNoRef::value_type>>) {
+                raw_append(json_str, value.get());
+            }
+            else if constexpr (true) {
+                static_assert("Cannot serialize T into JSON format!");
+            }
+        }
+
+        template<typename T>
+        static void append(std::string& json_str, std::string_view key, T&& value) {
+            json_str += '"';
+            json_str += key;
+            json_str += R"(":)";
+            raw_append(json_str, std::forward<T>(value));
+            json_str += ",";
+        }
+
+        template<typename T>
+        static void append(std::string& json_str, T&& value) {
+            raw_append(json_str, std::forward<T>(value));
+            json_str += ",";
+        }
+
+        template<serializable_to_json_array T>
+        static std::string serialize(T& arr) {
             if (arr.empty()) {
                 return "[]";
             }
@@ -209,13 +142,8 @@ namespace libanixart::json {
             return json_str;
         }
 
-        template<typename T>
-        static std::string serialize(const std::vector<T>& arr) { return serialize_array(arr); }
-        template<typename T>
-        static std::string serialize(const std::list<T>& arr) { return serialize_array(arr); }
-
-        template<typename T>
-        static std::string serialize_map(T& map) {
+        template<serializable_to_json_object T>
+        static std::string serialize(T& map) {
             if (map.empty()) {
                 return "{}";
             }
@@ -227,11 +155,6 @@ namespace libanixart::json {
             close_object(json_str);
             return json_str;
         }
-
-        template<typename TKey, typename TVal>
-        static std::string serialize(const std::map<TKey, TVal>& map) { return serialize_map(map); }
-        template<typename TKey, typename TVal>
-        static std::string serialize(const std::unordered_map<TKey, TVal>& map) { return serialize_map(map); }
     };
 
     class ParseJson {
@@ -338,12 +261,12 @@ namespace libanixart::json {
     extern const uint8_t power_of_2_digits_count[65];
 
     /* returns >= len(x) */
-    inline int calc_approx_num_digits(uint64_t x) {
+    inline int calc_approx_num_length(uint64_t x) {
         size_t leading_zeros = clz(x);
         return power_of_2_digits_count[leading_zeros];
     }
     /* returns >= len(x) */
-    inline int calc_approx_num_digits(int64_t x) {
+    inline int calc_approx_num_length(int64_t x) {
         size_t leading_zeros = clz(x >= 0 ? x : -x); // abs
         return power_of_2_digits_count[leading_zeros] + -(x >> 63); // add 1 if '-' at start
     }
@@ -363,22 +286,11 @@ namespace libanixart::json {
         static size_t get_arg_size(std::string_view&& arg) { return sizeof('"') + arg.size() + sizeof('"'); }
         template<size_t _Size>
         static size_t get_arg_size(char(&&arg)[_Size]) { return _Size; }
-        template<>
-        static size_t get_arg_size(int8_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(int16_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(int32_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(int64_t&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(uint8_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(uint16_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(uint32_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
-        template<>
-        static size_t get_arg_size(uint64_t&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
+        template<std::signed_integral T>
+        static size_t get_arg_size(T&& arg) { return calc_approx_num_digits(static_cast<int64_t>(arg)); }
+        template<std::unsigned_integral T>
+        static size_t get_arg_size(T&& arg) { return calc_approx_num_digits(static_cast<uint64_t>(arg)); }
+
         template<typename T>
         static size_t get_arg_size(Nullable<T>&& arg) { return get_arg_size(std::forward<T>(arg.get())); }
         template<>
@@ -409,25 +321,11 @@ namespace libanixart::json {
             json_str += ',';
         }
 
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, int8_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int8_t>(value)); }
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, int16_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int16_t>(value)); }
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, int32_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int32_t>(value)); }
-        template<>
+        template<std::signed_integral T>
         inline void object_append(std::string&& json_str, std::string_view&& key, int64_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<int64_t>(value)); }
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, uint8_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint8_t>(value)); }
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, uint16_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint16_t>(value)); }
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, uint32_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint32_t>(value)); }
-        template<>
+        template<std::unsigned_integral T>
         inline void object_append(std::string&& json_str, std::string_view&& key, uint64_t&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<uint64_t>(value)); }
-        template<>
-        inline void object_append(std::string&& json_str, std::string_view&& key, float&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<float>(value)); }
-        template<>
+        template<std::floating_point T>
         inline void object_append(std::string&& json_str, std::string_view&& key, double&& value) { object_append_number(std::forward<std::string>(json_str), std::forward<std::string_view>(key), std::forward<double>(value)); }
 
         template<>

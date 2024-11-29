@@ -87,16 +87,6 @@
     _delegate_responds_to.filter_method = [delegate respondsToSelector:@selector(searchBarFilterButtonPressed)];
 }
 
--(NSArray<NSLayoutConstraint*>*)getSearchViewConstraints:(UIView*)search_view{
-    search_view.translatesAutoresizingMaskIntoConstraints = NO;
-    return @[
-        [search_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [search_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        [search_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [search_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
-     ];
-}
-
 -(void)setupSearchViews {
     _search_bar = [UISearchBar new];
     _search_bar.delegate = self;
@@ -146,11 +136,23 @@
 
 -(void)setInlineSearchView:(NavigationSearchInlineView *)inline_search_view {
     _inline_search_view = inline_search_view;
-    _inline_search_view_constraints = [self getSearchViewConstraints:_inline_search_view];
+    _inline_search_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _inline_search_view_constraints = @[
+        [_inline_search_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_inline_search_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        [_inline_search_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [_inline_search_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
+     ];
 }
 -(void)setSearchView:(NavigationSearchView *)search_view {
     _search_view = search_view;
-    _search_view_constraints = [self getSearchViewConstraints:_search_view];
+    _search_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _search_view_constraints = @[
+        [_search_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_search_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [_search_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [_search_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
+     ];
 }
 
 -(void)setSearchText:(NSString*)text endEditing:(BOOL)end_editing {

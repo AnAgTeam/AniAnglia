@@ -234,18 +234,21 @@
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
     libanixart::Episode::Ptr episode = _episodes_arr[index];
-    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES];
-    
-    /* pre set just for instant UI update. Then update to real state */
-    episode->is_watched = YES;
-    [cell setWatchedStatus:YES];
-    
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
-        api->episodes().add_watched_episode(self->_release_id, self->_source_id, episode->position);
-        return YES;
-    } withUICompletion:^{
+    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES completion:^(BOOL errored){
+        if (errored) {
+            return;
+        }
+        /* pre set just for instant UI update. Then update to real state */
         episode->is_watched = YES;
         [cell setWatchedStatus:YES];
+        
+        [self->_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+            api->episodes().add_watched_episode(self->_release_id, self->_source_id, episode->position);
+            return YES;
+        } withUICompletion:^{
+            episode->is_watched = YES;
+            [cell setWatchedStatus:YES];
+        }];
     }];
 }
 
@@ -257,7 +260,7 @@
     EpisodeViewCell* cell = [_table_view cellForRowAtIndexPath:index_path];
     libanixart::Episode::Ptr episode = _episodes_arr[index];
     
-    BOOL to_set_watched =_episodes_arr[index]->is_watched ^ true;
+    BOOL to_set_watched = !_episodes_arr[index]->is_watched;
     /* pre set just for instant UI update. Then update to real state */
     episode->is_watched = to_set_watched;
     [cell setWatchedStatus:to_set_watched];

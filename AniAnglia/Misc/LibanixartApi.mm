@@ -49,6 +49,9 @@
         catch (libanixart::JsonError& e) {
             NSLog(@"Uncatched libanixart api json exception: %s", e.what());
         }
+        catch (libanixart::UrlSessionError& e) {
+            NSLog(@"Uncatched libanixart::UrlSession exception: %s", e.what());
+        }
     });
 }
 

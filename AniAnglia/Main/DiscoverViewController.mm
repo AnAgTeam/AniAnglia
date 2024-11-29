@@ -420,15 +420,15 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     _search_releases.clear();
 }
 
--(void)searchReleasesView:(SearchReleasesView*)release_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL action_performed))completion_handler {
-    __block BOOL action_performed = YES;
+-(void)searchReleasesView:(SearchReleasesView*)release_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL should_continue_fetch))completion_handler {
+    __block BOOL should_continue_fetch = YES;
     [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
         auto new_items = self->_search_release_pages->go(page);
         self->_search_releases.insert(self->_search_releases.end(), new_items.begin(), new_items.end());
-        action_performed = !self->_search_release_pages->is_end();
+        should_continue_fetch = !self->_search_release_pages->is_end();
         return YES;
     } withUICompletion:^{
-        completion_handler(action_performed);
+        completion_handler(should_continue_fetch);
     }];
 }
 -(void)searchReleasesView:(SearchReleasesView*)release_view loadNextPageWithcompletionHandler:(void(^)(BOOL action_performed))completion_handler {

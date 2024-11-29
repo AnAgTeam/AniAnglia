@@ -199,9 +199,9 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     }]];
     if ([filtered count] > 0) {
         if (_data_source) {
-            [_data_source searchReleasesView:self loadNextPageWithcompletionHandler:^(BOOL action_performed) {
-                self->_dont_fetch_pages |= !action_performed;
-                if (action_performed) {
+            [_data_source searchReleasesView:self loadNextPageWithcompletionHandler:^(BOOL should_continue_fetch) {
+                self->_dont_fetch_pages |= !should_continue_fetch;
+                if (should_continue_fetch) {
                     [self->_table_view reloadData];
                 }
             }];

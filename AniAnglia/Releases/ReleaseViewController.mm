@@ -18,10 +18,9 @@
 @property(nonatomic) NSInteger release_id;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic) libanixart::Release::Ptr release_info;
-@property(nonatomic, retain) UIActivityIndicatorView* release_loading_ind;
 
 @property(nonatomic, retain) UIScrollView* scroll_view;
-@property(nonatomic, retain) UIView* content_view;
+@property(nonatomic, retain) LoadableView* content_view;
 @property(nonatomic, retain) LoadableImageView* release_image_view;
 @property(nonatomic, retain) UILabel* title_label;
 @property(nonatomic, retain) UILabel* orig_title_label;
@@ -50,18 +49,14 @@ static NSArray* RELEASE_LIST_STATES = @[
 }
 
 -(void)loadReleaseInfo {
-    [_release_loading_ind startAnimating];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        try {
-            self->_release_info = self->_api_proxy.api->releases().get_release(self->_release_id);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self->_release_loading_ind stopAnimating];
-                [self setupReleaseView];
-            });
-        } catch (libanixart::ApiError& e) {
-            // error
-        }
-    });
+    [self->_content_view startLoading];
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+        self->_release_info = self->_api_proxy.api->releases().get_release(self->_release_id);
+        return YES;
+    } withUICompletion:^{
+        [self->_content_view endLoading];
+        [self setupReleaseView];
+    }];
 }
 
 -(void)viewDidLoad {
@@ -80,7 +75,7 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor].active = YES;
     [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor].active = YES;
     
-    _content_view = [UIView new];
+    _content_view = [LoadableView new];
     [_scroll_view addSubview:_content_view];
     _content_view.translatesAutoresizingMaskIntoConstraints = NO;
     [_content_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor].active = YES;
@@ -91,15 +86,6 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_content_view.rightAnchor constraintEqualToAnchor:_scroll_view.rightAnchor].active = YES;
     [_content_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor].active = YES;
     [_content_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor].active = YES;
-    
-    _release_loading_ind = [UIActivityIndicatorView new];
-    [_scroll_view addSubview:_release_loading_ind];
-    _release_loading_ind.transform = CGAffineTransformMakeScale(3.5, 3.5);
-    _release_loading_ind.translatesAutoresizingMaskIntoConstraints = NO;
-    [_release_loading_ind.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor].active = YES;
-    [_release_loading_ind.heightAnchor constraintEqualToAnchor:_content_view.heightAnchor].active = YES;
-    [_release_loading_ind.topAnchor constraintEqualToSystemSpacingBelowAnchor:_content_view.bottomAnchor multiplier:0.5].active = YES;
-    [_release_loading_ind.centerXAnchor constraintEqualToAnchor:_content_view.centerXAnchor].active = YES;
     
     [self preSetupLayout];
     
@@ -192,13 +178,6 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_play_button addTarget:self action:@selector(playButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     
     [_content_view.bottomAnchor constraintEqualToAnchor:_play_button.bottomAnchor].active = YES;
-    
-    [_scroll_view setClipsToBounds:YES];
-    [_content_view setClipsToBounds:YES];
-    [_play_button setClipsToBounds:YES];
-    [_scroll_view setUserInteractionEnabled:YES];
-    [_content_view setUserInteractionEnabled:YES];
-    [_play_button setUserInteractionEnabled:YES];
     
     [_release_image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_release_info->image_url)]];
     

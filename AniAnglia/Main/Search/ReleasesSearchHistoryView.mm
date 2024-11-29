@@ -61,7 +61,7 @@
 
 -(void)setupLayout {
     self.backgroundColor = [AppColorProvider backgroundColor];
-    _magnifier_image_view.tintColor = [AppColorProvider textColor];
+    _magnifier_image_view.tintColor = [AppColorProvider textSecondaryColor];
     _history_item_label.textColor = [AppColorProvider textColor];
 }
 

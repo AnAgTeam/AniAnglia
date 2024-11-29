@@ -13,7 +13,7 @@
 
 -(instancetype)init;
 
--(void)playWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position autoShow:(BOOL)auto_show;
+-(void)playWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position autoShow:(BOOL)auto_show completion:(void(^)(BOOL errored))completion_handler;
 
 -(AVPlayerViewController*)getPlayer;
 

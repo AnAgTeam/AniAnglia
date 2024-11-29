@@ -58,34 +58,34 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     return self;
 }
 
--(void)loadStreamsAndAutoPlay:(BOOL)auto_play{
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        try {
-            auto ep_target = self->_api_proxy.api->episodes().get_episode_target(self->_release_id, self->_source_id, static_cast<int32_t>(self->_source_position));
-            self->_streams_arr = self->_api_proxy.parsers->extract_info(ep_target->url);
-            auto selected_stream = choose_quality(self->_streams_arr, preferred_quality);
-            self->_selected_stream_url = [NSURL URLWithString:TO_NSSTRING(selected_stream)];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (auto_play) {
-                    [self runPlayer];
-                }
-            });
-        } catch (libanixart::ApiError& e) {
-            // error
+-(void)loadStreamsAndAutoPlay:(BOOL)auto_play completion:(void(^)(BOOL errored))completion_handler {
+    __block BOOL stream_founded = NO;
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
+        auto ep_target = self->_api_proxy.api->episodes().get_episode_target(self->_release_id, self->_source_id, static_cast<int32_t>(self->_source_position));
+        self->_streams_arr = self->_api_proxy.parsers->extract_info(ep_target->url);
+        auto selected_stream = choose_quality(self->_streams_arr, preferred_quality);
+        self->_selected_stream_url = [NSURL URLWithString:TO_NSSTRING(selected_stream)];
+        stream_founded = !self->_streams_arr.empty();
+        return YES;
+    } withUICompletion:^{
+        completion_handler(!stream_founded);
+        if (!stream_founded) {
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"app.player.stream_not_found_error.title", "") message:NSLocalizedString(@"app.player.stream_not_found_error.message", "") preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* default_action = [UIAlertAction actionWithTitle:NSLocalizedString(@"app.player.stream_not_found_error.default_action.text", "") style:UIAlertActionStyleDefault
+               handler:^(UIAlertAction * action) {
+                [self->_player_view_controller dismissViewControllerAnimated:YES completion:nil];
+            }];
+            [alert addAction:default_action];
+            [self showViewController:alert];
+            return;
         }
-        catch (libanixart::JsonError& e) {
-           // error
+        if (auto_play) {
+            [self runPlayer];
         }
-        catch (libanixart::UrlSessionError& e) {
-           // error
-        }
-        catch (std::runtime_error& e) {
-            
-        }
-    });
+    }];
 }
 
--(void)playWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position autoShow:(BOOL)auto_show {
+-(void)playWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position autoShow:(BOOL)auto_show completion:(void(^)(BOOL errored))completion_handler {
     _release_id = release_id;
     _source_id = source_id;
     _source_position = position;
@@ -95,16 +95,16 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     _player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
     
     [_pip_controller setDelegate:self];
-    [self loadStreamsAndAutoPlay:YES];
-    [self showPlayer];
+    [self loadStreamsAndAutoPlay:YES completion:completion_handler];
+    [self showViewController:_player_view_controller];
 }
 
 -(void)showAndRunPlayer {
-    [self showPlayer];
+    [self showViewController:_player_view_controller];
     [self runPlayer];
 }
 
--(void)showPlayer {
+-(void)showViewController:(UIViewController*)view_controller{
     UIViewController* top_view_controller = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     while (top_view_controller.presentedViewController) {
         top_view_controller = top_view_controller.presentedViewController;
@@ -113,7 +113,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
         top_view_controller = [((UINavigationController*)top_view_controller) topViewController];
     }
     
-    [top_view_controller presentViewController:_player_view_controller animated:YES completion:^{}];
+    [top_view_controller presentViewController:view_controller animated:YES completion:^{}];
 }
 
 -(void)runPlayer {
@@ -139,7 +139,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 }
 
 -(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler{
-    [self showPlayer];
+    [self showViewController:_player_view_controller];
     completion_handler(YES);
 }
 

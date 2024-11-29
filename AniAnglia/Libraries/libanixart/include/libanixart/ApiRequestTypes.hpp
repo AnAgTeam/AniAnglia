@@ -11,6 +11,7 @@ namespace libanixart {
 		public:
 			virtual std::string serialize() const = 0;
 		};
+
 		class BookmarksImportRequest {
 		public:
 			std::vector<int64_t> completed;

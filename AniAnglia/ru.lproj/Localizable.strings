@@ -80,3 +80,8 @@
 
 /* PROFILE */
 "app.profile.search_bar.placeholder" = "Найти пользователя...";
+
+/* PLAYER */
+"app.player.stream_not_found_error.title" = "Ошибка";
+"app.player.stream_not_found_error.message" = "Не удалось найти источник для данной серии";
+"app.player.stream_not_found_error.default_action.text" = "ОК";
