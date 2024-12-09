@@ -14,7 +14,7 @@
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
 		EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941142C723F8600832A6C /* CoreGraphics.framework */; };
 		EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */; };
-		EF53C7EF2CE125A200C15B87 /* SearchReleasesView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF53C7EE2CE125A200C15B87 /* SearchReleasesView.mm */; };
+		EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */; };
 		EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */; };
 		EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */; };
 		EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CCB2C7FA18A00B4F637 /* MainViewController.mm */; };
@@ -51,7 +51,9 @@
 		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
 		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
 		EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; };
+		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
+		EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,8 +67,8 @@
 		EF4941142C723F8600832A6C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibanixartApi.mm; sourceTree = "<group>"; };
 		EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LibanixartApi.h; sourceTree = "<group>"; };
-		EF53C7EE2CE125A200C15B87 /* SearchReleasesView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SearchReleasesView.mm; sourceTree = "<group>"; };
-		EF53C7F02CE125D000C15B87 /* SearchReleasesView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchReleasesView.h; sourceTree = "<group>"; };
+		EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SearchReleasesTableView.mm; sourceTree = "<group>"; };
+		EF53C7F02CE125D000C15B87 /* SearchReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchReleasesTableView.h; sourceTree = "<group>"; };
 		EF5A3CB12C7F928400B4F637 /* AppDataController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDataController.h; sourceTree = "<group>"; };
 		EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDataController.mm; sourceTree = "<group>"; };
 		EF5A3CB42C7F99A200B4F637 /* StringCvt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringCvt.h; sourceTree = "<group>"; };
@@ -1284,8 +1286,11 @@
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
 		EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NavSearchViewController.m; sourceTree = "<group>"; };
 		EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NavSearchViewController.h; sourceTree = "<group>"; };
+		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
+		EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesTableView.h; sourceTree = "<group>"; };
+		EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesTableView.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1303,6 +1308,7 @@
 				EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */,
 				EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */,
 				EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */,
+				EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */,
 				EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */,
 				EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */,
 				EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */,
@@ -1346,6 +1352,8 @@
 				EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */,
 				EFA1F93E2CB4922200555A26 /* PlayerViewController.h */,
 				EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */,
+				EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */,
+				EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";
@@ -3310,8 +3318,8 @@
 			children = (
 				EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */,
 				EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */,
-				EF53C7F02CE125D000C15B87 /* SearchReleasesView.h */,
-				EF53C7EE2CE125A200C15B87 /* SearchReleasesView.mm */,
+				EF53C7F02CE125D000C15B87 /* SearchReleasesTableView.h */,
+				EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */,
 				EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */,
 				EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */,
 			);
@@ -3321,6 +3329,7 @@
 		EFAB992D2C6FF833008208E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EFE474962CFA42B500508136 /* MediaPlayer.framework */,
 				EF5F02B62CCE956700EA11BB /* Libraries */,
 				EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */,
 				EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */,
@@ -3411,6 +3420,7 @@
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
+				EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EFC6077B2C76169500BA8B44 /* UITextErrorField.mm in Sources */,
@@ -3430,7 +3440,7 @@
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
-				EF53C7EF2CE125A200C15B87 /* SearchReleasesView.mm in Sources */,
+				EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
 			);

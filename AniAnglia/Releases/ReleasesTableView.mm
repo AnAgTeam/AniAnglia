@@ -1,18 +1,17 @@
 //
-//  SearchReleasesViewController.m
+//  ReleaseTableView.m
 //  AniAnglia
 //
-//  Created by Toilettrauma on 10.11.2024.
+//  Created by Toilettrauma on 09.12.2024.
 //
 
 #import <Foundation/Foundation.h>
-#import "SearchReleasesView.h"
+#import "ReleasesTableView.h"
 #import "AppColor.h"
 #import "LoadableView.h"
 #import "StringCvt.h"
-#import "ReleaseViewController.h"
 
-@interface SearchReleaseTableViewCell : UITableViewCell
+@interface ReleasesTableViewCell : UITableViewCell
 @property(nonatomic, retain) LoadableImageView* image_view;
 @property(nonatomic, retain) UILabel* title_label;
 @property(nonatomic, retain) UILabel* description_label;
@@ -20,21 +19,24 @@
 @property(nonatomic, retain) UILabel* rating_label;
 
 +(NSString*)getIndentifier;
+
+-(void)setRating:(double)rating;
+-(void)setEpCount:(NSUInteger)ep_count;
 @end
 
-@interface SearchReleasesView ()
+@interface ReleasesTableView ()
 @property(atomic) BOOL dont_fetch_pages;
 @property(atomic) NSUInteger current_page;
 @property(nonatomic, retain) UITableView* table_view;
 @end
 
-@implementation SearchReleaseTableViewCell
+@implementation ReleasesTableViewCell
 
 static const CGFloat RATING_BADGE_HEIGHT = 35;
 static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
 
 +(NSString*)getIndentifier {
-    return @"SearchReleaseTableViewCell";
+    return @"ReleasesTableViewCell";
 }
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier {
@@ -133,7 +135,7 @@ static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
 
 @end
 
-@implementation SearchReleasesView
+@implementation ReleasesTableView
 
 static const CGFloat TABLE_CELL_HEIGHT = 175;
 
@@ -145,10 +147,6 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     return self;
 }
 
--(void)setDataSource:(id<SearchReleasesViewDataSource>)data_source {
-    _data_source = data_source;
-}
-
 -(void)setup {
     _table_view = [UITableView new];
     [self addSubview:_table_view];
@@ -158,7 +156,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     [_table_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
     [_table_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
     [_table_view setDelegate:self];
-    [_table_view registerClass:SearchReleaseTableViewCell.class forCellReuseIdentifier:[SearchReleaseTableViewCell getIndentifier]];
+    [_table_view registerClass:ReleasesTableViewCell.class forCellReuseIdentifier:[ReleasesTableViewCell getIndentifier]];
     [_table_view setDataSource:self];
     [_table_view setPrefetchDataSource:self];
 }
@@ -169,15 +167,15 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 }
 
 -(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
-    return [_data_source numberOfItemsForSearchReleasesView:self];
+    return [_data_source numberOfItemsForReleasesTableView:self];
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return TABLE_CELL_HEIGHT;
 }
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
-    SearchReleaseTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[SearchReleaseTableViewCell getIndentifier] forIndexPath:index_path];
+    ReleasesTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesTableViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    libanixart::Release::Ptr release = [_data_source searchReleasesView:self releaseAtIndex:index];
+    libanixart::Release::Ptr release = [_data_source releasesTableView:self releaseAtIndex:index];
     
     cell.title_label.text = TO_NSSTRING(release->title_ru);
     cell.description_label.text = TO_NSSTRING(release->description);
@@ -199,7 +197,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     }]];
     if ([filtered count] > 0) {
         if (_data_source) {
-            [_data_source searchReleasesView:self loadNextPageWithcompletionHandler:^(BOOL should_continue_fetch) {
+            [_data_source releasesTableView:self loadNextPageWithcompletionHandler:^(BOOL should_continue_fetch) {
                 self->_dont_fetch_pages |= !should_continue_fetch;
                 if (should_continue_fetch) {
                     [self->_table_view reloadData];
@@ -212,7 +210,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
-    [_delegate searchReleasesView:self didSelectReleaseAtIndex:index];
+    [_delegate releasesTableView:self didSelectReleaseAtIndex:index];
 }
 
 -(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
@@ -235,10 +233,10 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     ]];
 }
 
--(void)searchViewDidShowWithController:(NavigationSearchViewController *)view_controller {
+-(void)releasesTableViewDidShow {
     _dont_fetch_pages = NO;
     if (_data_source) {
-        [_data_source searchReleasesView:self loadPage:0 completionHandler:^(BOOL action_performed){
+        [_data_source releasesTableView:self loadPage:0 completionHandler:^(BOOL action_performed){
             self->_dont_fetch_pages |= !action_performed;
             if (action_performed) {
                 [self->_table_view reloadData];
@@ -259,3 +257,5 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 }
 
 @end
+
+

@@ -20,8 +20,9 @@
 -(void)searchTextDidChanged:(NSString*)text;
 -(void)searchViewDidCancelWithText:(NSString*)text isSearchQuery:(BOOL)is_search_query;
 @end
+
 @interface NavigationSearchView : UIView
--(void)searchViewDidShowWithController:(NavigationSearchViewController*)view_controller;
+-(void)searchViewDidShowWithController:(NavigationSearchViewController*)view_controller query:(NSString*)query;
 -(void)reloadWithText:(NSString*)text;
 @end
 

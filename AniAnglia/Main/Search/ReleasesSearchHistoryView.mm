@@ -38,7 +38,6 @@
 }
 
 -(void)setupView {
-    
     _magnifier_image_view = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"magnifyingglass"]];
     [self addSubview:_magnifier_image_view];
     _magnifier_image_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -83,20 +82,19 @@
     _table_view = [UITableView new];
     [self addSubview:_table_view];
     _table_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_table_view registerClass:HistoryTableViewCell.class forCellReuseIdentifier:[HistoryTableViewCell getIndentifier]];
-    [_table_view setDelegate:self];
-    [_table_view setDataSource:self];
-    
     [_table_view.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
     [_table_view.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
     [_table_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
     [_table_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+    [_table_view registerClass:HistoryTableViewCell.class forCellReuseIdentifier:[HistoryTableViewCell getIndentifier]];
+    [_table_view setDelegate:self];
+    [_table_view setDataSource:self];
     
     [self setupLayout];
 }
 
 -(void)setupLayout {
-    
+    _table_view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 -(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {

@@ -7,6 +7,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>
+#import <MediaPlayer/MediaPlayer.h>
 #import "PlayerViewController.h"
 #import "AppColor.h"
 #import "LibanixartApi.h"
@@ -29,7 +30,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     auto preferred = quals.find(std::string(preffered.data()));
     if (preferred != quals.end()) {
         return preferred->second;
-    }
+    }		
     long long_quality = 0;
     std::string quality_url;
     for (auto& [q, u] : quals) {
@@ -93,6 +94,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 //    _pip_controller = [AVPictureInPictureController alloc] init;
     
     _player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
+    _player_view_controller.player = nil;
     
     [_pip_controller setDelegate:self];
     [self loadStreamsAndAutoPlay:YES completion:completion_handler];
@@ -119,6 +121,19 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 -(void)runPlayer {
     _player_view_controller.player = [AVPlayer playerWithURL:_selected_stream_url];
     [_player_view_controller.player play];
+    
+    AVMutableMetadataItem* title = [AVMutableMetadataItem new];
+    title.identifier = AVMetadataCommonIdentifierTitle;
+    title.value = @"YO";
+    title.extendedLanguageTag = @"und";
+    AVMutableMetadataItem* desc = [AVMutableMetadataItem new];
+    desc.identifier = AVMetadataCommonIdentifierArtist;
+    desc.value = @"HO";
+    desc.extendedLanguageTag = @"und";
+    _player_view_controller.player.currentItem.externalMetadata = @[
+        title,
+        desc
+    ];
 }
 
 -(void)setupLayout {

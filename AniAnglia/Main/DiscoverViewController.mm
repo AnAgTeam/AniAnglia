@@ -12,13 +12,14 @@
 #import "StringCvt.h"
 #import "AppColor.h"
 #import "AppSearchController.h"
-#import "SearchReleasesView.h"
+#import "SearchReleasesTableView.h"
 #import "ReleasesSearchHistoryView.h"
+#import "LoadableView.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
 @property(nonatomic, retain) UILabel* desc;
-@property(nonatomic, retain) UIImageView* image_view;
+@property(nonatomic, retain) LoadableImageView* image_view;
 
 +(NSString*)getIndentifier;
 -(instancetype)initWithFrame:(CGRect)frame;
@@ -63,7 +64,7 @@
 -(CGFloat)getTotalHeight;
 @end
 
-@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, SearchReleasesViewDataSource, SearchReleasesViewDelegate>
+@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, SearchReleasesTableViewDelegate, SearchReleasesTableViewDataSource>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
@@ -85,9 +86,8 @@
     self = [super initWithFrame:frame];
     self.layer.cornerRadius = 12.0;
     self.layer.masksToBounds = YES;
-    _image_view = [[UIImageView alloc] initWithFrame:frame];
+    _image_view = [LoadableImageView new];
     [self setBackgroundView:_image_view];
-    _image_view.image = nil;
     _desc = [UILabel new];
     [self addSubview:_desc];
     [_desc.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
@@ -104,9 +104,6 @@
     [_title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
     [_title.bottomAnchor constraintEqualToAnchor:_desc.topAnchor constant:-2.0].active = YES;
     [_title setFont:[UIFont boldSystemFontOfSize:_title.font.pointSize]];
-    _title.layer.shadowRadius = 2.2;
-    _title.layer.shadowOffset = CGSizeMake(0, 0);
-    _title.layer.shadowOpacity = 1.0;
     
     [self setupLayout];
     
@@ -119,8 +116,9 @@
      */
     _image_view.backgroundColor = [UIColor clearColor];
     _title.textColor = [AppColorProvider textColor];
-    _title.shadowColor = [AppColorProvider backgroundColor];
+    _title.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
     _desc.textColor = [AppColorProvider textSecondaryColor];
+    _desc.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
 }
 
 @end
@@ -151,27 +149,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     cell.title.text = TO_NSSTRING(_interest_arr[index]->title);
     cell.desc.text = TO_NSSTRING(_interest_arr[index]->description);
     [cell.desc sizeToFit];
-    UIImage* cached_image = [_image_cache objectForKey:[[NSNumber alloc] initWithLong:index]];
-    if (cached_image) {
-        cell.image_view.image = cached_image;
-        return cell;
-    }
-    cell.image_view.image = nil;
-    
-    NSString* url_str = TO_NSSTRING(_interest_arr[index]->image_url);
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSURL* url = [[NSURL alloc] initWithString:url_str];
-        NSData* data = [NSData dataWithContentsOfURL:url];
-        if (data == nil) {
-            // error
-            return;
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            UIImage* image = [UIImage imageWithData:data];
-            cell.image_view.image = image;
-            [self->_image_cache setObject:image forKey:[[NSNumber alloc] initWithLong:index]];
-        });
-    });
+    [cell.image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_interest_arr[index]->image_url)]];
     return cell;
 }
 
@@ -341,7 +319,7 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     
     _api_proxy = [LibanixartApi sharedInstance];
     self.inline_search_view = [ReleasesSearchHistoryView new];
-    SearchReleasesView* search_releases_view = [SearchReleasesView new];
+    SearchReleasesTableView* search_releases_view = [SearchReleasesTableView new];
     search_releases_view.delegate = self;
     search_releases_view.data_source = self;
     self.search_view = search_releases_view;
@@ -412,7 +390,7 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     NSLog(@"Search filter button pressed");
 }
 
--(void)search:(NSString *)query {
+-(void)searchReleasesTableView:(SearchReleasesTableView*)releases_view willBeginRequestsWithQuery:(NSString*)query {
     NSLog(@"Search query: %@", query);
     libanixart::requests::SearchRequest search_req;
     search_req.query = TO_STDSTRING(query);
@@ -420,7 +398,7 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     _search_releases.clear();
 }
 
--(void)searchReleasesView:(SearchReleasesView*)release_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL should_continue_fetch))completion_handler {
+-(void)releasesTableView:(SearchReleasesTableView*)releases_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL should_continue_fetch))completion_handler {
     __block BOOL should_continue_fetch = YES;
     [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
         auto new_items = self->_search_release_pages->go(page);
@@ -431,7 +409,7 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
         completion_handler(should_continue_fetch);
     }];
 }
--(void)searchReleasesView:(SearchReleasesView*)release_view loadNextPageWithcompletionHandler:(void(^)(BOOL action_performed))completion_handler {
+-(void)releasesTableView:(SearchReleasesTableView*)releases_view loadNextPageWithcompletionHandler:(void(^)(BOOL action_performed))completion_handler {
     __block BOOL action_performed = YES;
     [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
         auto new_items = self->_search_release_pages->next();
@@ -442,15 +420,15 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
         completion_handler(action_performed);
     }];
 }
--(void)searchReleasesView:(SearchReleasesView*)release_view didSelectReleaseAtIndex:(NSInteger)index {
-    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:_search_releases[index]->id] animated:YES];
-}
-
--(libanixart::Release::Ptr)searchReleasesView:(SearchReleasesView*)release_view releaseAtIndex:(NSUInteger)index {
+-(libanixart::Release::Ptr)releasesTableView:(SearchReleasesTableView*)releases_view releaseAtIndex:(NSUInteger)index {
     return _search_releases[index];
 }
--(NSUInteger)numberOfItemsForSearchReleasesView:(SearchReleasesView*)release_view {
+-(NSUInteger)numberOfItemsForReleasesTableView:(SearchReleasesTableView*)releases_view {
     return _search_releases.size();
+}
+
+-(void)releasesTableView:(SearchReleasesTableView*)releases_view didSelectReleaseAtIndex:(NSInteger)index {
+    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:_search_releases[index]->id] animated:YES];
 }
 
 -(void)didSelectInterestingCell:(long long)release_id {

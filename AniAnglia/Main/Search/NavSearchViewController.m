@@ -114,7 +114,7 @@
     if (_search_view) {
         [self.view addSubview:_search_view];
         [NSLayoutConstraint activateConstraints:_search_view_constraints];
-        [_search_view searchViewDidShowWithController:self];
+        [_search_view searchViewDidShowWithController:self query:_search_bar.text];
     }
 }
 -(void)hideSearchView {
