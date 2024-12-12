@@ -100,7 +100,7 @@
     [_loading_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_episodes_arr = self->_api_proxy.api->episodes().get_release_episodes(self->_release_id, self->_type_id, self->_source_id, libanixart::EpisodesSort::FromLeast);
+            self->_episodes_arr = self->_api_proxy.api->episodes().get_release_episodes(self->_release_id, self->_type_id, self->_source_id, libanixart::Episode::Sort::FromLeast);
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self->_loading_ind stopAnimating];
                 [self setupEpisodesView];

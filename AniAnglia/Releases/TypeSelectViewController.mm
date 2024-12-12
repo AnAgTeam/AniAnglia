@@ -102,17 +102,13 @@
 
 -(void)loadTypes {
     [_loading_ind startAnimating];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        try {
-            self->_types_arr = self->_api_proxy.api->episodes().get_release_types(self->_release_id);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self->_loading_ind stopAnimating];
-                [self setupTypesView];
-            });
-        } catch (libanixart::ApiError& e) {
-            // error
-        }
-    });
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+        self->_types_arr = api->episodes().get_release_types(self->_release_id);
+        return YES;
+    } withUICompletion:^{
+        [self->_loading_ind stopAnimating];
+        [self setupTypesView];
+    }];
 }
 
 //-(NSInteger)numberOfSectionsInTableView:(UITableView *)table_view {
@@ -146,11 +142,8 @@
     
     _loading_ind = [UIActivityIndicatorView new];
     [self.view addSubview:_loading_ind];
-    _loading_ind.transform = CGAffineTransformMakeScale(3.5, 3.5);
     _loading_ind.translatesAutoresizingMaskIntoConstraints = NO;
-    [_loading_ind.widthAnchor constraintEqualToAnchor:self.view.widthAnchor].active = YES;
-    [_loading_ind.heightAnchor constraintEqualToAnchor:self.view.heightAnchor].active = YES;
-    [_loading_ind.topAnchor constraintEqualToSystemSpacingBelowAnchor:self.view.bottomAnchor multiplier:0.5].active = YES;
+    [_loading_ind.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor].active = YES;
     [_loading_ind.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
     
     [self preSetupLayout];

@@ -128,7 +128,7 @@ namespace libanixart {
 		};
 		namespace profile::releaseVote {
 			extern ApiGetRequest all_release_unvoted(const int32_t& page, const std::string& token);
-			extern ApiGetRequest all_release_voted(const int64_t& profile_id, const int32_t& page, const std::string& token);
+			extern ApiGetRequest all_release_voted(const int64_t& profile_id, const int32_t& page, const int32_t& sort, const std::string& token);
 			extern ApiGetRequest last_release_unvoted(const std::string& token);
 		};
 		namespace commentVotes {

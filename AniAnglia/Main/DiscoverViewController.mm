@@ -15,6 +15,7 @@
 #import "SearchReleasesTableView.h"
 #import "ReleasesSearchHistoryView.h"
 #import "LoadableView.h"
+#import "ReleasesQuerySearch.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
@@ -64,14 +65,14 @@
 -(CGFloat)getTotalHeight;
 @end
 
-@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, SearchReleasesTableViewDelegate, SearchReleasesTableViewDataSource>
+@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, SearchReleasesTableViewDelegate>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
 @property(nonatomic, retain) InterestingView* interesting_view;
 @property(nonatomic, retain) DiscoverOptionsTableView* options_view;
-@property(nonatomic) std::vector<libanixart::Release::Ptr> search_releases;
-@property(nonatomic) std::shared_ptr<libanixart::ReleaseSearchPages> search_release_pages;
+@property(nonatomic, retain) ReleasesQuerySearchDefaultDelegate* search_query_delegate;
+@property(nonatomic, retain) ReleasesQuerySearchDefaultDataSource* search_query_data_source;
 
 -(void)didSelectInterestingCell:(long long)release_id;
 @end
@@ -175,7 +176,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_activity_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_interest_arr = api_proxy.api->search().interesting().get();
+            self->_interest_arr = api_proxy.api->search().interesting()->get();
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self setupCollectionView];
             });
@@ -321,7 +322,8 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     self.inline_search_view = [ReleasesSearchHistoryView new];
     SearchReleasesTableView* search_releases_view = [SearchReleasesTableView new];
     search_releases_view.delegate = self;
-    search_releases_view.data_source = self;
+    _search_query_data_source = [ReleasesQuerySearchDefaultDataSource new];
+    search_releases_view.data_source = _search_query_data_source;
     self.search_view = search_releases_view;
     
     [self setupView];
@@ -390,45 +392,9 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     NSLog(@"Search filter button pressed");
 }
 
--(void)searchReleasesTableView:(SearchReleasesTableView*)releases_view willBeginRequestsWithQuery:(NSString*)query {
-    NSLog(@"Search query: %@", query);
-    libanixart::requests::SearchRequest search_req;
-    search_req.query = TO_STDSTRING(query);
-    _search_release_pages = std::make_shared<libanixart::ReleaseSearchPages>(_api_proxy.api->search().release_search(search_req));
-    _search_releases.clear();
-}
-
--(void)releasesTableView:(SearchReleasesTableView*)releases_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL should_continue_fetch))completion_handler {
-    __block BOOL should_continue_fetch = YES;
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
-        auto new_items = self->_search_release_pages->go(page);
-        self->_search_releases.insert(self->_search_releases.end(), new_items.begin(), new_items.end());
-        should_continue_fetch = !self->_search_release_pages->is_end();
-        return YES;
-    } withUICompletion:^{
-        completion_handler(should_continue_fetch);
-    }];
-}
--(void)releasesTableView:(SearchReleasesTableView*)releases_view loadNextPageWithcompletionHandler:(void(^)(BOOL action_performed))completion_handler {
-    __block BOOL action_performed = YES;
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
-        auto new_items = self->_search_release_pages->next();
-        self->_search_releases.insert(self->_search_releases.end(), new_items.begin(), new_items.end());
-        action_performed = !self->_search_release_pages->is_end();
-        return YES;
-    } withUICompletion:^{
-        completion_handler(action_performed);
-    }];
-}
--(libanixart::Release::Ptr)releasesTableView:(SearchReleasesTableView*)releases_view releaseAtIndex:(NSUInteger)index {
-    return _search_releases[index];
-}
--(NSUInteger)numberOfItemsForReleasesTableView:(SearchReleasesTableView*)releases_view {
-    return _search_releases.size();
-}
-
--(void)releasesTableView:(SearchReleasesTableView*)releases_view didSelectReleaseAtIndex:(NSInteger)index {
-    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:_search_releases[index]->id] animated:YES];
+-(void)releasesTableView:(ReleasesTableView*)releases_view didSelectReleaseAtIndex:(NSInteger)index {
+    libanixart::Release::Ptr release = [_search_query_data_source releasesTableView:releases_view releaseAtIndex:index];
+    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
 -(void)didSelectInterestingCell:(long long)release_id {

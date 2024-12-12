@@ -22,4 +22,5 @@
 @interface SearchReleasesTableView : NavigationSearchView
 @property(nonatomic, weak, setter = setDataSource:) id<SearchReleasesTableViewDataSource> data_source;
 @property(nonatomic, weak) id<SearchReleasesTableViewDelegate> delegate;
+@property(nonatomic, retain) ReleasesTableView* releases_table_view;
 @end

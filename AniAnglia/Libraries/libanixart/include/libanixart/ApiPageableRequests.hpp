@@ -168,24 +168,23 @@ namespace libanixart {
         requests::SearchRequest _request;
     };
 
-    /* Api strange =). Doesn't inherit from Pageable, it's a wrapper */
-    class ReleaseSearchPages {
+    class ReleaseSearchPages : public Pageable<Release> {
     public:
         using PageableCode = codes::PageableCode;
         using ParseJson = json::ParseJson;
 
         ReleaseSearchPages(const ApiSession& session, const std::string& token, const int32_t& page, const requests::SearchRequest& request);
 
-        std::vector<Release::Ptr> next();
-        std::vector<Release::Ptr> prev();
-        std::vector<Release::Ptr> go(const int32_t& page);
-        std::vector<Release::Ptr> get();
+        std::vector<Release::Ptr> next() override;
+        std::vector<Release::Ptr> prev() override;
+        std::vector<Release::Ptr> go(const int32_t& page) override;
+        std::vector<Release::Ptr> get() override;
 
-        bool is_end() const;
+        bool is_end() const override;
     protected:
         JsonObject do_request(const int32_t& page) const;
     private:
-        std::vector<Release::Ptr> do_parse_request();
+        std::vector<Release::Ptr> do_parse_request() override;
 
         const ApiSession& _session;
         const std::string& _token;
@@ -254,20 +253,20 @@ namespace libanixart {
 
     class ProfileListPages : public Pageable<Release> {
     public:
-        ProfileListPages(const ApiSession& session, const std::string& token, const int32_t& page, const BookmarksStatusTab& tab, const ProfileListSort& sort);
+        ProfileListPages(const ApiSession& session, const std::string& token, const int32_t& page, const ProfileList::Status& status, const ProfileList::Sort& sort);
 
     protected:
         JsonObject do_request(const int32_t& page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
-        BookmarksStatusTab _tab;
-        ProfileListSort _sort;
+        ProfileList::Status _tab;
+        ProfileList::Sort _sort;
     };
 
     class ProfileListByProfilePages : public Pageable<Release> {
     public:
-        ProfileListByProfilePages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& profile_id, const BookmarksStatusTab& tab, const ProfileListSort& sort);
+        ProfileListByProfilePages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& profile_id, const ProfileList::Status& status, const ProfileList::Sort& sort);
 
     protected:
         JsonObject do_request(const int32_t& page) const override;
@@ -275,8 +274,8 @@ namespace libanixart {
         const ApiSession& _session;
         const std::string& _token;
         int64_t _profile_id;
-        BookmarksStatusTab _tab;
-        ProfileListSort _sort;
+        ProfileList::Status _tab;
+        ProfileList::Sort _sort;
     };
 
     class AllReleaseUnvotedPages : public Pageable<Release> {
@@ -292,7 +291,7 @@ namespace libanixart {
 
     class AllReleaseVotedPages : public Pageable<Release> {
     public:
-        AllReleaseVotedPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& profile_id, const ReleaseVotedSort& sort);
+        AllReleaseVotedPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& profile_id, const Release::ByVoteSort& sort);
 
     protected:
         JsonObject do_request(const int32_t& page) const override;
@@ -300,12 +299,12 @@ namespace libanixart {
         const ApiSession& _session;
         const std::string& _token;
         int64_t _profile_id;
-        ReleaseVotedSort _sort;
+        Release::ByVoteSort _sort;
     };
 
     class ReleaseCommentsPages : public Pageable<ReleaseComment> {
     public:
-        ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& release_id, const ReleaseCommentsSort& sort);
+        ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& release_id, const ReleaseComment::FilterBy& filter_by);
 
     protected:
         JsonObject do_request(const int32_t& page) const override;
@@ -313,12 +312,12 @@ namespace libanixart {
         const ApiSession& _session;
         const std::string& _token;
         int64_t _release_id;
-        ReleaseCommentsSort _sort;
+        ReleaseComment::FilterBy _sort;
     };
 
     class ProfileCommentsPages : public Pageable<ReleaseComment> {
     public:
-        ProfileCommentsPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& profile_id, const ProfileCommentsSort& sort);
+        ProfileCommentsPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& profile_id, const ReleaseComment::Sort& sort);
 
     protected:
         JsonObject do_request(const int32_t& page) const override;
@@ -326,12 +325,12 @@ namespace libanixart {
         const ApiSession& _session;
         const std::string& _token;
         int64_t _profile_id;
-        ProfileCommentsSort _sort;
+        ReleaseComment::Sort _sort;
     };
 
     class ReleaseCommentRepliesPages : public Pageable<ReleaseComment> {
     public:
-        ReleaseCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& comment_id, const ReleaseCommentsSort& sort);
+        ReleaseCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t& page, const int64_t& comment_id, const ReleaseComment::FilterBy& filter_by);
 
     protected:
         JsonObject do_request(const int32_t& page) const override;
@@ -339,7 +338,7 @@ namespace libanixart {
         const ApiSession& _session;
         const std::string& _token;
         int64_t _comment_id;
-        ReleaseCommentsSort _sort;
+        ReleaseComment::FilterBy _sort;
     };
 
     class ReleaseVideoCategoryPages : public Pageable<ReleaseVideoCategory> {

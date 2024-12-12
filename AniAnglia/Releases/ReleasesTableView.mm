@@ -252,8 +252,8 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 -(void)addCellToListAtIndexPath:(NSIndexPath*)index_path {
     NSLog(@"addCellToListAtIndexPath:%@", index_path);
 }
--(void)addCellToList:(libanixart::ReleaseListStatus)list atIndexPath:(NSIndexPath*)index_path {
-    NSLog(@"addCellToList:%d atIndexPath:%@", list, index_path);
+-(void)addCellToList:(libanixart::ProfileList::Status)status atIndexPath:(NSIndexPath*)index_path {
+    NSLog(@"addCellToList:%d atIndexPath:%@", status, index_path);
 }
 
 @end

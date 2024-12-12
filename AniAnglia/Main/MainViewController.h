@@ -10,6 +10,6 @@
 #import "ReleasesSearchHistoryView.h"
 #import "SearchReleasesTableView.h"
 
-@interface MainViewController : NavigationSearchViewController <NavigationSearchDelegate, SearchReleasesTableViewDelegate, SearchReleasesTableViewDataSource>
+@interface MainViewController : NavigationSearchViewController <NavigationSearchDelegate, SearchReleasesTableViewDelegate>
 
 @end

@@ -36,18 +36,18 @@ namespace libanixart {
 
 			std::string serialize() const override;
 
-			json::Nullable<int64_t> category_id;
+			json::Nullable<Release::Category> category;
 			json::Nullable<std::string> country;
 			json::Nullable<int32_t> start_year;
 			json::Nullable<int32_t> end_year;
 			json::Nullable<int32_t> episode_duration_from;
 			json::Nullable<int32_t> episode_duration_to;
-			json::Nullable<int32_t> episodes_from;
-			json::Nullable<int32_t> episodes_to;
+			json::Nullable<int32_t> episodes_count_from;
+			json::Nullable<int32_t> episodes_count_to;
 			json::Nullable<int32_t> season;
-			json::Nullable<int32_t> status_id;
+			json::Nullable<Release::Status> status;
 			json::Nullable<std::string> studio;
-			json::Nullable<int32_t> sort;
+			json::Nullable<Sort> sort;
 			bool is_genres_exclude_mode = false;
 			std::vector<std::string> genres;
 			std::vector<int32_t> profile_list_exclusions;
@@ -57,11 +57,18 @@ namespace libanixart {
 
 		class SearchRequest : Serializable {
 		public:
+			enum class SearchBy {
+				Basic = 0,
+				ByStudio = 1,
+				ByDirector = 2,
+				ByAuthor = 3,
+				ByGenre = 4
+			};
 
 			std::string serialize() const override;
 
 			std::string query;
-			SearchByType search_by = SearchByType::Basic;
+			SearchBy search_by = SearchBy::Basic;
 		};
 
 		class DirectLinkRequest : Serializable {

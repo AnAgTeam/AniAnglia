@@ -34,6 +34,9 @@ namespace libanixart::json {
         std::same_as<std::remove_cvref_t<T>, std::unordered_map<typename T::key_type, typename T::mapped_type, typename T::hasher, typename T::key_equal, typename T::allocator_type>>;
 
     template<typename T>
+    concept enumeration = std::is_enum_v<T>;
+
+    template<typename T>
     concept json_nullable =
         std::same_as<std::remove_cvref_t<T>, Nullable<typename T::value_type>>;
 
@@ -91,6 +94,9 @@ namespace libanixart::json {
             if constexpr (std::same_as<TNoRef, bool>) {
                 json_str += value ? "true" : "false";
             }
+            else if constexpr (enumeration<TNoRef>) {
+                raw_append(json_str, static_cast<int32_t>(value));
+            }
             else if constexpr ((std::integral<TNoRef> || std::floating_point<TNoRef>) && requires { std::to_string(value); }) {
                 json_str += std::to_string(value);
             }
@@ -105,11 +111,16 @@ namespace libanixart::json {
                 json_str += value;
                 json_str += '"';
             }
-            else if constexpr (std::same_as<TNoRef, Nullable<typename TNoRef::value_type>>) {
-                raw_append(json_str, value.get());
+            else if constexpr (json_nullable<TNoRef>) {
+                if (!value.is_null()) {
+                    raw_append(json_str, value.get());
+                }
+                else {
+                    json_str += "null";
+                }
             }
-            else if constexpr (true) {
-                static_assert("Cannot serialize T into JSON format!");
+            else {
+                static_assert(!sizeof(T), "Cannot serialize T into JSON format!");
             }
         }
 
@@ -196,6 +207,10 @@ namespace libanixart::json {
         template<typename TRet>
         static TRet get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
             return predicate(object, key) ? boost::json::value_to<TRet>(object[key]) : TRet();
+        }
+        template<enumeration TRet>
+        static TRet get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {
+            return predicate(object, key) ? static_cast<TRet>(get<int32_t>(object, key)) : static_cast<TRet>(0);
         }
         template<>
         static time_point get_if(JsonObject& object, const std::string_view& key, PredicateFunc predicate) {

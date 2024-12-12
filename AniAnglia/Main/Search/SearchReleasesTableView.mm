@@ -11,7 +11,7 @@
 @interface SearchReleasesTableView () {
     id<SearchReleasesTableViewDelegate> _delegate;
 }
-@property(nonatomic, retain) ReleasesTableView* releases_table_view;
+
 @end
 
 @implementation SearchReleasesTableView

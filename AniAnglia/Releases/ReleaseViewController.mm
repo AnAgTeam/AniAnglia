@@ -30,7 +30,7 @@
 @end
 
 @implementation ReleaseViewController
-static NSArray* RELEASE_LIST_STATES = @[
+static auto RELEASE_LIST_STATES = @[
     NSLocalizedString(@"app.release.state.none.title", ""),
     NSLocalizedString(@"app.release.state.watching.title", ""),
     NSLocalizedString(@"app.release.state.plan.title", ""),
@@ -38,6 +38,23 @@ static NSArray* RELEASE_LIST_STATES = @[
     NSLocalizedString(@"app.release.state.deffered.title", ""),
     NSLocalizedString(@"app.release.state.dropped.title", "")
 ];
+
+NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
+    switch (status) {
+        case libanixart::ProfileList::Status::NotWatching:
+            return NSLocalizedString(@"app.release.state.none.title", "");
+        case libanixart::ProfileList::Status::Watching:
+            return NSLocalizedString(@"app.release.state.watching.title", "");
+        case libanixart::ProfileList::Status::Plan:
+            return NSLocalizedString(@"app.release.state.plan.title", "");
+        case libanixart::ProfileList::Status::Watched:
+            return NSLocalizedString(@"app.release.state.watched.title", "");
+        case libanixart::ProfileList::Status::HoldOn:
+            return NSLocalizedString(@"app.release.state.deffered.title", "");
+        case libanixart::ProfileList::Status::Dropped:
+            return NSLocalizedString(@"app.release.state.dropped.title", "");
+    }
+};
 
 -(instancetype)initWithReleaseID:(NSInteger)release_id {
     self = [super init];
@@ -140,15 +157,21 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_add_list_button.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor multiplier:0.3].active = YES;
     [_add_list_button.heightAnchor constraintEqualToConstant:30].active = YES;
     [_add_list_button.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor constant:25].active = YES;
-    [_add_list_button setTitle:RELEASE_LIST_STATES[_release_info->status_id] forState:UIControlStateNormal];
+    [_add_list_button setTitle:profile_list_status_name(_release_info->profile_list_status) forState:UIControlStateNormal];
     [_add_list_button setImage:[UIImage systemImageNamed:@"chevron.down"] forState:UIControlStateNormal];
+    
+    auto create_list_menu_action = [self](libanixart::ProfileList::Status status) {
+        return [UIAction actionWithTitle:profile_list_status_name(status) image:nil identifier:nil handler:^(UIAction* action){
+            [self addListMenuSelected:status];
+        }];
+    };
     UIMenu* add_list_menu = [UIMenu menuWithTitle:NSLocalizedString(@"app.release.add_list_button.menu.title", "") children:@[
-        [UIAction actionWithTitle:RELEASE_LIST_STATES[0] image:nil identifier:nil handler:^(UIAction* action){ [self addListMenuSelected:0];}],
-        [UIAction actionWithTitle:RELEASE_LIST_STATES[1] image:nil identifier:nil handler:^(UIAction* action){ [self addListMenuSelected:1];}],
-        [UIAction actionWithTitle:RELEASE_LIST_STATES[2] image:nil identifier:nil handler:^(UIAction* action){ [self addListMenuSelected:2];}],
-        [UIAction actionWithTitle:RELEASE_LIST_STATES[3] image:nil identifier:nil handler:^(UIAction* action){ [self addListMenuSelected:3];}],
-        [UIAction actionWithTitle:RELEASE_LIST_STATES[4] image:nil identifier:nil handler:^(UIAction* action){ [self addListMenuSelected:4];}],
-        [UIAction actionWithTitle:RELEASE_LIST_STATES[5] image:nil identifier:nil handler:^(UIAction* action){ [self addListMenuSelected:5];}]
+        create_list_menu_action(libanixart::ProfileList::Status::NotWatching),
+        create_list_menu_action(libanixart::ProfileList::Status::Watching),
+        create_list_menu_action(libanixart::ProfileList::Status::Plan),
+        create_list_menu_action(libanixart::ProfileList::Status::Watched),
+        create_list_menu_action(libanixart::ProfileList::Status::HoldOn),
+        create_list_menu_action(libanixart::ProfileList::Status::Dropped)
     ]];
     [_add_list_button setMenu:add_list_menu];
     _add_list_button.showsMenuAsPrimaryAction = YES;
@@ -199,8 +222,8 @@ static NSArray* RELEASE_LIST_STATES = @[
     [_play_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
 }
 
--(void)addListMenuSelected:(NSInteger)index {
-    NSLog(@"addListMenuSelected: %ld", index);
+-(void)addListMenuSelected:(libanixart::ProfileList::Status)status {
+    NSLog(@"addListMenuSelected: %d", status);
 }
 
 -(IBAction)playButtonPressed:(id)sender {

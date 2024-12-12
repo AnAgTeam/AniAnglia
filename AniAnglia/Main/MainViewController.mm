@@ -11,15 +11,96 @@
 #import "LibanixartApi.h"
 #import "ReleaseViewController.h"
 #import "StringCvt.h"
+#import "ReleasesQuerySearch.h"
+#import "ReleasesTableView.h"
 
-@interface MainPagesViewController : UIPageViewController
+@interface MainPageViewController : UIViewController {
+    libanixart::FilterPages::UniqPtr _filter_request;
+}
+@property(nonatomic, retain) ReleasesTableView* releases_table_view;
+@property(nonatomic, weak, setter=setDataSource:) id<ReleasesTableViewDataSource> data_source;
+@property(nonatomic, weak) id<ReleasesTableViewDelegate> delegate;
+
+-(instancetype)initWithPages:(libanixart::FilterPages::UniqPtr)pages;
+
+@end
+
+@interface MainPagesViewController : UIPageViewController <ReleasesTableViewDelegate, ReleasesTableViewDataSource>
+@property(nonatomic, retain) UISegmentedControl* pages_segment_control;
+@property(nonatomic, retain) NSArray<MainPageViewController*>* page_view_contorollers;
 
 @end
 
 @interface MainViewController ()
 @property(nonatomic) LibanixartApi* api_proxy;
-@property(nonatomic) std::vector<libanixart::Release::Ptr> search_releases;
-@property(nonatomic) std::shared_ptr<libanixart::ReleaseSearchPages> search_release_pages;
+@property(nonatomic, retain) ReleasesQuerySearchDefaultDataSource* search_query_data_source;
+
+@end
+
+@implementation MainPageViewController
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setupView];
+}
+-(void)setupView {
+    _releases_table_view = [ReleasesTableView new];
+    [self.view addSubview:_releases_table_view];
+    _releases_table_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [_releases_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
+    [_releases_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+    [_releases_table_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor].active = YES;
+    [_releases_table_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor].active = YES;
+    _releases_table_view.delegate = _delegate;
+    _releases_table_view.data_source = _data_source;
+
+    [self setupLayout];
+}
+-(void)setupLayout {
+    
+}
+
+-(void)setDataSource:(id<ReleasesTableViewDataSource>)data_source {
+    _data_source = data_source;
+    if ([self isViewLoaded]) {
+        _releases_table_view.data_source = _data_source;
+    }
+}
+-(void)setDelegate:(id<ReleasesTableViewDelegate>)delegate {
+    _delegate = delegate;
+    if ([self isViewLoaded]) {
+        _releases_table_view.delegate = _delegate;
+    }
+}
+
+@end
+
+@implementation MainPagesViewController
+
+-(MainPageViewController*)createPageViewController {
+    MainPageViewController* page_view_controller = [MainPageViewController new];
+    page_view_controller.delegate = self;
+    page_view_controller.data_source = self;
+    return page_view_controller;
+}
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setupView];
+}
+
+-(void)setupView {
+    
+    
+    [self setupLayout];
+}
+
+-(void)setupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+}
+
 
 @end
 
@@ -32,7 +113,8 @@
     self.inline_search_view = [ReleasesSearchHistoryView new];
     SearchReleasesTableView* search_releases_view = [SearchReleasesTableView new];
     search_releases_view.delegate = self;
-    search_releases_view.data_source = self;
+    _search_query_data_source = [ReleasesQuerySearchDefaultDataSource new];
+    search_releases_view.data_source = _search_query_data_source;
     self.search_view = search_releases_view;
     
     [self setupView];
@@ -41,51 +123,17 @@
 -(void)setupView {
     
     
-    [self setupDarkLayout];
+    [self setupLayout];
 }
 
--(void)setupDarkLayout {
+-(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
--(void)searchReleasesTableView:(SearchReleasesTableView*)releases_view willBeginRequestsWithQuery:(NSString*)query {
-    NSLog(@"Search query: %@", query);
-    libanixart::requests::SearchRequest search_req;
-    search_req.query = TO_STDSTRING(query);
-    _search_release_pages = std::make_shared<libanixart::ReleaseSearchPages>(_api_proxy.api->search().release_search(search_req));
-    _search_releases.clear();
+-(void)releasesTableView:(ReleasesTableView*)releases_view didSelectReleaseAtIndex:(NSInteger)index {
+    libanixart::Release::Ptr release = [_search_query_data_source releasesTableView:releases_view releaseAtIndex:index];
+    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
--(void)releasesTableView:(SearchReleasesTableView*)releases_view loadPage:(NSUInteger)page completionHandler:(void(^)(BOOL should_continue_fetch))completion_handler {
-    __block BOOL should_continue_fetch = YES;
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
-        auto new_items = self->_search_release_pages->go(page);
-        self->_search_releases.insert(self->_search_releases.end(), new_items.begin(), new_items.end());
-        should_continue_fetch = !self->_search_release_pages->is_end();
-        return YES;
-    } withUICompletion:^{
-        completion_handler(should_continue_fetch);
-    }];
-}
--(void)releasesTableView:(SearchReleasesTableView*)releases_view loadNextPageWithcompletionHandler:(void(^)(BOOL action_performed))completion_handler {
-    __block BOOL action_performed = YES;
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
-        auto new_items = self->_search_release_pages->next();
-        self->_search_releases.insert(self->_search_releases.end(), new_items.begin(), new_items.end());
-        action_performed = !self->_search_release_pages->is_end();
-        return YES;
-    } withUICompletion:^{
-        completion_handler(action_performed);
-    }];
-}
--(libanixart::Release::Ptr)releasesTableView:(SearchReleasesTableView*)releases_view releaseAtIndex:(NSUInteger)index {
-    return _search_releases[index];
-}
--(NSUInteger)numberOfItemsForReleasesTableView:(SearchReleasesTableView*)releases_view {
-    return _search_releases.size();
-}
--(void)releasesTableView:(ReleasesTableView *)releases_table_view didSelectReleaseAtIndex:(NSInteger)index {
-    
-}
 
 @end

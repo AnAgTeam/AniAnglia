@@ -26,6 +26,7 @@
 		EF60AC7F2C6FB30100CD33A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */; };
 		EF6A56222CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */; };
 		EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF70960B2C77A56500C95429 /* RestoreViewController.mm */; };
+		EF7FA84B2D08D4E5007A98C8 /* ReleasesQuerySearch.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF7FA84A2D08D4E5007A98C8 /* ReleasesQuerySearch.mm */; };
 		EF875C802C78FB7400DAECB1 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF875C7F2C78FB7400DAECB1 /* Security.framework */; };
 		EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF875C822C78FCB500DAECB1 /* SignUpViewController.mm */; };
 		EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF875C852C79026700DAECB1 /* AuthChecker.mm */; };
@@ -1257,6 +1258,8 @@
 		EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesSearchHistoryView.h; sourceTree = "<group>"; };
 		EF70960B2C77A56500C95429 /* RestoreViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RestoreViewController.mm; sourceTree = "<group>"; };
 		EF70960D2C77A57200C95429 /* RestoreViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RestoreViewController.h; sourceTree = "<group>"; };
+		EF7FA84A2D08D4E5007A98C8 /* ReleasesQuerySearch.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesQuerySearch.mm; sourceTree = "<group>"; };
+		EF7FA84C2D08D4FB007A98C8 /* ReleasesQuerySearch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesQuerySearch.h; sourceTree = "<group>"; };
 		EF875C7F2C78FB7400DAECB1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EF875C812C78FC7B00DAECB1 /* SignUpViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SignUpViewController.h; sourceTree = "<group>"; };
 		EF875C822C78FCB500DAECB1 /* SignUpViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SignUpViewController.mm; sourceTree = "<group>"; };
@@ -3322,6 +3325,8 @@
 				EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */,
 				EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */,
 				EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */,
+				EF7FA84C2D08D4FB007A98C8 /* ReleasesQuerySearch.h */,
+				EF7FA84A2D08D4E5007A98C8 /* ReleasesQuerySearch.mm */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -3438,6 +3443,7 @@
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
+				EF7FA84B2D08D4E5007A98C8 /* ReleasesQuerySearch.mm in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
 				EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */,
