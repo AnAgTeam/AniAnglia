@@ -10,6 +10,7 @@
 #import "AppColor.h"
 #import "LoadableView.h"
 #import "StringCvt.h"
+#import "ReleaseViewController.h"
 
 @interface ReleasesTableViewCell : UITableViewCell
 @property(nonatomic, retain) LoadableImageView* image_view;
@@ -24,10 +25,13 @@
 -(void)setEpCount:(NSUInteger)ep_count;
 @end
 
-@interface ReleasesTableView ()
-@property(atomic) BOOL dont_fetch_pages;
-@property(atomic) NSUInteger current_page;
-@property(nonatomic, retain) UITableView* table_view;
+@interface ReleasesTableView () {
+    libanixart::Pageable<libanixart::Release>::UniqPtr _pages;
+    std::vector<libanixart::Release::Ptr> _releases;
+}
+@property(nonatomic) LibanixartApi* api_proxy;
+@property(nonatomic, retain) NSLock* lock;
+@property(nonatomic, retain) LoadableView* loadable_view;
 @end
 
 @implementation ReleasesTableViewCell
@@ -143,31 +147,85 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     self = [super init];
     
     [self setup];
+    _api_proxy = [LibanixartApi sharedInstance];
+    _lock = [NSLock new];
+    
+    return self;
+}
+
+-(instancetype)initWithPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages {
+    self = [super init];
+    
+    [self setup];
+    _api_proxy = [LibanixartApi sharedInstance];
+    _lock = [NSLock new];
+    _pages = std::move(pages);
     
     return self;
 }
 
 -(void)setup {
-    _table_view = [UITableView new];
-    [self addSubview:_table_view];
-    _table_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_table_view.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    [_table_view.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
-    [_table_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-    [_table_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
-    [_table_view setDelegate:self];
-    [_table_view registerClass:ReleasesTableViewCell.class forCellReuseIdentifier:[ReleasesTableViewCell getIndentifier]];
-    [_table_view setDataSource:self];
-    [_table_view setPrefetchDataSource:self];
+    [self registerClass:ReleasesTableViewCell.class forCellReuseIdentifier:[ReleasesTableViewCell getIndentifier]];
+    [self setDelegate:self];
+    [self setDataSource:self];
+    [self setPrefetchDataSource:self];
 }
 
 -(void)setupLayout {
     self.backgroundColor = [UIColor clearColor];
-    _table_view.backgroundColor = [UIColor clearColor];
+}
+
+-(UIViewController*)getRootViewController {
+    UIResponder* responder = self.nextResponder;
+    while (true) {
+        if ([responder isKindOfClass:UIViewController.class]) {
+            return (UIViewController*)responder;
+        } else if ([responder isKindOfClass:UIView.class]) {
+            responder = responder.nextResponder;
+        } else {
+            return nil;
+        }
+    }
+    return nil;
+}
+
+-(void)loadPageAtIndex:(NSInteger)index {
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
+        /* todo: change to thread-safe */
+        auto new_items = self->_pages->go(index);
+        [self->_lock lock];
+        self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
+        [self->_lock unlock];
+        return YES;
+    } withUICompletion:^{
+        [self reloadData];
+    }];
+}
+-(void)loadNextPage {
+    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
+        auto new_items = self->_pages->next();
+        [self->_lock lock];
+        self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
+        [self->_lock unlock];
+        return YES;
+    } withUICompletion:^{
+        [self reloadData];
+    }];
+}
+
+-(void)setPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages {
+    _pages = std::move(pages);
+    [self reset];
+    [self loadPageAtIndex:0];
+}
+-(void)reset {
+    /* todo: load cancel */
+    _releases.clear();
+    [self reloadData];
 }
 
 -(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
-    return [_data_source numberOfItemsForReleasesTableView:self];
+    return _releases.size();
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return TABLE_CELL_HEIGHT;
@@ -175,7 +233,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
     ReleasesTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesTableViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    libanixart::Release::Ptr release = [_data_source releasesTableView:self releaseAtIndex:index];
+    libanixart::Release::Ptr& release = _releases[index];
     
     cell.title_label.text = TO_NSSTRING(release->title_ru);
     cell.description_label.text = TO_NSSTRING(release->description);
@@ -188,21 +246,14 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 
 -(void)tableView:(UITableView *)table_view
 prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
-    if (self->_dont_fetch_pages) {
+    if (_pages->is_end()) {
         return;
     }
-    NSUInteger item_count = [_table_view numberOfRowsInSection:0];
-    NSArray* filtered = [index_paths filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id index_path, NSDictionary *bindings) {
-        return [index_path row] >= item_count - 1;
-    }]];
-    if ([filtered count] > 0) {
-        if (_data_source) {
-            [_data_source releasesTableView:self loadNextPageWithcompletionHandler:^(BOOL should_continue_fetch) {
-                self->_dont_fetch_pages |= !should_continue_fetch;
-                if (should_continue_fetch) {
-                    [self->_table_view reloadData];
-                }
-            }];
+    NSUInteger item_count = [self numberOfRowsInSection:0];
+    for (NSIndexPath* index_path in index_paths) {
+        if ([index_path row] >= item_count - 1) {
+            [self loadNextPage];
+            return;
         }
     }
 }
@@ -210,7 +261,8 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
-    [_delegate releasesTableView:self didSelectReleaseAtIndex:index];
+    libanixart::Release::Ptr& release = _releases[index];
+    [[self getRootViewController].navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
 -(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
@@ -231,19 +283,6 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
         bookmark_action,
         add_to_list_action
     ]];
-}
-
--(void)releasesTableViewDidShow {
-    _dont_fetch_pages = NO;
-    if (_data_source) {
-        [_data_source releasesTableView:self loadPage:0 completionHandler:^(BOOL action_performed){
-            self->_dont_fetch_pages |= !action_performed;
-            if (action_performed) {
-                [self->_table_view reloadData];
-            }
-        }];
-    }
-    [_table_view reloadData];
 }
 
 -(void)addCellToBookmarkAtIndexPath:(NSIndexPath*)index_path {

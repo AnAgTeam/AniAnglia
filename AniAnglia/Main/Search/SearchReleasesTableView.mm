@@ -7,11 +7,11 @@
 
 #import <Foundation/Foundation.h>
 #import "SearchReleasesTableView.h"
+#import "StringCvt.h"
 
-@interface SearchReleasesTableView () {
-    id<SearchReleasesTableViewDelegate> _delegate;
-}
-
+@interface SearchReleasesTableView ()
+@property(nonatomic) LibanixartApi* api_proxy;
+@property(nonatomic, retain) ReleasesTableView* releases_view;
 @end
 
 @implementation SearchReleasesTableView
@@ -20,41 +20,32 @@
     self = [super init];
     
     [self setup];
+    _api_proxy = [LibanixartApi sharedInstance];
     
     return self;
 }
 
 -(void)setup {
-    _releases_table_view = [ReleasesTableView new];
-    _releases_table_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:_releases_table_view];
-    [_releases_table_view.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    [_releases_table_view.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
-    [_releases_table_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-    [_releases_table_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+    _releases_view = [ReleasesTableView new];
+    [self addSubview:_releases_view];
+    _releases_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [_releases_view.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
+    [_releases_view.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
+    [_releases_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
+    [_releases_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+    
+    [self setupLayout];
 }
 -(void)setupLayout {
-    
-}
-
--(void)setDataSource:(id<SearchReleasesTableViewDataSource>)data_source {
-    _releases_table_view.data_source = data_source;
-    _data_source = data_source;
-}
--(id<SearchReleasesTableViewDataSource>)dataSource {
-    return _data_source;
-}
--(void)setDelegate:(id<SearchReleasesTableViewDelegate>)delegate {
-    _releases_table_view.delegate = delegate;
-    _delegate = delegate;
-}
--(id<SearchReleasesTableViewDelegate>)delegate {
-    return _delegate;
+    self.backgroundColor = [UIColor clearColor];
 }
 
 -(void)searchViewDidShowWithController:(NavigationSearchViewController*)view_controller query:(NSString*)query {
-    [_data_source searchReleasesTableView:self willBeginRequestsWithQuery:query];
-    [_releases_table_view releasesTableViewDidShow];
+    libanixart::requests::SearchRequest request;
+    request.query = TO_STDSTRING(query);
+    [_releases_view setPages:_api_proxy.api->search().release_search(request)];
 }
-
+-(void)reloadWithText:(NSString*)text {
+    
+}
 @end

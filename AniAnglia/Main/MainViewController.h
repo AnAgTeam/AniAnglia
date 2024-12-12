@@ -7,9 +7,7 @@
 
 #import <UIKit/UIKit.h>
 #import "NavSearchViewController.h"
-#import "ReleasesSearchHistoryView.h"
-#import "SearchReleasesTableView.h"
 
-@interface MainViewController : NavigationSearchViewController <NavigationSearchDelegate, SearchReleasesTableViewDelegate>
+@interface MainViewController : NavigationSearchViewController <NavigationSearchDelegate>
 
 @end

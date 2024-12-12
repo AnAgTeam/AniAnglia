@@ -3,19 +3,17 @@
 //  iOSAnixart
 //
 //  Created by Toilettrauma on 28.08.2024.
-//
+//"
 
 #import <Foundation/Foundation.h>
 #import "DiscoverViewController.h"
 #import "ReleaseViewController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
-#import "AppColor.h"
-#import "AppSearchController.h"
+#import "AppColor.h""
 #import "SearchReleasesTableView.h"
 #import "ReleasesSearchHistoryView.h"
 #import "LoadableView.h"
-#import "ReleasesQuerySearch.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
@@ -65,14 +63,12 @@
 -(CGFloat)getTotalHeight;
 @end
 
-@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, SearchReleasesTableViewDelegate>
+@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
 @property(nonatomic, retain) InterestingView* interesting_view;
 @property(nonatomic, retain) DiscoverOptionsTableView* options_view;
-@property(nonatomic, retain) ReleasesQuerySearchDefaultDelegate* search_query_delegate;
-@property(nonatomic, retain) ReleasesQuerySearchDefaultDataSource* search_query_data_source;
 
 -(void)didSelectInterestingCell:(long long)release_id;
 @end
@@ -320,11 +316,7 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     
     _api_proxy = [LibanixartApi sharedInstance];
     self.inline_search_view = [ReleasesSearchHistoryView new];
-    SearchReleasesTableView* search_releases_view = [SearchReleasesTableView new];
-    search_releases_view.delegate = self;
-    _search_query_data_source = [ReleasesQuerySearchDefaultDataSource new];
-    search_releases_view.data_source = _search_query_data_source;
-    self.search_view = search_releases_view;
+    self.search_view = [SearchReleasesTableView new];
     
     [self setupView];
 }
@@ -390,11 +382,6 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 -(void)searchBarFilterButtonPressed {
     NSLog(@"Search filter button pressed");
-}
-
--(void)releasesTableView:(ReleasesTableView*)releases_view didSelectReleaseAtIndex:(NSInteger)index {
-    libanixart::Release::Ptr release = [_search_query_data_source releasesTableView:releases_view releaseAtIndex:index];
-    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
 -(void)didSelectInterestingCell:(long long)release_id {
