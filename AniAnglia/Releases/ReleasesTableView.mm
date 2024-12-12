@@ -147,6 +147,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     self = [super init];
     
     [self setup];
+    _trailing_action_disabled = NO;
     _api_proxy = [LibanixartApi sharedInstance];
     _lock = [NSLock new];
     
@@ -157,9 +158,10 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     self = [super init];
     
     [self setup];
+    _trailing_action_disabled = NO;
     _api_proxy = [LibanixartApi sharedInstance];
     _lock = [NSLock new];
-    _pages = std::move(pages);
+    [self setPages:std::move(pages)];
     
     return self;
 }
@@ -175,12 +177,12 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     self.backgroundColor = [UIColor clearColor];
 }
 
--(UIViewController*)getRootViewController {
+-(UINavigationController*)getRootNavigationController {
     UIResponder* responder = self.nextResponder;
     while (true) {
-        if ([responder isKindOfClass:UIViewController.class]) {
-            return (UIViewController*)responder;
-        } else if ([responder isKindOfClass:UIView.class]) {
+        if ([responder isKindOfClass:UINavigationController.class]) {
+            return (UINavigationController*)responder;
+        } else if ([responder isKindOfClass:UIView.class] || [responder isKindOfClass:UIViewController.class]) {
             responder = responder.nextResponder;
         } else {
             return nil;
@@ -189,21 +191,10 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     return nil;
 }
 
--(void)loadPageAtIndex:(NSInteger)index {
+-(void)appendItemsFromBlock:(std::vector<libanixart::Release::Ptr>(^)())block {
     [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
         /* todo: change to thread-safe */
-        auto new_items = self->_pages->go(index);
-        [self->_lock lock];
-        self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
-        [self->_lock unlock];
-        return YES;
-    } withUICompletion:^{
-        [self reloadData];
-    }];
-}
--(void)loadNextPage {
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
-        auto new_items = self->_pages->next();
+        auto new_items = block();
         [self->_lock lock];
         self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
         [self->_lock unlock];
@@ -216,7 +207,9 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 -(void)setPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages {
     _pages = std::move(pages);
     [self reset];
-    [self loadPageAtIndex:0];
+    [self appendItemsFromBlock:^{
+        return self->_pages->get();
+    }];
 }
 -(void)reset {
     /* todo: load cancel */
@@ -224,13 +217,13 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     [self reloadData];
 }
 
--(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
+-(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
     return _releases.size();
 }
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+-(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path {
     return TABLE_CELL_HEIGHT;
 }
--(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
+-(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     ReleasesTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesTableViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
     libanixart::Release::Ptr& release = _releases[index];
@@ -244,7 +237,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     return cell;
 }
 
--(void)tableView:(UITableView *)table_view
+-(void)tableView:(UITableView*)table_view
 prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     if (_pages->is_end()) {
         return;
@@ -252,20 +245,25 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     NSUInteger item_count = [self numberOfRowsInSection:0];
     for (NSIndexPath* index_path in index_paths) {
         if ([index_path row] >= item_count - 1) {
-            [self loadNextPage];
+            [self appendItemsFromBlock:^{
+                return self->_pages->next();
+            }];
             return;
         }
     }
 }
 
--(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
+-(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
     libanixart::Release::Ptr& release = _releases[index];
-    [[self getRootViewController].navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
+    [[self getRootNavigationController] pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
--(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
+-(UISwipeActionsConfiguration*)tableView:(UITableView*)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath*)index_path {
+    if (_trailing_action_disabled) {
+        return nil;
+    }
     
     UIContextualAction* bookmark_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL action_performed)) {
         [self addCellToBookmarkAtIndexPath:index_path];

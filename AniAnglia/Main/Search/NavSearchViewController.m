@@ -55,6 +55,7 @@
 -(instancetype)init {
     self = [super init];
     
+    _hidesBarOnSwipe = YES;
     [self setDefaults];
     [self setupSearchViews];
     
@@ -64,6 +65,7 @@
 -(instancetype)initWithNibName:(NSString *)nib_name_or_nil bundle:(NSBundle *)nib_bundle_or_nil {
     self = [super initWithNibName:nib_name_or_nil bundle:nib_bundle_or_nil];
     
+    _hidesBarOnSwipe = YES;
     [self setDefaults];
     [self setupSearchViews];
     
@@ -74,6 +76,7 @@
 -(instancetype)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     
+    _hidesBarOnSwipe = YES;
     [self setDefaults];
     [self setupSearchViews];
     
@@ -91,7 +94,7 @@
     _search_bar = [UISearchBar new];
     _search_bar.delegate = self;
     self.navigationItem.titleView = _search_bar;
-    self.navigationController.hidesBarsOnSwipe = YES;
+    self.navigationController.hidesBarsOnSwipe = _hidesBarOnSwipe;
     _search_cancel_bar_item = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"chevron.left"] style:UIBarButtonItemStylePlain target:self action:@selector(searchBarCancelButtonPressed:)];
     _search_filter_bar_item = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"slider.horizontal.3"] style:UIBarButtonItemStylePlain target:self action:@selector(searchBarFilterButtonPressed:)];
 }
@@ -129,7 +132,7 @@
     }
 }
 -(void)hideSearchButtons {
-    self.navigationController.hidesBarsOnSwipe = YES;
+    self.navigationController.hidesBarsOnSwipe = _hidesBarOnSwipe;
     self.navigationItem.leftBarButtonItem = nil;
     self.navigationItem.rightBarButtonItem = nil;
 }

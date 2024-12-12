@@ -32,6 +32,7 @@
 @property(nonatomic, retain, setter = setSearchView:) NavigationSearchView* search_view;
 @property(atomic, setter = setFilterEnabled:) BOOL filter_enabled;
 @property(nonatomic) UISearchBar* search_bar;
+@property(nonatomic) BOOL hidesBarOnSwipe;
 
 -(instancetype)init;
 -(instancetype)initWithFilterEnabled:(BOOL)filter_enabled;
