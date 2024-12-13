@@ -1,13 +1,15 @@
 #pragma once
 #include <string>
 #include <stdarg.h>
-#include <chrono>
 
 #if defined(__APPLE__) && defined(__MACH__)
 # include <TargetConditionals.h>
 #endif
 
+
 namespace libanixart {
+    template<typename T>
+    concept stdstring = std::same_as<std::decay_t<T>, std::string>;
 
     class StringTools {
     public:
@@ -23,7 +25,7 @@ namespace libanixart {
 #else
             const int size_s = std::vsnprintf(nullptr, 0, format.data(), args);
 # endif
-            
+
 
             if (size_s <= 0) {
                 return {};
@@ -46,34 +48,10 @@ namespace libanixart {
             va_end(vargs);
             return ret;
         }
-        template<typename ... TArgs>
+
+        template<stdstring ... TArgs>
         static std::string sformat(const std::string_view format, const TArgs& ... args) {
             return snformat(format, args.c_str()...);
         }
     };
-
-    class TimeTools {
-    public:
-        template<typename T>
-        static inline T from_timestamp_tp(int64_t timestamp) {
-            return T{ std::chrono::seconds(timestamp) };
-        }
-        static inline std::chrono::system_clock::time_point from_timestamp(int64_t timestamp) {
-            return from_timestamp_tp<std::chrono::system_clock::time_point>(timestamp);
-        }
-
-        template<typename T>
-        static inline int64_t to_timestamp_tp(const std::chrono::system_clock::time_point& time) {
-            return std::chrono::duration_cast<T>(time.time_since_epoch()).count();
-        }
-        static inline int64_t to_timestamp(const std::chrono::system_clock::time_point& time) {
-            return to_timestamp_tp<std::chrono::seconds>(time);
-        }
-
-    };
-
-    extern std::string get_platform_version();
-    extern void set_lib_language(std::string_view lang);
-    extern std::string_view get_lib_language();
-
 };

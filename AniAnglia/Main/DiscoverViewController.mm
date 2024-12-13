@@ -3,20 +3,22 @@
 //  iOSAnixart
 //
 //  Created by Toilettrauma on 28.08.2024.
-//
+//"
 
 #import <Foundation/Foundation.h>
 #import "DiscoverViewController.h"
 #import "ReleaseViewController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
-#import "AppColor.h"
-#import "AppSearchController.h"
+#import "AppColor.h""
+#import "SearchReleasesTableView.h"
+#import "ReleasesSearchHistoryView.h"
+#import "LoadableView.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
 @property(nonatomic, retain) UILabel* desc;
-@property(nonatomic, retain) UIImageView* image_view;
+@property(nonatomic, retain) LoadableImageView* image_view;
 
 +(NSString*)getIndentifier;
 -(instancetype)initWithFrame:(CGRect)frame;
@@ -62,6 +64,7 @@
 @end
 
 @interface DiscoverViewController () <DiscoverOptionsTableViewDelegate>
+@property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
 @property(nonatomic, retain) InterestingView* interesting_view;
@@ -80,9 +83,8 @@
     self = [super initWithFrame:frame];
     self.layer.cornerRadius = 12.0;
     self.layer.masksToBounds = YES;
-    _image_view = [[UIImageView alloc] initWithFrame:frame];
+    _image_view = [LoadableImageView new];
     [self setBackgroundView:_image_view];
-    _image_view.image = nil;
     _desc = [UILabel new];
     [self addSubview:_desc];
     [_desc.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
@@ -99,9 +101,6 @@
     [_title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
     [_title.bottomAnchor constraintEqualToAnchor:_desc.topAnchor constant:-2.0].active = YES;
     [_title setFont:[UIFont boldSystemFontOfSize:_title.font.pointSize]];
-    _title.layer.shadowRadius = 2.2;
-    _title.layer.shadowOffset = CGSizeMake(0, 0);
-    _title.layer.shadowOpacity = 1.0;
     
     [self setupLayout];
     
@@ -114,8 +113,9 @@
      */
     _image_view.backgroundColor = [UIColor clearColor];
     _title.textColor = [AppColorProvider textColor];
-    _title.shadowColor = [AppColorProvider backgroundColor];
+    _title.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
     _desc.textColor = [AppColorProvider textSecondaryColor];
+    _desc.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
 }
 
 @end
@@ -146,27 +146,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     cell.title.text = TO_NSSTRING(_interest_arr[index]->title);
     cell.desc.text = TO_NSSTRING(_interest_arr[index]->description);
     [cell.desc sizeToFit];
-    UIImage* cached_image = [_image_cache objectForKey:[[NSNumber alloc] initWithLong:index]];
-    if (cached_image) {
-        cell.image_view.image = cached_image;
-        return cell;
-    }
-    cell.image_view.image = nil;
-    
-    NSString* url_str = TO_NSSTRING(_interest_arr[index]->image_url);
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSURL* url = [[NSURL alloc] initWithString:url_str];
-        NSData* data = [NSData dataWithContentsOfURL:url];
-        if (data == nil) {
-            // error
-            return;
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            UIImage* image = [UIImage imageWithData:data];
-            cell.image_view.image = image;
-            [self->_image_cache setObject:image forKey:[[NSNumber alloc] initWithLong:index]];
-        });
-    });
+    [cell.image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_interest_arr[index]->image_url)]];
     return cell;
 }
 
@@ -174,7 +154,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     return CGSizeMake(collection_view.frame.size.height * 1.66, collection_view.frame.size.height);
 }
 
-- (void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
+-(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
     [_delegate didSelectInterestingCell:std::stoll(_interest_arr[index]->action)];
 }
@@ -192,7 +172,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [_activity_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_interest_arr = api_proxy.api->search().interesting().get();
+            self->_interest_arr = api_proxy.api->search().interesting()->get();
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self setupCollectionView];
             });
@@ -324,15 +304,19 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 @implementation DiscoverViewController
 
--(void)loadView {
-//    [super loadView];
-    
-    _scroll_view = [UIScrollView new];
-    self.view = _scroll_view;
-}
+//-(void)loadView {
+////    [super loadView];
+//    
+//    _scroll_view = [UIScrollView new];
+//    self.view = _scroll_view;
+//}
 
 -(void)viewDidLoad {
     [super viewDidLoad];
+    
+    _api_proxy = [LibanixartApi sharedInstance];
+    self.inline_search_view = [ReleasesSearchHistoryView new];
+    self.search_view = [SearchReleasesTableView new];
     
     [self setupView];
 }
@@ -343,13 +327,13 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 }
 
 -(void)setupView {    
-    
-//    [self.view addSubview:_scroll_view];
-//    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
-//    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-//    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-//    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-//    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
+    _scroll_view = [UIScrollView new];
+    [self.view addSubview:_scroll_view];
+    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
+    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
+    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
+    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
     
     _content_view = [UIView new];
     [_scroll_view addSubview:_content_view];
@@ -399,11 +383,6 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 -(void)searchBarFilterButtonPressed {
     NSLog(@"Search filter button pressed");
 }
-
--(void)search:(NSString *)query {
-    NSLog(@"Search query: %@", query);
-}
-
 
 -(void)didSelectInterestingCell:(long long)release_id {
     [self.navigationController setNavigationBarHidden:NO];

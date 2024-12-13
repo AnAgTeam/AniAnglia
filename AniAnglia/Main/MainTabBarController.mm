@@ -31,9 +31,10 @@
     [self setupView];
 }
 
--(UINavigationController*)tabWithViewController:(NavigationSearchViewController<NavigationSearchDelegate>*)view_controller filterEnabled:(BOOL)filter_enabled title:(NSString*)local_title image:(NSString*)image_sys_name searchBarPlaceholder:(NSString*)local_search_ph{
+-(UINavigationController*)tabWithViewController:(NavigationSearchViewController<NavigationSearchDelegate>*)view_controller filterEnabled:(BOOL)filter_enabled historyEnabled:(BOOL)history_enabled title:(NSString*)local_title image:(NSString*)image_sys_name searchBarPlaceholder:(NSString*)local_search_ph{
     view_controller.search_delegate = view_controller;
     view_controller.filter_enabled = filter_enabled;
+    // view_controller.history_enabled = history_enabled;
     UINavigationController* nav_controller = [[UINavigationController alloc] initWithRootViewController:view_controller];
     nav_controller.tabBarItem.title = NSLocalizedString(local_title, "");
     nav_controller.tabBarItem.image = [UIImage systemImageNamed:image_sys_name];
@@ -48,12 +49,12 @@
 }
 
 -(void)setupTabs {
-    _main_nav_controller = [self tabWithViewController:[MainViewController new] filterEnabled:YES title:@"app.main_tab_bar.main_tab.title" image:@"house" searchBarPlaceholder:@"app.main.search_bar.placeholder"];
-    _discover_nav_controller = [self tabWithViewController:[DiscoverViewController new] filterEnabled:YES title:@"app.main_tab_bar.discover_tab.title" image:@"safari" searchBarPlaceholder:@"app.discover.search_bar.placeholder"];
-    _bookmarks_nav_controller = [self tabWithViewController:[MainViewController new] filterEnabled:NO title:@"app.main_tab_bar.bookmarks_tab.title" image:@"bookmark" searchBarPlaceholder:@"app.bookmarks.search_bar.placeholder"];
+    _main_nav_controller = [self tabWithViewController:[MainViewController new] filterEnabled:YES historyEnabled:YES title:@"app.main_tab_bar.main_tab.title" image:@"house" searchBarPlaceholder:@"app.main.search_bar.placeholder"];
+    _discover_nav_controller = [self tabWithViewController:[DiscoverViewController new] filterEnabled:YES historyEnabled:YES title:@"app.main_tab_bar.discover_tab.title" image:@"safari" searchBarPlaceholder:@"app.discover.search_bar.placeholder"];
+    _bookmarks_nav_controller = [self tabWithViewController:[BookmarksViewController new] filterEnabled:NO historyEnabled:NO title:@"app.main_tab_bar.bookmarks_tab.title" image:@"bookmark" searchBarPlaceholder:@"app.bookmarks.search_bar.placeholder"];
     UIStoryboard* profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
     ProfileViewController* profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
-    _profile_nav_controller = [self tabWithViewController:profile_view_controller filterEnabled:NO title:@"app.main_tab_bar.profile_tab.title" image:@"person" searchBarPlaceholder:@"app.profile.search_bar.placeholder"];
+    _profile_nav_controller = [self tabWithViewController:profile_view_controller filterEnabled:NO historyEnabled:NO title:@"app.main_tab_bar.profile_tab.title" image:@"person" searchBarPlaceholder:@"app.profile.search_bar.placeholder"];
     
     [self setViewControllers:@[
             _main_nav_controller,

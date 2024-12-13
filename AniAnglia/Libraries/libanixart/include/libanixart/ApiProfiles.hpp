@@ -8,12 +8,12 @@ namespace libanixart {
 		ApiProfiles(const ApiSession& session, const std::string& token);
 
 		Profile::Ptr get_profile(const int64_t& profile_id);
-		FriendsPages get_friends(const int64_t& profile_id, const int32_t& start_page);
-		LoginChangeHistoryPages get_profile_login_history(const int64_t& profile_id, const int32_t& start_page);
+		FriendsPages::UniqPtr get_friends(const int64_t& profile_id, const int32_t& start_page);
+		LoginChangeHistoryPages::UniqPtr get_profile_login_history(const int64_t& profile_id, const int32_t& start_page);
 		ProfileSocial::Ptr get_profile_social(const int64_t& profile_id);
-		ProfileCommentsPages get_profile_comments(const int64_t& profile_id, const int32_t& start_page, const ProfileCommentsSort& sort);
+		ProfileCommentsPages::UniqPtr get_profile_comments(const int64_t& profile_id, const int32_t& start_page, const ReleaseComment::Sort& sort);
 
-		BlockListPages block_list(const int32_t& start_page);
+		BlockListPages::UniqPtr block_list(const int32_t& start_page);
 		void remove_from_block_list(const int64_t& profile_id);
 		void add_to_block_list(const int64_t& profile_id);
 
@@ -21,9 +21,9 @@ namespace libanixart {
 		void hide_friend_request(const int64_t& profile_id);
 		void remove_friend_request(const int64_t& profile_id);
 		void send_friend_request(const int64_t& profile_id);
-		FriendRequestsInPages friend_requests_in(const int32_t& start_page);
+		FriendRequestsInPages::UniqPtr friend_requests_in(const int32_t& start_page);
 		std::vector<Profile::Ptr> friend_requests_in_last();
-		FriendRequestsOutPages friend_requests_out(const int32_t& start_page);
+		FriendRequestsOutPages::UniqPtr friend_requests_out(const int32_t& start_page);
 		std::vector<Profile::Ptr> friend_requests_out_last();
 
 		ProfilePreferenceStatus::Ptr edit_avatar(const std::string& image_path);

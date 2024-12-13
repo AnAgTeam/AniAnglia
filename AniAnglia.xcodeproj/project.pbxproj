@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		CEA6E87E2CD7D57E00D4588F /* ProfileStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */; };
-		EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
 		EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941142C723F8600832A6C /* CoreGraphics.framework */; };
 		EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */; };
+		EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */; };
 		EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */; };
 		EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */; };
 		EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CCB2C7FA18A00B4F637 /* MainViewController.mm */; };
@@ -23,6 +23,7 @@
 		EF5FFDC32CCE88A300EA11BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = EF5FFDC12CCE88A300EA11BB /* Localizable.strings */; };
 		EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF60AC732C6FB2FE00CD33A8 /* AppDelegate.mm */; };
 		EF60AC7F2C6FB30100CD33A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */; };
+		EF6A56222CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */; };
 		EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF70960B2C77A56500C95429 /* RestoreViewController.mm */; };
 		EF875C802C78FB7400DAECB1 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF875C7F2C78FB7400DAECB1 /* Security.framework */; };
 		EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF875C822C78FCB500DAECB1 /* SignUpViewController.mm */; };
@@ -43,51 +44,28 @@
 		EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */; };
 		EFD5CD6C2CD8436000A1E057 /* NavSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */; };
 		EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; };
-		EFD5CD6F2CDABD1700A1E057 /* boost_container.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; };
-		EFD5CD712CDABD1700A1E057 /* boost_json.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; };
-		EFD5CD732CDABD1700A1E057 /* boost_regex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; };
-		EFD5CD752CDABD1700A1E057 /* boost_system.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
-		EFD5CD782CDABD3800A1E057 /* curl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
-		EFD5CD7A2CDABD3800A1E057 /* curlpp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; };
-		EFD5CD7C2CDABD5900A1E057 /* libanixart.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
+		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
+		EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		EFD5CD762CDABD1800A1E057 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				EFD5CD6F2CDABD1700A1E057 /* boost_container.xcframework in Embed Frameworks */,
-				EFD5CD7C2CDABD5900A1E057 /* libanixart.xcframework in Embed Frameworks */,
-				EFD5CD7A2CDABD3800A1E057 /* curlpp.xcframework in Embed Frameworks */,
-				EFD5CD712CDABD1700A1E057 /* boost_json.xcframework in Embed Frameworks */,
-				EFD5CD752CDABD1700A1E057 /* boost_system.xcframework in Embed Frameworks */,
-				EFD5CD732CDABD1700A1E057 /* boost_regex.xcframework in Embed Frameworks */,
-				EFD5CD782CDABD3800A1E057 /* curl.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileStoryboard.storyboard; sourceTree = "<group>"; };
-		EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppSearchController.mm; sourceTree = "<group>"; };
-		EF44D0D62CD7FD2500C8B608 /* AppSearchController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppSearchController.h; sourceTree = "<group>"; };
+		EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AniAnglia.entitlements; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
 		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		EF4941142C723F8600832A6C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibanixartApi.mm; sourceTree = "<group>"; };
 		EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LibanixartApi.h; sourceTree = "<group>"; };
+		EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SearchReleasesTableView.mm; sourceTree = "<group>"; };
+		EF53C7F02CE125D000C15B87 /* SearchReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchReleasesTableView.h; sourceTree = "<group>"; };
 		EF5A3CB12C7F928400B4F637 /* AppDataController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDataController.h; sourceTree = "<group>"; };
 		EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDataController.mm; sourceTree = "<group>"; };
 		EF5A3CB42C7F99A200B4F637 /* StringCvt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringCvt.h; sourceTree = "<group>"; };
@@ -1272,6 +1250,8 @@
 		EF60AC782C6FB2FE00CD33A8 /* AuthViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthViewController.h; sourceTree = "<group>"; };
 		EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EF60AC832C6FB30100CD33A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesSearchHistoryView.mm; sourceTree = "<group>"; };
+		EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesSearchHistoryView.h; sourceTree = "<group>"; };
 		EF70960B2C77A56500C95429 /* RestoreViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RestoreViewController.mm; sourceTree = "<group>"; };
 		EF70960D2C77A57200C95429 /* RestoreViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RestoreViewController.h; sourceTree = "<group>"; };
 		EF875C7F2C78FB7400DAECB1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -1303,6 +1283,11 @@
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
 		EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NavSearchViewController.m; sourceTree = "<group>"; };
 		EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NavSearchViewController.h; sourceTree = "<group>"; };
+		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
+		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
+		EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesTableView.h; sourceTree = "<group>"; };
+		EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesTableView.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1320,6 +1305,7 @@
 				EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */,
 				EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */,
 				EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */,
+				EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */,
 				EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */,
 				EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */,
 				EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */,
@@ -1332,6 +1318,7 @@
 		EF44D0CE2CD6A36800C8B608 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				EF6A56202CF33BF1003D1FF0 /* Search */,
 				EF5A3CBA2C7F9C0800B4F637 /* MainTabBarController.h */,
 				EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */,
 				EF5A3CC72C7FA0F800B4F637 /* MainViewController.h */,
@@ -1342,10 +1329,6 @@
 				EF5A3CCF2C7FA1AB00B4F637 /* BookmarksViewController.mm */,
 				EF5A3CCA2C7FA16D00B4F637 /* ProfileViewController.h */,
 				EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */,
-				EF44D0D62CD7FD2500C8B608 /* AppSearchController.h */,
-				EF44D0D42CD7FCFE00C8B608 /* AppSearchController.mm */,
-				EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */,
-				EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */,
 				CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */,
 			);
 			path = Main;
@@ -1364,6 +1347,8 @@
 				EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */,
 				EFA1F93E2CB4922200555A26 /* PlayerViewController.h */,
 				EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */,
+				EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */,
+				EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";
@@ -1393,6 +1378,8 @@
 				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
 				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
 				EFD505E02CAC401700E87BF1 /* StringCvt.mm */,
+				EFED8F552CE2985300C53C1C /* LoadableView.h */,
+				EFED8F562CE2986300C53C1C /* LoadableView.mm */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -3308,6 +3295,7 @@
 		EF60AC712C6FB2FE00CD33A8 /* AniAnglia */ = {
 			isa = PBXGroup;
 			children = (
+				EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */,
 				EF5FFDC12CCE88A300EA11BB /* Localizable.strings */,
 				EF44D0D02CD6A3AE00C8B608 /* Core */,
 				EF44D0D32CD6A3F600C8B608 /* Auth */,
@@ -3320,9 +3308,23 @@
 			path = AniAnglia;
 			sourceTree = "<group>";
 		};
+		EF6A56202CF33BF1003D1FF0 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */,
+				EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.m */,
+				EF53C7F02CE125D000C15B87 /* SearchReleasesTableView.h */,
+				EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */,
+				EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */,
+				EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */,
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
 		EFAB992D2C6FF833008208E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EFE474962CFA42B500508136 /* MediaPlayer.framework */,
 				EF5F02B62CCE956700EA11BB /* Libraries */,
 				EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */,
 				EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */,
@@ -3345,7 +3347,6 @@
 				EF60AC6B2C6FB2FE00CD33A8 /* Sources */,
 				EF60AC6C2C6FB2FE00CD33A8 /* Frameworks */,
 				EF60AC6D2C6FB2FE00CD33A8 /* Resources */,
-				EFD5CD762CDABD1800A1E057 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3414,13 +3415,14 @@
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
+				EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EFC6077B2C76169500BA8B44 /* UITextErrorField.mm in Sources */,
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
+				EF6A56222CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
-				EF44D0D52CD7FCFF00C8B608 /* AppSearchController.mm in Sources */,
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
@@ -3431,6 +3433,8 @@
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
+				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
+				EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
 			);
@@ -3584,13 +3588,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AniAnglia/AniAnglia.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 4G5LGK558P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -3598,8 +3605,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3611,13 +3618,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AniAnglia/AniAnglia.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 4G5LGK558P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -3625,8 +3635,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = org.toilettrauma.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";

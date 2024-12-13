@@ -42,13 +42,20 @@
 "app.signup.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
 "app.signup.password_re_field.error_not_equal.text" = "Пароль не совпадает";
 
-/* MAIN STRINGS */
+/* MAIN TAB BAR STRINGS */
 "app.main_tab_bar.main_tab.title" = "Главная";
 "app.main_tab_bar.discover_tab.title" = "Обзор";
 "app.main_tab_bar.bookmarks_tab.title" = "Закладки";
 "app.main_tab_bar.profile_tab.title" = "Профиль";
 
+/* MAIN STRINGS */
 "app.main.search_bar.placeholder" = "Найти релиз...";
+"app.main.pages_segment_control.actual.name" = "Актуальное";
+"app.main.pages_segment_control.ongoing.name" = "Онгоинги";
+"app.main.pages_segment_control.upcoming.name" = "Анонсы";
+"app.main.pages_segment_control.finished.name" = "Вышедшие";
+"app.main.pages_segment_control.movies.name" = "Фильмы";
+"app.main.pages_segment_control.ova.name" = "OVA";
 
 /* DISCOVER */
 "app.discover.search_bar.placeholder" = "Найти релиз...";
@@ -57,6 +64,7 @@
 "app.discover.option.collections.name" = "Коллекции";
 "app.discover.option.filter.name" = "Фильтр";
 "app.discover.option.random.name" = "Случайное";
+"app.release_search.ep_count.text" = "Кол-во эп";
 
 /* RELEASES */
 "app.releases.search_bar.placeholder" = "Найти релиз...";
@@ -71,11 +79,16 @@
 
 "app.type_select.nav_item.title" = "Озвучка";
 "app.type_select.cell.ep_count.name" = "эп.";
-
 "app.source_select.nav_item.title" = "Источник";
+"app.episode_select.nav_item.title" = "Серия";
 
 /* BOOKMARKS */
 "app.bookmarks.search_bar.placeholder" = "Найти закладку...";
 
 /* PROFILE */
 "app.profile.search_bar.placeholder" = "Найти пользователя...";
+
+/* PLAYER */
+"app.player.stream_not_found_error.title" = "Ошибка";
+"app.player.stream_not_found_error.message" = "Не удалось найти источник для данной серии";
+"app.player.stream_not_found_error.default_action.text" = "ОК";

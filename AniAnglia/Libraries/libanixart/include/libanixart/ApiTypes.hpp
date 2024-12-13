@@ -5,81 +5,25 @@
 #include <vector>
 
 namespace libanixart {
-/* Declares enum without it's inner in this namespace */
-#define DECLARE_LOCAL_ENUM(name, ...)	\
-	class name##EnumClass {				\
-	public:								\
-		enum name {						\
-			__VA_ARGS__					\
-		};								\
-	};									\
-	using name = name##EnumClass::name
-
-	namespace enums {
-		DECLARE_LOCAL_ENUM(CollectionSort,
-			RatingLeader = 1,
-			YearPopular = 2,
-			SeasonPopular = 3,
-			WeekPopular = 4,
-			RecentlyAdded = 5,
-			Random = 6
-		);
-		DECLARE_LOCAL_ENUM(EpisodesSort,
-			FromLeast = 1,
-			FromGreatest = 2
-		);
-		DECLARE_LOCAL_ENUM(ReleaseVotedSort,
-			Descending = 1,
-			Ascending = 2,
-			FiveStar = 3,
-			FourStar = 4,
-			ThreeStar = 5,
-			TwoStar = 6,
-			OneStar = 7
-		);
-		DECLARE_LOCAL_ENUM(ProfileListSort,
+	// Internal type
+	struct ProfileList {
+		enum class Sort {
 			Descending = 1,
 			Ascending = 2,
 			ReleaseDescending = 3,
 			ReleaseAscending = 4,
 			TitleDescending = 5,
 			TitleAscending = 6
-		);
-		DECLARE_LOCAL_ENUM(StatusID,
-			/* todo */
-		);
-		DECLARE_LOCAL_ENUM(BookmarksStatusTab,
+		};
+		enum class Status {
+			NotWatching = 0,
 			Watching = 1,
-			Plans = 2,
-			Completed = 3,
+			Plan = 2,
+			Watched = 3,
 			HoldOn = 4,
 			Dropped = 5
-		);
-		DECLARE_LOCAL_ENUM(ReleaseCommentsSort,
-			All = 1,
-			Negative = 2,
-			Positive = 3
-		);
-		DECLARE_LOCAL_ENUM(ProfileCommentsSort,
-			Newest = 1,
-			Oldest = 2,
-			Popular = 3
-		);
-		DECLARE_LOCAL_ENUM(CommentVoteType,
-			Plus = 1,
-			Minus = 2
-		);
+		};
 	};
-#undef DECLARE_LOCAL_ENUM
-	using enums::CollectionSort;
-	using enums::EpisodesSort;
-	using enums::ReleaseVotedSort;
-	using enums::ProfileListSort;
-	using enums::StatusID;
-	using enums::BookmarksStatusTab;
-	using enums::ReleaseCommentsSort;
-	using enums::ProfileCommentsSort;
-	using enums::CommentVoteType;
 
 	using time_point = std::chrono::system_clock::time_point;
 	class ProfileToken {
@@ -90,20 +34,19 @@ namespace libanixart {
 		int64_t id;
 		std::string token;
 	};
-	enum class ProfilePrivilegeLevel {
-		None = 0,
-		Member = 1,
-		Releaser = 2,
-		Moderator = 3,
-		Administrator = 4,
-		Developer = 5
-	};
 	class Profile {
 	public:
 		using Ptr = std::shared_ptr<Profile>;
 		Profile(JsonObject& object);
 
-		ProfileToken token;
+		enum class PrivilegeLevel {
+			None = 0,
+			Member = 1,
+			Releaser = 2,
+			Moderator = 3,
+			Administrator = 4,
+			Developer = 5
+		};
 
 		int64_t id;
 		std::string login;
@@ -120,7 +63,7 @@ namespace libanixart {
 		time_point ban_expires;
 		std::string ban_reason;
 
-		ProfilePrivilegeLevel privilege_level;
+		PrivilegeLevel privilege_level;
 		int64_t watched_time;
 		int32_t completed_count;
 		int32_t dropped_count;
@@ -204,6 +147,11 @@ namespace libanixart {
 		using Ptr = std::shared_ptr<Episode>;
 		Episode(JsonObject& object);
 
+		enum class Sort {
+			FromLeast = 1,
+			FromGreatest = 2
+		};
+
 		int64_t id;
 		std::string name;
 		std::string url;
@@ -215,10 +163,34 @@ namespace libanixart {
 		bool is_watched;
 		bool is_filler;
 	};
+	
 	class Release {
 	public:
 		using Ptr = std::shared_ptr<Release>;
+		
 		Release(JsonObject& object);
+
+		enum class Status {
+			Unknown = 0,
+			Finished = 1,
+			Ongoing = 2,
+			Upcoming = 3
+		};
+		enum class Category {
+			Unknown = 0,
+			Series = 1,
+			Movies = 2,
+			Ova = 3
+		};
+		enum class ByVoteSort {
+			Descending = 1,
+			Ascending = 2,
+			FiveStar = 3,
+			FourStar = 4,
+			ThreeStar = 5,
+			TwoStar = 6,
+			OneStar = 7
+		};
 
 		int64_t id;
 		std::string title_original;
@@ -234,7 +206,9 @@ namespace libanixart {
 		std::string year;
 		std::string genres;
 		int32_t rating;
-		int32_t status_id;
+		double grade;
+		Status status; // fake property
+		Category category; // fake property
 		int32_t season;
 		std::string release_date;
 		time_point creation_date;
@@ -281,7 +255,7 @@ namespace libanixart {
 		std::string last_view_episode_type_name;
 
 		std::string note;
-		int32_t profile_list_status;
+		ProfileList::Status profile_list_status;
 
 		bool is_adult;
 		bool is_deleted;
@@ -316,6 +290,22 @@ namespace libanixart {
 	public:
 		using Ptr = std::shared_ptr<ReleaseComment>;
 		ReleaseComment(JsonObject& object);
+
+		enum class FilterBy {
+			All = 1,
+			Negative = 2,
+			Positive = 3
+		};
+		enum class Sort {
+			Newest = 1,
+			Oldest = 2,
+			Popular = 3
+		};
+		enum class Sign {
+			Neutral = 0,
+			Negative = 1,
+			Positive = 2
+		};
 
 		int64_t id;
 		int64_t parent_comment_id;
@@ -382,6 +372,15 @@ namespace libanixart {
 	public:
 		using Ptr = std::shared_ptr<Collection>;
 		Collection(JsonObject& object);
+
+		enum class Sort {
+			RatingLeader = 1,
+			YearPopular = 2,
+			SeasonPopular = 3,
+			WeekPopular = 4,
+			RecentlyAdded = 5,
+			Random = 6
+		};
 
 		int64_t id;
 		std::string title;

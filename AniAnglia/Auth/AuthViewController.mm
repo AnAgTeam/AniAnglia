@@ -151,9 +151,9 @@
     libanixart::Api* api = _api_proxy.api;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            auto profile = api->auth().sign_in(login, password);
-            self->_data_controller.token = TO_NSSTRING(profile->token.token);
-            self->_api_proxy.api->set_token(profile->token.token);
+            auto [profile, token] = api->auth().sign_in(login, password);
+            [self->_data_controller setToken:TO_NSSTRING(token.token)];
+            self->_api_proxy.api->set_token(token.token);
         }
         catch (libanixart::SignInError& e) {
             dispatch_async(dispatch_get_main_queue(), ^{

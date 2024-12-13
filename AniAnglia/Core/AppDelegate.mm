@@ -6,10 +6,10 @@
 //
 
 #import "AppDelegate.h"
-#import <libanixart/Api.hpp>
 #import "AppDataController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
+
 #import <AVFoundation/AVFoundation.h>
 
 @interface AppDelegate ()
@@ -22,17 +22,10 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     libanixart::api_init("ru");
-    // OMG, how this patch works ????
-    auto _ = libanixart::StringTools::sformat("BLYAAAA");
-    // set token for libanixart
-    std::string token = TO_STDSTRING([AppDataController sharedInstance].token);
-    [LibanixartApi sharedInstance].api->set_token(token);
     // setup audio
     AVAudioSession* audio_sess = [AVAudioSession sharedInstance];
     [audio_sess setCategory:AVAudioSessionCategoryPlayback error:nil];
     [audio_sess setActive:NO error:nil];
-    // light status bar
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     
     return YES;
 }

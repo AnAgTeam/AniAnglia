@@ -1,6 +1,7 @@
 #pragma once
 #include "ApiSession.hpp"
 #include "ApiPageableRequests.hpp"
+#include "ApiTypes.hpp"
 
 namespace libanixart {
 	class ApiReleases {
@@ -18,26 +19,35 @@ namespace libanixart {
 		ReleaseComment::Ptr add_release_comment(const int64_t& release_id, const requests::ReleaseCommentAddRequest& add_request);
 		ReleaseComment::Ptr release_comment(const int64_t& release_id);
 		void remove_release_comment(const int64_t& comment_id);
-		ReleaseCommentsPages release_comments(const int64_t& release_id, const int32_t& start_page, const ReleaseCommentsSort& sort);
+		ReleaseCommentsPages::UniqPtr release_comments(const int64_t& release_id, const int32_t& start_page, const ReleaseComment::FilterBy& filter_by);
 		void process_release_comment(const int64_t& comment_id, const requests::ReleaseCommentProcessRequest& process_request);
-		ReleaseCommentRepliesPages get_replies_to_comment(const int64_t& comment_id, const int32_t& start_page, const ReleaseCommentsSort& sort);
+		ReleaseCommentRepliesPages::UniqPtr get_replies_to_comment(const int64_t& comment_id, const int32_t& start_page, const ReleaseComment::FilterBy& filter_by);
 		void report_release_comment(const int64_t& comment_id, const requests::ReleaseCommentReportRequest& report_request);
-		void vote_release_comment(const int64_t& comment_id, const CommentVoteType& type);
+		void vote_release_comment(const int64_t& comment_id, const ReleaseComment::Sign& sign);
 
 		std::vector<ReleaseVideoCategory::Ptr> release_video_categories();
-		ReleaseVideoCategoryPages release_video_category(const int64_t& release_id, const int64_t& category_id, const int32_t& start_page);
+		ReleaseVideoCategoryPages::UniqPtr release_video_category(const int64_t& release_id, const int64_t& category_id, const int32_t& start_page);
 		std::vector<ReleaseVideoBlock::Ptr> release_video_main(const int64_t& release_id);
-		ReleaseVideoPages release_videos(const int64_t& release_id, const int32_t& start_page);
-		ProfileReleaseVideoPages profile_release_videos(const int64_t& profile_id, const int32_t& start_page);
+		ReleaseVideoPages::UniqPtr release_videos(const int64_t& release_id, const int32_t& start_page);
+		ProfileReleaseVideoPages::UniqPtr profile_release_videos(const int64_t& profile_id, const int32_t& start_page);
 
 		void raise_release_appeal(const requests::ReleaseVideoAppealRequest& appeal_request);
 		void remove_release_appeal(const int64_t& appeal_id);
-		ReleaseVideoAppealPages my_appeals(const int32_t& start_page);
+		ReleaseVideoAppealPages::UniqPtr my_appeals(const int32_t& start_page);
 		std::vector<ReleaseVideo::Ptr> my_last_appeals();
 
 		void add_release_to_favorites(const int64_t& release_id);
 		void remove_release_from_favorites(const int64_t& release_id);
-		ProfileReleaseVideoFavoritesPages profile_favorites(const int64_t& profile_id, const int32_t& start_page);
+		ProfileReleaseVideoFavoritesPages::UniqPtr profile_favorites(const int64_t& profile_id, const int32_t& start_page);
+
+		void add_to_history(const int64_t& release_id, const int64_t& source_id, const int32_t& position);
+		void remove_release_from_history(const int64_t& release_id);
+		HistoryPages::UniqPtr get_history(const int32_t& start_page);
+
+		void add_release_to_profile_list(const int64_t& release_id, const ProfileList::Status& status);
+		void remove_release_from_profile_list(const int64_t& release_id, const ProfileList::Status& status);
+		ProfileListPages::UniqPtr my_profile_list(const ProfileList::Status& status, const ProfileList::Sort& sort, const int32_t& start_page);
+		ProfileListByProfilePages::UniqPtr profile_list(const int64_t& profile_id, const ProfileList::Status& status, const ProfileList::Sort& sort, const int32_t& start_page);
 
 	private:
 		const ApiSession& _session;
