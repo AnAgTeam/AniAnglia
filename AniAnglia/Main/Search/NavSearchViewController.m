@@ -83,6 +83,10 @@
     return self;
 }
 
+-(void)viewDidLoad {
+    [super viewDidLoad];
+}
+
 -(void)setSearchDelegate:(id<NavigationSearchDelegate>)search_delegate {
     _search_delegate = search_delegate;
     NSObject<NavigationSearchDelegate>* delegate = (NSObject<NavigationSearchDelegate>*)search_delegate;
@@ -94,6 +98,7 @@
     _search_bar = [UISearchBar new];
     _search_bar.delegate = self;
     self.navigationItem.titleView = _search_bar;
+    self.navigationController.toolbarHidden = YES;
     self.navigationController.hidesBarsOnSwipe = _hidesBarOnSwipe;
     _search_cancel_bar_item = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"chevron.left"] style:UIBarButtonItemStylePlain target:self action:@selector(searchBarCancelButtonPressed:)];
     _search_filter_bar_item = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"slider.horizontal.3"] style:UIBarButtonItemStylePlain target:self action:@selector(searchBarFilterButtonPressed:)];
