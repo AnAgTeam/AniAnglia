@@ -10,10 +10,11 @@
 #import "ReleaseViewController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
-#import "AppColor.h""
+#import "AppColor.h"
 #import "SearchReleasesTableView.h"
 #import "ReleasesSearchHistoryView.h"
 #import "LoadableView.h"
+#import "FilterViewController.h"
 
 @interface InterestingViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* title;
@@ -63,7 +64,7 @@
 -(CGFloat)getTotalHeight;
 @end
 
-@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate>
+@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, UIPopoverPresentationControllerDelegate>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
@@ -382,6 +383,24 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 -(void)searchBarFilterButtonPressed {
     NSLog(@"Search filter button pressed");
+    
+    FilterViewController* filter_vc = [FilterViewController new];
+//    filter_vc.modalPresentationStyle = UIModalPresentationPageSheet;
+    filter_vc.modalPresentationStyle = UIModalPresentationPopover;
+    filter_vc.popoverPresentationController.sourceView = self.view;
+    filter_vc.popoverPresentationController.delegate = self;
+//    filter_vc.popoverPresentationController.barButtonItem = self.navigationItem.rightBarButtonItem;
+    filter_vc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
+    filter_vc.popoverPresentationController.sourceRect = CGRectMake(0, 0, 50, 50);
+    filter_vc.preferredContentSize = CGSizeMake(300, 300);
+//    filter_vc.modalPresentationStyle = UIModalPresentationFormSheet;
+//    filter_vc.modalPresentationStyle = UIModalPresentationCurrentContext;
+    [self presentViewController:filter_vc animated:YES completion:nil];
+}
+
+- (UIModalPresentationStyle) adaptivePresentationStyleForPresentationController:(UIPresentationController *) controller
+                                                                traitCollection:(UITraitCollection *) traitCollection {
+    return UIModalPresentationNone;
 }
 
 -(void)didSelectInterestingCell:(long long)release_id {

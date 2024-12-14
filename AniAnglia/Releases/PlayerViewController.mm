@@ -13,6 +13,11 @@
 #import "LibanixartApi.h"
 #import "StringCvt.h"
 
+@interface PlayerViewController : AVPlayerViewController
+@property(nonatomic, retain) AVPlayerViewController* player_view_controller;
+@property(nonatomic) BOOL in_pip;
+@property(nonatomic) BOOL is_visible;
+@end
 
 @interface PlayerController ()
 @property(atomic) long long release_id;
@@ -21,7 +26,7 @@
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic) std::unordered_map<std::string, std::string> streams_arr;
 @property(nonatomic, retain) NSURL* selected_stream_url;
-@property(nonatomic, retain) AVPlayerViewController* player_view_controller;
+@property(nonatomic, retain) PlayerViewController* player_view_controller;
 @property(nonatomic, retain) AVPictureInPictureController* pip_controller;
 @end
 
@@ -43,6 +48,23 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     return quality_url;
 }
 
+@implementation PlayerViewController
+
+-(void)viewWillAppear:(BOOL)animated {
+    _is_visible = YES;
+    [super viewWillAppear:animated];
+}
+
+-(void)viewDidDisappear:(BOOL)animated{
+    if (!_in_pip) {
+        self.player = nil;
+    }
+    _is_visible = NO;
+    [super viewDidDisappear:animated];
+}
+
+@end
+
 @implementation PlayerController
 
 -(instancetype)init {
@@ -52,7 +74,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     _source_id = -1;
     _source_position = -1;
     _api_proxy = [LibanixartApi sharedInstance];
-    _player_view_controller = [AVPlayerViewController new];
+    _player_view_controller = [PlayerViewController new];
     [_player_view_controller setDelegate:self];
     [self setupLayout];
     
@@ -115,7 +137,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
         top_view_controller = [((UINavigationController*)top_view_controller) topViewController];
     }
     
-    [top_view_controller presentViewController:view_controller animated:YES completion:^{}];
+    [top_view_controller presentViewController:view_controller animated:NO completion:nil];
 }
 
 -(void)runPlayer {
@@ -137,7 +159,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 }
 
 -(void)setupLayout {
-    _player_view_controller.view.backgroundColor = [AppColorProvider backgroundColor];
+//    _player_view_controller.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 -(AVPlayerViewController*)getPlayer {
@@ -153,9 +175,20 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     return sharedInstance;
 }
 
--(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler{
+-(void)playerViewControllerWillStartPictureInPicture:(AVPlayerViewController*)player_view_controller{
+    _player_view_controller.in_pip = YES;
+}
+-(void)playerViewControllerDidStopPictureInPicture:(AVPlayerViewController*)player_view_controller {
+    _player_view_controller.in_pip = NO;
+    if (!_player_view_controller.is_visible) {
+        // closed outside application
+        _player_view_controller.player = nil;
+    }
+}
+
+-(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler {
     [self showViewController:_player_view_controller];
-    completion_handler(YES);
+//    completion_handler(YES);
 }
 
 @end

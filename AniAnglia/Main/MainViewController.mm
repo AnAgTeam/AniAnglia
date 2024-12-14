@@ -19,7 +19,7 @@
 
 @end
 
-@interface MainPageViewController : UIViewController {
+@interface MainPageViewController : UIViewController <UIGestureRecognizerDelegate> {
     libanixart::requests::FilterRequest _filter_request;
 }
 @property(nonatomic) LibanixartApi* api_proxy;
@@ -31,12 +31,10 @@
 
 @interface MainPagesViewController : UIPageViewController <UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIGestureRecognizerDelegate>
 @property(nonatomic, weak) MainViewController* main_view_controller;
-@property(nonatomic) NSInteger current_page_index;
-@property(nonatomic) NSInteger next_page_index;
-@property(nonatomic) BOOL transition_started;
-@property(nonatomic) BOOL performing_switch;
-@property(nonatomic) UIViewController* should_change_to;
 @property(nonatomic, retain) NSArray<MainPageViewController*>* page_view_controllers;
+@property(nonatomic) NSInteger current_page_index;
+@property(nonatomic) BOOL is_changing_page;
+@property(nonatomic, weak) UIPanGestureRecognizer* external_pan_gesture_recognizer;
 
 @end
 
@@ -102,8 +100,6 @@
 -(instancetype)init {
     self = [super initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
     
-    _performing_switch = NO;
-    
     return self;
 }
 
@@ -113,6 +109,8 @@
     UIGestureRecognizer* gesture_recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGesture:)];
     gesture_recognizer.delegate = self;
     [self.view addGestureRecognizer:gesture_recognizer];
+    
+    _external_pan_gesture_recognizer = self.view.subviews[0].gestureRecognizers[0];
     
     [self setupView];
 }
@@ -179,87 +177,59 @@
     return _page_view_controllers[index + 1];
 }
 
--(void)pageViewController:(UIPageViewController*)page_view_controller willTransitionToViewControllers:(NSArray*)pending_view_controllers {
-    _transition_started = YES;
-    if([pending_view_controllers count] > 0) {
-        [_main_view_controller willTransitionToPageAtIndex:_current_page_index];
-    }
-}
-
 -(void)pageViewController:(UIPageViewController*)page_view_controller didFinishAnimating:(BOOL)finished previousViewControllers:(NSArray*)previous_view_controllers transitionCompleted:(BOOL)completed {
-    _transition_started = NO;
     if (finished && [previous_view_controllers count] > 0) {
-        self.view.userInteractionEnabled = YES;
-        _current_page_index = [_page_view_controllers indexOfObject:self.viewControllers[0]];
+        if (completed) {
+            _current_page_index = [_page_view_controllers indexOfObject:self.viewControllers[0]];
+            [_main_view_controller didTransitionToPageAtIndex:_current_page_index completed:completed];
+        }
     }
-    [_main_view_controller didTransitionToPageAtIndex:_current_page_index completed:finished];
 }
 
 -(void)goToPageAtIndex:(NSInteger)index {
-    NSInteger current_index = [_page_view_controllers indexOfObject:self.viewControllers[0]];
-    if (current_index == index) {
+    if (_current_page_index == index || index >= [_page_view_controllers count]) {
         return;
     }
     UIPageViewControllerNavigationDirection direction = UIPageViewControllerNavigationDirectionForward;
-    if (current_index > index) {
+    if (_current_page_index > index) {
         direction = UIPageViewControllerNavigationDirectionReverse;
     }
     _current_page_index = index;
-    /* If animation completion block don't called, then view is blocked */
-    self.view.userInteractionEnabled = NO;
-    _performing_switch = YES;
     
-    __block __weak MainPagesViewController* weak_self = self;
-    [self setViewControllers:@[_page_view_controllers[index]] direction:direction animated:YES completion:^(BOOL finished) {
-        MainPagesViewController* strong_self = weak_self;
-        strong_self->_performing_switch = NO;
-        weak_self.view.userInteractionEnabled = YES;
-        [strong_self->_main_view_controller didTransitionToPageAtIndex:index completed:YES];
-    }];
+    [self setDataSource:nil];
+    [self setDataSource:self];
+    [self setViewControllers:@[_page_view_controllers[index]] direction:direction animated:YES completion:nil];
 }
-
-//-(BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
-//    return self.view.userInteractionEnabled;
-//}
 
 -(BOOL)gestureRecognizer:(UIPanGestureRecognizer*)gesture_recognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)other_gesture_recognizer {
     if (![other_gesture_recognizer isKindOfClass:UIPanGestureRecognizer.class]) {
-        return YES;
+        return NO;
     }
     if ([other_gesture_recognizer.view isKindOfClass:ReleasesTableView.class]) {
-        return YES;
+        return NO;
     }
-//    NSLog(@"other:%@ (state):%ld", other_gesture_recognizer, other_gesture_recognizer.state);
-    
-    if(!_performing_switch && other_gesture_recognizer.state == UIGestureRecognizerStateBegan) {
-        /* pan gesture began */
-        [_main_view_controller willTransitionToPageAtIndex:_current_page_index];
-    }
-    if (other_gesture_recognizer.state == UIGestureRecognizerStateFailed || other_gesture_recognizer.state == UIGestureRecognizerStateChanged) {
-        /* if 'pvc: willTransition:' don't called, then activate segment view */
-        if (!_transition_started) {
-            _transition_started = NO;
-            [_main_view_controller didTransitionToPageAtIndex:_current_page_index completed:NO];
-        }
-    }
-    
-    if (_performing_switch && self.view.userInteractionEnabled) {
-        
-    }
-    if (_performing_switch) {
-//        [other_gesture_recognizer reset];
-    }
-    return NO;
+    return YES;
 }
 
 -(void)panGesture:(UIPanGestureRecognizer*)gesture_recognizer {
-    NSLog(@"panGesture:");
+    if (gesture_recognizer.state == UIGestureRecognizerStateBegan) {
+        [_main_view_controller pageSegmentControlInteractionEnabled:NO];
+    } else if (gesture_recognizer.state == UIGestureRecognizerStateEnded) {
+        [_main_view_controller pageSegmentControlInteractionEnabled:YES];
+    }
 }
 
 
 @end
 
 @implementation MainViewController
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    /* todo: fix toolbar */
+    self.navigationController.toolbarHidden = YES;
+    _pages_segment_control.userInteractionEnabled = YES;
+}
 
 -(void)viewDidLoad {
     [super viewDidLoad];
@@ -318,6 +288,7 @@
 }
 
 -(void)pageSegmentControlInteractionEnabled:(BOOL)interaction_enabled {
+    self.search_bar.userInteractionEnabled = interaction_enabled;
     _pages_segment_control.userInteractionEnabled = interaction_enabled;
 }
 
@@ -333,7 +304,7 @@
 -(void)didTransitionToPageAtIndex:(NSInteger)index completed:(BOOL)completed {
     self.search_bar.userInteractionEnabled = YES;
     _pages_segment_control.userInteractionEnabled = YES;
-    if (_pages_segment_control.selectedSegmentIndex == index) {
+    if (_pages_segment_control.selectedSegmentIndex == index || !completed) {
         return;
     }
     _pages_segment_control.selectedSegmentIndex = index;
