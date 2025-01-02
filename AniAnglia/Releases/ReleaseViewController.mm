@@ -130,7 +130,7 @@ NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
     _title_label.translatesAutoresizingMaskIntoConstraints = NO;
     [_title_label.topAnchor constraintEqualToAnchor:_release_image_view.bottomAnchor constant:10].active = YES;
     [_title_label.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor constant:-80].active = YES;
-    [_title_label.heightAnchor constraintLessThanOrEqualToConstant:70].active = YES;
+//    [_title_label.heightAnchor constraintLessThanOrEqualToConstant:70].active = YES;
     [_title_label.centerXAnchor constraintEqualToAnchor:_content_view.centerXAnchor].active = YES;
     _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 0;
@@ -142,8 +142,8 @@ NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
     [_content_view addSubview:_orig_title_label];
     _orig_title_label.translatesAutoresizingMaskIntoConstraints = NO;
     [_orig_title_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:2].active = YES;
-    [_orig_title_label.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor constant:-80].active = YES;
-    [_orig_title_label.heightAnchor constraintLessThanOrEqualToConstant:50].active = YES;
+    [_orig_title_label.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor constant:-50].active = YES;
+//    [_orig_title_label.heightAnchor constraintLessThanOrEqualToConstant:50].active = YES;
     [_orig_title_label.centerXAnchor constraintEqualToAnchor:_content_view.centerXAnchor].active = YES;
     _orig_title_label.textAlignment = NSTextAlignmentJustified;
     _orig_title_label.numberOfLines = 0;

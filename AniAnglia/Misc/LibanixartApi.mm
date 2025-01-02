@@ -18,7 +18,7 @@
 -(instancetype)init {
     self = [super init];
     
-    _api = new libanixart::Api();
+    _api = new libanixart::Api("ru_RU", "AniAnglia");
     _api->set_verbose(false, false);
     _api->set_token(TO_STDSTRING([[AppDataController sharedInstance] getToken]));
     _parsers = new libanixart::parsers::Parsers();

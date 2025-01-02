@@ -82,6 +82,8 @@
 "app.source_select.nav_item.title" = "Источник";
 "app.episode_select.nav_item.title" = "Серия";
 
+"app.releases_table_view.is_empty_label.text" = "Ничего не найдено";
+
 /* BOOKMARKS */
 "app.bookmarks.search_bar.placeholder" = "Найти закладку...";
 
@@ -92,3 +94,10 @@
 "app.player.stream_not_found_error.title" = "Ошибка";
 "app.player.stream_not_found_error.message" = "Не удалось найти источник для данной серии";
 "app.player.stream_not_found_error.default_action.text" = "ОК";
+
+/* SEARCH FILTER */
+"app.filter.status_select_button.menu.title" = "Статус";
+"app.filter.status_select_button.menu.none.text" = "Не выбрано";
+"app.filter.status_select_button.menu.finished.text" = "Вышел";
+"app.filter.status_select_button.menu.ongoing.text" = "Онгоинг";
+"app.filter.status_select_button.menu.upcoming.text" = "Анонс";

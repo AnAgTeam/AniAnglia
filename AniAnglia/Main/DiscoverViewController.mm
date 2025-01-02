@@ -64,14 +64,14 @@
 -(CGFloat)getTotalHeight;
 @end
 
-@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate, UIPopoverPresentationControllerDelegate>
+@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIView* content_view;
 @property(nonatomic, retain) InterestingView* interesting_view;
 @property(nonatomic, retain) DiscoverOptionsTableView* options_view;
 
--(void)didSelectInterestingCell:(long long)release_id;
+-(void)didSelectInterestingCell:(libanixart::Interesting::Ptr)interesting;
 @end
 
 @implementation InterestingViewCell
@@ -157,7 +157,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
-    [_delegate didSelectInterestingCell:std::stoll(_interest_arr[index]->action)];
+    [_delegate didSelectInterestingCell:_interest_arr[index]];
 }
 
 -(void)tryLoad {
@@ -382,30 +382,14 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 }
 
 -(void)searchBarFilterButtonPressed {
-    NSLog(@"Search filter button pressed");
-    
-    FilterViewController* filter_vc = [FilterViewController new];
-//    filter_vc.modalPresentationStyle = UIModalPresentationPageSheet;
-    filter_vc.modalPresentationStyle = UIModalPresentationPopover;
-    filter_vc.popoverPresentationController.sourceView = self.view;
-    filter_vc.popoverPresentationController.delegate = self;
-//    filter_vc.popoverPresentationController.barButtonItem = self.navigationItem.rightBarButtonItem;
-    filter_vc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
-    filter_vc.popoverPresentationController.sourceRect = CGRectMake(0, 0, 50, 50);
-    filter_vc.preferredContentSize = CGSizeMake(300, 300);
-//    filter_vc.modalPresentationStyle = UIModalPresentationFormSheet;
-//    filter_vc.modalPresentationStyle = UIModalPresentationCurrentContext;
-    [self presentViewController:filter_vc animated:YES completion:nil];
+    [self.navigationController pushViewController:[FilterViewController new] animated:YES];
 }
 
-- (UIModalPresentationStyle) adaptivePresentationStyleForPresentationController:(UIPresentationController *) controller
-                                                                traitCollection:(UITraitCollection *) traitCollection {
-    return UIModalPresentationNone;
-}
-
--(void)didSelectInterestingCell:(long long)release_id {
-    [self.navigationController setNavigationBarHidden:NO];
-    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release_id] animated:YES];
+-(void)didSelectInterestingCell:(libanixart::Interesting::Ptr)interesting {
+    if (interesting->type == libanixart::Interesting::Type::OpenRelease) {
+        [self.navigationController setNavigationBarHidden:NO];
+        [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:std::stoll(interesting->action)] animated:YES];
+    }
 }
 
 -(void)popularButtonPressed {

@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		CEA6E87E2CD7D57E00D4588F /* ProfileStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */; };
+		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
+		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
+		EF0D7D1F2D26F107000E516A /* libaanetwork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D162D26F0D0000E516A /* libaanetwork.xcframework */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -25,7 +28,10 @@
 		EF60AC7F2C6FB30100CD33A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */; };
 		EF6A56222CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */; };
 		EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF70960B2C77A56500C95429 /* RestoreViewController.mm */; };
-		EF8097C52D0CC6F2006F18DF /* FilterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8097C42D0CC6F2006F18DF /* FilterViewController.m */; };
+		EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8097C42D0CC6F2006F18DF /* FilterViewController.mm */; };
+		EF8097CA2D15CB70006F18DF /* libtorrent.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF8097C62D15B92C006F18DF /* libtorrent.xcframework */; };
+		EF8097CE2D15CF85006F18DF /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF8097CD2D15CF85006F18DF /* SystemConfiguration.framework */; };
+		EF8097D02D15DC05006F18DF /* try_signal.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF8097CF2D15DC05006F18DF /* try_signal.xcframework */; };
 		EF875C802C78FB7400DAECB1 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF875C7F2C78FB7400DAECB1 /* Security.framework */; };
 		EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF875C822C78FCB500DAECB1 /* SignUpViewController.mm */; };
 		EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF875C852C79026700DAECB1 /* AuthChecker.mm */; };
@@ -50,7 +56,6 @@
 		EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; };
 		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
 		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
-		EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5F02B42CCE956700EA11BB /* libanixart.xcframework */; };
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
 		EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */; };
@@ -58,6 +63,14 @@
 
 /* Begin PBXFileReference section */
 		CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileStoryboard.storyboard; sourceTree = "<group>"; };
+		EF0D7D0F2D26F0D0000E516A /* JsonTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = JsonTools.hpp; sourceTree = "<group>"; };
+		EF0D7D102D26F0D0000E516A /* NetTypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetTypes.hpp; sourceTree = "<group>"; };
+		EF0D7D112D26F0D0000E516A /* StringTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = StringTools.hpp; sourceTree = "<group>"; };
+		EF0D7D122D26F0D0000E516A /* TimeTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TimeTools.hpp; sourceTree = "<group>"; };
+		EF0D7D132D26F0D0000E516A /* UrlSession.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UrlSession.hpp; sourceTree = "<group>"; };
+		EF0D7D162D26F0D0000E516A /* libaanetwork.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libaanetwork.xcframework; sourceTree = "<group>"; };
+		EF0D7D182D26F0E7000E516A /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = AniAnglia/Libraries/aateam/libanixart/libanixart.xcframework; sourceTree = "<group>"; };
+		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
 		EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AniAnglia.entitlements; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
 		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
@@ -1256,7 +1269,10 @@
 		EF70960B2C77A56500C95429 /* RestoreViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RestoreViewController.mm; sourceTree = "<group>"; };
 		EF70960D2C77A57200C95429 /* RestoreViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RestoreViewController.h; sourceTree = "<group>"; };
 		EF8097C32D0CC6C1006F18DF /* FilterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FilterViewController.h; sourceTree = "<group>"; };
-		EF8097C42D0CC6F2006F18DF /* FilterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FilterViewController.m; sourceTree = "<group>"; };
+		EF8097C42D0CC6F2006F18DF /* FilterViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = FilterViewController.mm; sourceTree = "<group>"; };
+		EF8097C62D15B92C006F18DF /* libtorrent.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrent.xcframework; path = AniAnglia/Libraries/libtorrent/libtorrent.xcframework; sourceTree = "<group>"; };
+		EF8097CD2D15CF85006F18DF /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		EF8097CF2D15DC05006F18DF /* try_signal.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = try_signal.xcframework; path = AniAnglia/Libraries/libtorrent/try_signal.xcframework; sourceTree = "<group>"; };
 		EF875C7F2C78FB7400DAECB1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EF875C812C78FC7B00DAECB1 /* SignUpViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SignUpViewController.h; sourceTree = "<group>"; };
 		EF875C822C78FCB500DAECB1 /* SignUpViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SignUpViewController.mm; sourceTree = "<group>"; };
@@ -1266,6 +1282,7 @@
 		EF8B01B22C7015A200423ECD /* AuthViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthViewController.mm; sourceTree = "<group>"; };
 		EF8B01B32C7015A300423ECD /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		EF8BFF7E2C70060600423ECD /* curl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = curl.xcframework; path = /Users/toilettrauma/AniAnglia/../Desktop/myAppFrameworks/curl.xcframework; sourceTree = "<absolute>"; };
+		EF9A38A92D19FC4E009A83EE /* libtorrenthelper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrenthelper.xcframework; path = AniAnglia/Libraries/libtorrenthelper/libtorrenthelper.xcframework; sourceTree = "<group>"; };
 		EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EpisodeSelectViewController.mm; sourceTree = "<group>"; };
 		EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EpisodeSelectViewController.h; sourceTree = "<group>"; };
 		EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlayerViewController.mm; sourceTree = "<group>"; };
@@ -1300,24 +1317,59 @@
 			files = (
 				EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */,
 				EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */,
+				EF0D7D1F2D26F107000E516A /* libaanetwork.xcframework in Frameworks */,
 				EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */,
 				EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */,
+				EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */,
 				EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */,
 				EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */,
+				EF8097CE2D15CF85006F18DF /* SystemConfiguration.framework in Frameworks */,
+				EF8097CA2D15CB70006F18DF /* libtorrent.xcframework in Frameworks */,
 				EF875C802C78FB7400DAECB1 /* Security.framework in Frameworks */,
 				EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */,
 				EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */,
 				EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */,
 				EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */,
 				EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */,
-				EFD5CD7B2CDABD5900A1E057 /* libanixart.xcframework in Frameworks */,
+				EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */,
 				EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */,
+				EF8097D02D15DC05006F18DF /* try_signal.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EF0D7D142D26F0D0000E516A /* libaanetwork */ = {
+			isa = PBXGroup;
+			children = (
+				EF0D7D0F2D26F0D0000E516A /* JsonTools.hpp */,
+				EF0D7D102D26F0D0000E516A /* NetTypes.hpp */,
+				EF0D7D112D26F0D0000E516A /* StringTools.hpp */,
+				EF0D7D122D26F0D0000E516A /* TimeTools.hpp */,
+				EF0D7D132D26F0D0000E516A /* UrlSession.hpp */,
+			);
+			path = libaanetwork;
+			sourceTree = "<group>";
+		};
+		EF0D7D152D26F0D0000E516A /* include */ = {
+			isa = PBXGroup;
+			children = (
+				EF0D7D142D26F0D0000E516A /* libaanetwork */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		EF0D7D172D26F0D0000E516A /* libaanetwork */ = {
+			isa = PBXGroup;
+			children = (
+				EF0D7D152D26F0D0000E516A /* include */,
+				EF0D7D162D26F0D0000E516A /* libaanetwork.xcframework */,
+			);
+			name = libaanetwork;
+			path = AniAnglia/Libraries/aateam/libaanetwork;
+			sourceTree = "<group>";
+		};
 		EF44D0CE2CD6A36800C8B608 /* Main */ = {
 			isa = PBXGroup;
 			children = (
@@ -3321,7 +3373,7 @@
 				EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */,
 				EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */,
 				EF8097C32D0CC6C1006F18DF /* FilterViewController.h */,
-				EF8097C42D0CC6F2006F18DF /* FilterViewController.m */,
+				EF8097C42D0CC6F2006F18DF /* FilterViewController.mm */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -3329,6 +3381,13 @@
 		EFAB992D2C6FF833008208E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */,
+				EF0D7D182D26F0E7000E516A /* libanixart.xcframework */,
+				EF0D7D172D26F0D0000E516A /* libaanetwork */,
+				EF9A38A92D19FC4E009A83EE /* libtorrenthelper.xcframework */,
+				EF8097CF2D15DC05006F18DF /* try_signal.xcframework */,
+				EF8097CD2D15CF85006F18DF /* SystemConfiguration.framework */,
+				EF8097C62D15B92C006F18DF /* libtorrent.xcframework */,
 				EFE474962CFA42B500508136 /* MediaPlayer.framework */,
 				EF5F02B62CCE956700EA11BB /* Libraries */,
 				EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */,
@@ -3435,7 +3494,7 @@
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
 				EF5A3CD02C7FA1AB00B4F637 /* BookmarksViewController.mm in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
-				EF8097C52D0CC6F2006F18DF /* FilterViewController.m in Sources */,
+				EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
@@ -3520,7 +3579,9 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-I./AniAnglia/Libraries/include",
-					"-I./AniAnglia/Libraries/libanixart/include",
+					"-I./AniAnglia/Libraries/aateam/libanixart/include",
+					"-I./AniAnglia/Libraries/aateam/libtorrentrepo/include",
+					"-I./AniAnglia/Libraries/aateam/libaanetwork/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";
@@ -3580,7 +3641,9 @@
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
 					"-I./AniAnglia/Libraries/include",
-					"-I./AniAnglia/Libraries/libanixart/include",
+					"-I./AniAnglia/Libraries/aateam/libanixart/include",
+					"-I./AniAnglia/Libraries/aateam/libtorrentrepo/include",
+					"-I./AniAnglia/Libraries/aateam/libaanetwork/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";

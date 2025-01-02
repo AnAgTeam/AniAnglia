@@ -43,7 +43,7 @@
 -(void)searchViewDidShowWithController:(NavigationSearchViewController*)view_controller query:(NSString*)query {
     libanixart::requests::SearchRequest request;
     request.query = TO_STDSTRING(query);
-    [_releases_view setPages:_api_proxy.api->search().release_search(request)];
+    [_releases_view setPages:_api_proxy.api->search().release_search(request, 0)];
 }
 -(void)reloadWithText:(NSString*)text {
     

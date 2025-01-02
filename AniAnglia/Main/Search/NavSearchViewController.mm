@@ -144,12 +144,21 @@
 -(void)setInlineSearchView:(NavigationSearchInlineView *)inline_search_view {
     _inline_search_view = inline_search_view;
     _inline_search_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _inline_search_view_constraints = @[
-        [_inline_search_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_inline_search_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        [_inline_search_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_inline_search_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
-     ];
+    if (@available(iOS 15.0, *)) {
+        _inline_search_view_constraints = @[
+            [_inline_search_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+            [_inline_search_view.bottomAnchor constraintEqualToAnchor:self.view.keyboardLayoutGuide.topAnchor],
+            [_inline_search_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+            [_inline_search_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
+        ];
+    } else {
+        _inline_search_view_constraints = @[
+            [_inline_search_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+            [_inline_search_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+            [_inline_search_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+            [_inline_search_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
+        ];
+    }
 }
 -(void)setSearchView:(NavigationSearchView *)search_view {
     _search_view = search_view;

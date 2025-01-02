@@ -120,7 +120,9 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     
     [_pip_controller setDelegate:self];
     [self loadStreamsAndAutoPlay:YES completion:completion_handler];
-    [self showViewController:_player_view_controller];
+    if (auto_show) {
+        [self showViewController:_player_view_controller];
+    }
 }
 
 -(void)showAndRunPlayer {
@@ -128,8 +130,11 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     [self runPlayer];
 }
 
--(void)showViewController:(UIViewController*)view_controller{
+-(void)showViewController:(UIViewController*)view_controller {
     UIViewController* top_view_controller = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    if (view_controller.presentingViewController) {
+        return;
+    }
     while (top_view_controller.presentedViewController) {
         top_view_controller = top_view_controller.presentedViewController;
     }

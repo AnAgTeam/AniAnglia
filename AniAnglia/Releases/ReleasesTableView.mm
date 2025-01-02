@@ -32,6 +32,7 @@
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) NSLock* lock;
 @property(nonatomic, retain) LoadableView* loadable_view;
+@property(nonatomic, retain) UILabel* empty_label;
 @end
 
 @implementation ReleasesTableViewCell
@@ -171,10 +172,26 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     [self setDelegate:self];
     [self setDataSource:self];
     [self setPrefetchDataSource:self];
+    
+    _loadable_view = [LoadableView new];
+    [self addSubview:_loadable_view];
+    _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [_loadable_view.centerXAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.centerXAnchor].active = YES;
+    [_loadable_view.centerYAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.centerYAnchor].active = YES;
+    
+    _empty_label = [UILabel new];
+    [self addSubview:_empty_label];
+    _empty_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [_empty_label.centerXAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.centerXAnchor].active = YES;
+    [_empty_label.centerYAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.centerYAnchor].active = YES;
+    _empty_label.text = NSLocalizedString(@"app.releases_table_view.is_empty_label.text", "");
+    _empty_label.hidden = YES;
 }
 
 -(void)setupLayout {
     self.backgroundColor = [UIColor clearColor];
+    _loadable_view.backgroundColor = [UIColor clearColor];
+    _empty_label.textColor = [AppColorProvider textColor];
 }
 
 -(UINavigationController*)getRootNavigationController {
@@ -192,6 +209,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 }
 
 -(void)appendItemsFromBlock:(std::vector<libanixart::Release::Ptr>(^)())block {
+    [_loadable_view startLoading];
     [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
         /* todo: change to thread-safe */
         auto new_items = block();
@@ -200,6 +218,8 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
         [self->_lock unlock];
         return YES;
     } withUICompletion:^{
+        [self->_loadable_view endLoading];
+        self->_empty_label.hidden = !self->_releases.empty();
         [self reloadData];
     }];
 }
@@ -214,6 +234,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 -(void)reset {
     /* todo: load cancel */
     _releases.clear();
+    _empty_label.hidden = YES;
     [self reloadData];
 }
 

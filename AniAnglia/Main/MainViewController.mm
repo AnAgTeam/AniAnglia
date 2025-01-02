@@ -178,11 +178,9 @@
 }
 
 -(void)pageViewController:(UIPageViewController*)page_view_controller didFinishAnimating:(BOOL)finished previousViewControllers:(NSArray*)previous_view_controllers transitionCompleted:(BOOL)completed {
-    if (finished && [previous_view_controllers count] > 0) {
-        if (completed) {
-            _current_page_index = [_page_view_controllers indexOfObject:self.viewControllers[0]];
-            [_main_view_controller didTransitionToPageAtIndex:_current_page_index completed:completed];
-        }
+    if (finished && completed && [previous_view_controllers count] > 0) {
+        _current_page_index = [_page_view_controllers indexOfObject:self.viewControllers[0]];
+        [_main_view_controller didTransitionToPageAtIndex:_current_page_index completed:completed];
     }
 }
 
@@ -190,10 +188,7 @@
     if (_current_page_index == index || index >= [_page_view_controllers count]) {
         return;
     }
-    UIPageViewControllerNavigationDirection direction = UIPageViewControllerNavigationDirectionForward;
-    if (_current_page_index > index) {
-        direction = UIPageViewControllerNavigationDirectionReverse;
-    }
+    UIPageViewControllerNavigationDirection direction = _current_page_index < index ? UIPageViewControllerNavigationDirectionForward : UIPageViewControllerNavigationDirectionReverse;
     _current_page_index = index;
     
     [self setDataSource:nil];
@@ -228,7 +223,7 @@
     [super viewWillAppear:animated];
     /* todo: fix toolbar */
     self.navigationController.toolbarHidden = YES;
-    _pages_segment_control.userInteractionEnabled = YES;
+    [self pageSegmentControlInteractionEnabled:YES];
 }
 
 -(void)viewDidLoad {
@@ -274,7 +269,7 @@
     UIView* pages_view = _pages_view_controller.view;
     [self.view addSubview:pages_view];
     pages_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [pages_view.topAnchor constraintEqualToAnchor:_pages_segment_control.bottomAnchor constant:2].active = YES;
+    [pages_view.topAnchor constraintEqualToAnchor:_pages_segment_control.bottomAnchor constant:8].active = YES;
     [pages_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor].active = YES;
     [pages_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor].active = YES;
     [pages_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor].active = YES;
