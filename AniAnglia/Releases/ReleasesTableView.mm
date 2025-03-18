@@ -26,8 +26,8 @@
 @end
 
 @interface ReleasesTableView () {
-    libanixart::Pageable<libanixart::Release>::UniqPtr _pages;
-    std::vector<libanixart::Release::Ptr> _releases;
+    anixart::Pageable<anixart::Release>::UPtr _pages;
+    std::vector<anixart::Release::Ptr> _releases;
 }
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) NSLock* lock;
@@ -53,6 +53,7 @@ static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
 }
 
 -(void)setup {
+//    self.preservesSuperviewLayoutMargins = YES;
     _image_view = [LoadableImageView new];
     [self addSubview:_image_view];
     _image_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -62,13 +63,14 @@ static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
     [_image_view.widthAnchor constraintEqualToAnchor:_image_view.heightAnchor multiplier:0.56].active = YES;
     _image_view.layer.cornerRadius = 6.0;
     _image_view.clipsToBounds = YES;
+    _image_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(10, 0, 10, 0);
 
     _title_label = [UILabel new];
     [self addSubview:_title_label];
     _title_label.translatesAutoresizingMaskIntoConstraints = NO;
     [_title_label.topAnchor constraintEqualToAnchor:_image_view.topAnchor].active = YES;
     [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:5].active = YES;
-    [_title_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-5].active = YES;
+    [_title_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor].active = YES;
 //    [_title_label.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.25].active = YES;
     _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 2;
@@ -88,7 +90,7 @@ static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
     [_description_label.topAnchor constraintEqualToAnchor:_ep_count_label.bottomAnchor].active = YES;
     [_description_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor].active = YES;
     [_description_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor].active = YES;
-    [_description_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
+    [_description_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor].active = YES;
     _description_label.textAlignment = NSTextAlignmentJustified;
     _description_label.numberOfLines = -1;
     
@@ -155,7 +157,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     return self;
 }
 
--(instancetype)initWithPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages {
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     self = [super init];
     
     [self setup];
@@ -172,6 +174,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     [self setDelegate:self];
     [self setDataSource:self];
     [self setPrefetchDataSource:self];
+    self.preservesSuperviewLayoutMargins = YES;
     
     _loadable_view = [LoadableView new];
     [self addSubview:_loadable_view];
@@ -208,9 +211,9 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     return nil;
 }
 
--(void)appendItemsFromBlock:(std::vector<libanixart::Release::Ptr>(^)())block {
+-(void)appendItemsFromBlock:(std::vector<anixart::Release::Ptr>(^)())block {
     [_loadable_view startLoading];
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         /* todo: change to thread-safe */
         auto new_items = block();
         [self->_lock lock];
@@ -224,7 +227,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
     }];
 }
 
--(void)setPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages {
+-(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     _pages = std::move(pages);
     [self reset];
     [self appendItemsFromBlock:^{
@@ -247,7 +250,7 @@ static const CGFloat TABLE_CELL_HEIGHT = 175;
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     ReleasesTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesTableViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    libanixart::Release::Ptr& release = _releases[index];
+    anixart::Release::Ptr& release = _releases[index];
     
     cell.title_label.text = TO_NSSTRING(release->title_ru);
     cell.description_label.text = TO_NSSTRING(release->description);
@@ -277,7 +280,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 -(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
-    libanixart::Release::Ptr& release = _releases[index];
+    anixart::Release::Ptr& release = _releases[index];
     [[self getRootNavigationController] pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
@@ -310,7 +313,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 -(void)addCellToListAtIndexPath:(NSIndexPath*)index_path {
     NSLog(@"addCellToListAtIndexPath:%@", index_path);
 }
--(void)addCellToList:(libanixart::ProfileList::Status)status atIndexPath:(NSIndexPath*)index_path {
+-(void)addCellToList:(anixart::Profile::ListStatus)status atIndexPath:(NSIndexPath*)index_path {
     NSLog(@"addCellToList:%d atIndexPath:%@", status, index_path);
 }
 

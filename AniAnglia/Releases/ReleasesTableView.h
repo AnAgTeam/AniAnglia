@@ -7,12 +7,11 @@
 
 #import <UIKit/UIKit.h>
 #import "LibanixartApi.h"
-#import "NavSearchViewController.h"
 
 @interface ReleasesTableView : UITableView <UITableViewDelegate, UITableViewDataSource, UITableViewDataSourcePrefetching>
 @property(nonatomic) BOOL trailing_action_disabled;
 
--(instancetype)initWithPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages;
--(void)setPages:(libanixart::Pageable<libanixart::Release>::UniqPtr)pages;
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(void)reset;
 @end

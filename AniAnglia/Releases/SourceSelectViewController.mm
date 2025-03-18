@@ -20,10 +20,10 @@
 @end
 
 @interface SourceSelectViewController ()
-@property(atomic) long long release_id;
-@property(atomic) long long type_id;
+@property(atomic) anixart::ReleaseID release_id;
+@property(atomic) anixart::EpisodeTypeID type_id;
 @property(nonatomic, retain) NSString* type_name;
-@property(nonatomic) std::vector<libanixart::EpisodeSource::Ptr> sources_arr;
+@property(nonatomic) std::vector<anixart::EpisodeSource::Ptr> sources_arr;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UILabel* type_name_label;
 @property(nonatomic, retain) UITableView* table_view;
@@ -62,7 +62,7 @@
 
 @implementation SourceSelectViewController
 
--(instancetype)initWithReleaseID:(long long)release_id typeID:(long long)type_id typeName:(NSString*)type_name {
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id typeID:(anixart::EpisodeTypeID)type_id typeName:(NSString*)type_name {
     self = [super init];
     
     _release_id = release_id;
@@ -82,7 +82,7 @@
                 [self->_loading_ind stopAnimating];
                 [self setupSourcesView];
             });
-        } catch (libanixart::ApiError& e) {
+        } catch (anixart::ApiError& e) {
             // error
         }
     });
@@ -180,7 +180,7 @@
 
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
-    libanixart::EpisodeSource::Ptr& ep_source = _sources_arr[index];
+    anixart::EpisodeSource::Ptr& ep_source = _sources_arr[index];
     
     [self.navigationController pushViewController:[[EpisodeSelectViewController alloc] initWithReleaseID:_release_id typeID:_type_id typeName:_type_name sourceID:ep_source->id sourceName:TO_NSSTRING(ep_source->name)] animated:NO];
 }

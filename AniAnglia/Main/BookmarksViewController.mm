@@ -9,6 +9,12 @@
 #import "BookmarksViewController.h"
 #import "AppColor.h"
 
+#import "TorrentAVAsset.h"
+#import "PlayerViewController.h"
+#import "StringCvt.h"
+
+#import <torrentrepo/TorrentSession.hpp>
+
 @interface BookmarksViewController ()
 
 @end

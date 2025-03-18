@@ -96,8 +96,70 @@
 "app.player.stream_not_found_error.default_action.text" = "ОК";
 
 /* SEARCH FILTER */
+"app.filter.multi_select._modal.done_button.title" = "Готово";
+
 "app.filter.status_select_button.menu.title" = "Статус";
-"app.filter.status_select_button.menu.none.text" = "Не выбрано";
+"app.filter.status_select_button.menu.none.text" = "Похуй";
 "app.filter.status_select_button.menu.finished.text" = "Вышел";
 "app.filter.status_select_button.menu.ongoing.text" = "Онгоинг";
 "app.filter.status_select_button.menu.upcoming.text" = "Анонс";
+
+"app.filter.category_select_button.menu.title" = "Категория";
+"app.filter.category_select_button.menu.none.text" = "Похуй";
+"app.filter.category_select_button.menu.series.text" = "Сериал";
+"app.filter.category_select_button.menu.movies.text" = "Фильмы";
+"app.filter.category_select_button.menu.ova.text" = "OVA";
+
+"app.filter.genres_select_button.menu.title" = "Жанры";
+
+"app.filter.country_select_button.title" = "Страна";
+"app.filter.country_select_button.menu.none.text" = "Похуй";
+"app.filter.country_select_button.menu.japan.text" = "Япония";
+"app.filter.country_select_button.menu.china.text" = "Китай";
+
+"app.filter.types_select_button.menu.title" = "Озвучки";
+
+"app.filter.studio_select_button.title" = "Студия";
+"app.filter.studio_select_button.menu.none.text" = "Похуй";
+
+"app.filter.season_select_button.title" = "Сезон";
+"app.filter.season_select_button.menu.none.text" = "Похуй";
+"app.filter.season_select_button.menu.winter.text" = "Зима";
+"app.filter.season_select_button.menu.spring.text" = "Весна";
+"app.filter.season_select_button.menu.summer.text" = "Лето";
+"app.filter.season_select_button.menu.fall.text" = "Осень";
+
+"app.filter.episode_count_select_button.title" = "Количество эпизодов";
+"app.filter.episode_count_select_button.menu.none.text" = "Похуй";
+"app.filter.episode_count_select_button.menu.1_to_12.text" = "От 1 по 12";
+"app.filter.episode_count_select_button.menu.13_to_24.text" = "От 13 по 24";
+"app.filter.episode_count_select_button.menu.25_to_100.text" = "От 25 по 100";
+"app.filter.episode_count_select_button.menu.100_plus.text" = "От 100";
+
+"app.filter.episode_duration_select_button.title" = "Длительность эпизодов";
+"app.filter.episode_duration_select_button.menu.none.text" = "Похуй";
+"app.filter.episode_duration_select_button.menu.to_10.text" = "До 10 минут";
+"app.filter.episode_duration_select_button.menu.to_30.text" = "До 30 минут";
+"app.filter.episode_duration_select_button.menu.30_plus.text" = "От 30 минут";
+
+"app.filter.list_exclude_select_button.menu.title" = "Исключить закладки";
+"app.filter.list_exclude_select_button.menu.favorite" = "Избранное";
+"app.filter.list_exclude_select_button.menu.watching" = "Смотрю";
+"app.filter.list_exclude_select_button.menu.plan" = "В планах";
+"app.filter.list_exclude_select_button.menu.watched" = "Просмотрено";
+"app.filter.list_exclude_select_button.menu.hold_on" = "Отложено";
+"app.filter.list_exclude_select_button.menu.dropped" = "Брошено";
+
+"app.filter.age_rating_select_button.menu.title" = "Возрастное ограничение";
+"app.filter.age_rating_select_button.menu.g" = "0+";
+"app.filter.age_rating_select_button.menu.pg6" = "6+";
+"app.filter.age_rating_select_button.menu.pg12" = "12+";
+"app.filter.age_rating_select_button.menu.r16" = "16+";
+"app.filter.age_rating_select_button.menu.r18" = "18+";
+
+"app.filter.sort_select_button.title" = "Сортировка";
+"app.filter.sort_select_button.menu.release_date.text" = "По дате выхода";
+"app.filter.sort_select_button.menu.grade.text" = "По рейтингу";
+"app.filter.sort_select_button.menu.year.text" = "По году";
+
+"app.filter.search_button.title" = "Поиск";

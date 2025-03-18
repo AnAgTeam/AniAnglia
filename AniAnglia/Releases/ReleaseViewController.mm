@@ -15,9 +15,9 @@
 #import "LoadableView.h"
 
 @interface ReleaseViewController ()
-@property(nonatomic) NSInteger release_id;
+@property(nonatomic) anixart::ReleaseID release_id;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
-@property(nonatomic) libanixart::Release::Ptr release_info;
+@property(nonatomic) anixart::Release::Ptr release_info;
 
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) LoadableView* content_view;
@@ -30,7 +30,7 @@
 @end
 
 @implementation ReleaseViewController
-static auto RELEASE_LIST_STATES = @[
+static NSArray<NSString*>* RELEASE_LIST_STATES = @[
     NSLocalizedString(@"app.release.state.none.title", ""),
     NSLocalizedString(@"app.release.state.watching.title", ""),
     NSLocalizedString(@"app.release.state.plan.title", ""),
@@ -39,24 +39,24 @@ static auto RELEASE_LIST_STATES = @[
     NSLocalizedString(@"app.release.state.dropped.title", "")
 ];
 
-NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
+NSString* profile_list_status_name(anixart::Profile::ListStatus status) {
     switch (status) {
-        case libanixart::ProfileList::Status::NotWatching:
+        case anixart::Profile::ListStatus::NotWatching:
             return NSLocalizedString(@"app.release.state.none.title", "");
-        case libanixart::ProfileList::Status::Watching:
+        case anixart::Profile::ListStatus::Watching:
             return NSLocalizedString(@"app.release.state.watching.title", "");
-        case libanixart::ProfileList::Status::Plan:
+        case anixart::Profile::ListStatus::Plan:
             return NSLocalizedString(@"app.release.state.plan.title", "");
-        case libanixart::ProfileList::Status::Watched:
+        case anixart::Profile::ListStatus::Watched:
             return NSLocalizedString(@"app.release.state.watched.title", "");
-        case libanixart::ProfileList::Status::HoldOn:
+        case anixart::Profile::ListStatus::HoldOn:
             return NSLocalizedString(@"app.release.state.deffered.title", "");
-        case libanixart::ProfileList::Status::Dropped:
+        case anixart::Profile::ListStatus::Dropped:
             return NSLocalizedString(@"app.release.state.dropped.title", "");
     }
 };
 
--(instancetype)initWithReleaseID:(NSInteger)release_id {
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id {
     self = [super init];
     
     self.release_id = release_id;
@@ -67,7 +67,7 @@ NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
 
 -(void)loadReleaseInfo {
     [self->_content_view startLoading];
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         self->_release_info = self->_api_proxy.api->releases().get_release(self->_release_id);
         return YES;
     } withUICompletion:^{
@@ -160,18 +160,18 @@ NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
     [_add_list_button setTitle:profile_list_status_name(_release_info->profile_list_status) forState:UIControlStateNormal];
     [_add_list_button setImage:[UIImage systemImageNamed:@"chevron.down"] forState:UIControlStateNormal];
     
-    auto create_list_menu_action = [self](libanixart::ProfileList::Status status) {
+    auto create_list_menu_action = [self](anixart::Profile::ListStatus status) {
         return [UIAction actionWithTitle:profile_list_status_name(status) image:nil identifier:nil handler:^(UIAction* action){
             [self addListMenuSelected:status];
         }];
     };
     UIMenu* add_list_menu = [UIMenu menuWithTitle:NSLocalizedString(@"app.release.add_list_button.menu.title", "") children:@[
-        create_list_menu_action(libanixart::ProfileList::Status::NotWatching),
-        create_list_menu_action(libanixart::ProfileList::Status::Watching),
-        create_list_menu_action(libanixart::ProfileList::Status::Plan),
-        create_list_menu_action(libanixart::ProfileList::Status::Watched),
-        create_list_menu_action(libanixart::ProfileList::Status::HoldOn),
-        create_list_menu_action(libanixart::ProfileList::Status::Dropped)
+        create_list_menu_action(anixart::Profile::ListStatus::NotWatching),
+        create_list_menu_action(anixart::Profile::ListStatus::Watching),
+        create_list_menu_action(anixart::Profile::ListStatus::Plan),
+        create_list_menu_action(anixart::Profile::ListStatus::Watched),
+        create_list_menu_action(anixart::Profile::ListStatus::HoldOn),
+        create_list_menu_action(anixart::Profile::ListStatus::Dropped)
     ]];
     [_add_list_button setMenu:add_list_menu];
     _add_list_button.showsMenuAsPrimaryAction = YES;
@@ -222,12 +222,11 @@ NSString* profile_list_status_name(libanixart::ProfileList::Status status) {
     [_play_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
 }
 
--(void)addListMenuSelected:(libanixart::ProfileList::Status)status {
+-(void)addListMenuSelected:(anixart::Profile::ListStatus)status {
     NSLog(@"addListMenuSelected: %d", status);
 }
 
 -(IBAction)playButtonPressed:(id)sender {
-    self.navigationController.toolbarHidden = NO;
     [self.navigationController pushViewController:[[TypeSelectViewController alloc] initWithReleaseID:_release_info->id] animated:YES];
 }
 

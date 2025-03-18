@@ -23,12 +23,12 @@
 @end
 
 @interface EpisodeSelectViewController ()
-@property(atomic) long long release_id;
-@property(atomic) long long type_id;
+@property(atomic) anixart::ReleaseID release_id;
+@property(atomic) anixart::EpisodeTypeID type_id;
 @property(nonatomic, retain) NSString* type_name;
-@property(atomic) long long source_id;
+@property(atomic) anixart::EpisodeSourceID source_id;
 @property(nonatomic, retain) NSString* source_name;
-@property(nonatomic) std::vector<libanixart::Episode::Ptr> episodes_arr;
+@property(nonatomic) std::vector<anixart::Episode::Ptr> episodes_arr;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UILabel* type_name_label;
 @property(nonatomic, retain) UITableView* table_view;
@@ -83,7 +83,7 @@
 
 @implementation EpisodeSelectViewController
 
--(instancetype)initWithReleaseID:(long long)release_id typeID:(long long)type_id typeName:(NSString*)type_name sourceID:(long long)source_id sourceName:(NSString*) source_name {
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id typeID:(anixart::EpisodeTypeID)type_id typeName:(NSString*)type_name sourceID:(anixart::EpisodeSourceID)source_id sourceName:(NSString*) source_name {
     self = [super init];
     
     _release_id = release_id;
@@ -100,12 +100,12 @@
     [_loading_ind startAnimating];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
-            self->_episodes_arr = self->_api_proxy.api->episodes().get_release_episodes(self->_release_id, self->_type_id, self->_source_id, libanixart::Episode::Sort::FromLeast);
+            self->_episodes_arr = self->_api_proxy.api->episodes().get_release_episodes(self->_release_id, self->_type_id, self->_source_id, anixart::Episode::Sort::FromLeast);
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self->_loading_ind stopAnimating];
                 [self setupEpisodesView];
             });
-        } catch (libanixart::ApiError& e) {
+        } catch (anixart::ApiError& e) {
             // error
         }
     });
@@ -123,7 +123,7 @@
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
     EpisodeViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[EpisodeViewCell getIndentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    libanixart::Episode::Ptr episode = _episodes_arr[index];
+    anixart::Episode::Ptr episode = _episodes_arr[index];
     cell.name_label.text = TO_NSSTRING(episode->name);
     [cell setWatchedStatus:episode->is_watched];
 
@@ -233,7 +233,7 @@
     EpisodeViewCell* cell = [table_view cellForRowAtIndexPath:index_path];
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
-    libanixart::Episode::Ptr episode = _episodes_arr[index];
+    anixart::Episode::Ptr episode = _episodes_arr[index];
     [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES completion:^(BOOL errored){
         if (errored) {
             return;
@@ -242,7 +242,7 @@
         episode->is_watched = YES;
         [cell setWatchedStatus:YES];
         
-        [self->_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+        [self->_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
             api->episodes().add_watched_episode(self->_release_id, self->_source_id, episode->position);
             return YES;
         } withUICompletion:^{
@@ -258,14 +258,14 @@
 -(void)cellChangeViewedActionPressed:(NSIndexPath*)index_path {
     NSInteger index = [index_path item];
     EpisodeViewCell* cell = [_table_view cellForRowAtIndexPath:index_path];
-    libanixart::Episode::Ptr episode = _episodes_arr[index];
+    anixart::Episode::Ptr episode = _episodes_arr[index];
     
     BOOL to_set_watched = !_episodes_arr[index]->is_watched;
     /* pre set just for instant UI update. Then update to real state */
     episode->is_watched = to_set_watched;
     [cell setWatchedStatus:to_set_watched];
     
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         if (to_set_watched) {
             api->episodes().add_watched_episode(self->_release_id, self->_source_id, episode->position);
         } else {

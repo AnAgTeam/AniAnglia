@@ -10,8 +10,6 @@
 #import "LibanixartApi.h"
 #import "StringCvt.h"
 
-#import <libtorrentrepo/TorrentSession.hpp>
-
 #import <AVFoundation/AVFoundation.h>
 
 @interface AppDelegate ()
@@ -27,8 +25,6 @@
     AVAudioSession* audio_sess = [AVAudioSession sharedInstance];
     [audio_sess setCategory:AVAudioSessionCategoryPlayback error:nil];
     [audio_sess setActive:NO error:nil];
-    
-    libtorrentrepo::TorrentSession tses;
     
     return YES;
 }

@@ -23,8 +23,8 @@
 @end
 
 @interface TypeSelectViewController ()
-@property(atomic) long long release_id;
-@property(nonatomic) std::vector<libanixart::EpisodeType::Ptr> types_arr;
+@property(atomic) anixart::ReleaseID release_id;
+@property(nonatomic) std::vector<anixart::EpisodeType::Ptr> types_arr;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UITableView* table_view;
 @property(nonatomic, retain) UIActivityIndicatorView* loading_ind;
@@ -91,7 +91,7 @@
 
 @implementation TypeSelectViewController
 
--(instancetype)initWithReleaseID:(long long)release_id {
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id {
     self = [super init];
     
     self.release_id = release_id;
@@ -102,7 +102,7 @@
 
 -(void)loadTypes {
     [_loading_ind startAnimating];
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api) {
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         self->_types_arr = api->episodes().get_release_types(self->_release_id);
         return YES;
     } withUICompletion:^{
@@ -178,7 +178,7 @@
 
 - (void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
-    libanixart::EpisodeType::Ptr& type = _types_arr[index];
+    anixart::EpisodeType::Ptr& type = _types_arr[index];
     SourceSelectViewController* vc = [[SourceSelectViewController alloc] initWithReleaseID:_release_id typeID:type->id typeName:TO_NSSTRING(type->name)];
     [self.navigationController pushViewController:vc animated:YES];
 }

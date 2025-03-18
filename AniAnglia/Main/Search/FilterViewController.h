@@ -6,7 +6,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SearchViewController.h"
+#import "ReleasesHistoryTableViewController.h"
 
-@interface FilterViewController : UIViewController
+@interface FilterViewController : UIViewController <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesHistoryTableViewControllerDelegate>
 
 @end

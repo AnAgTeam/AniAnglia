@@ -6,8 +6,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LibanixartApi.h"
 
 @interface TypeSelectViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 
--(instancetype)initWithReleaseID:(long long)release_id;
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id;
 @end

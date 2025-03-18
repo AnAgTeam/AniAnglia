@@ -10,13 +10,11 @@
 		CEA6E87E2CD7D57E00D4588F /* ProfileStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */; };
 		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
 		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
-		EF0D7D1F2D26F107000E516A /* libaanetwork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D162D26F0D0000E516A /* libaanetwork.xcframework */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
 		EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941142C723F8600832A6C /* CoreGraphics.framework */; };
 		EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */; };
-		EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */; };
 		EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */; };
 		EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */; };
 		EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CCB2C7FA18A00B4F637 /* MainViewController.mm */; };
@@ -26,7 +24,9 @@
 		EF5FFDC32CCE88A300EA11BB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = EF5FFDC12CCE88A300EA11BB /* Localizable.strings */; };
 		EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF60AC732C6FB2FE00CD33A8 /* AppDelegate.mm */; };
 		EF60AC7F2C6FB30100CD33A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */; };
-		EF6A56222CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */; };
+		EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF65E3452D82059D00114102 /* ReleasesTableViewController.mm */; };
+		EF65E3492D82297C00114102 /* ReleasesHistoryTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF65E3482D82297C00114102 /* ReleasesHistoryTableViewController.mm */; };
+		EF65E34B2D8393BE00114102 /* SearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF65E34A2D8393BE00114102 /* SearchViewController.m */; };
 		EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF70960B2C77A56500C95429 /* RestoreViewController.mm */; };
 		EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8097C42D0CC6F2006F18DF /* FilterViewController.mm */; };
 		EF8097CA2D15CB70006F18DF /* libtorrent.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF8097C62D15B92C006F18DF /* libtorrent.xcframework */; };
@@ -43,13 +43,15 @@
 		EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F93F2CB497D500555A26 /* AVKit.framework */; };
 		EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */; };
 		EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */; };
+		EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA4D6712D59146B00005139 /* libnetsess.xcframework */; };
+		EFA4D6732D59146B00005139 /* libnetsess.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EFA4D6712D59146B00005139 /* libnetsess.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */; };
 		EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFBF59B52C768CF1008F1967 /* AuthNavigationController.mm */; };
 		EFC6077B2C76169500BA8B44 /* UITextErrorField.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */; };
+		EFCBC3A52D54F6C600080866 /* TorrentAVAsset.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFCBC3A42D54F6C600080866 /* TorrentAVAsset.mm */; };
 		EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */; };
 		EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E02CAC401700E87BF1 /* StringCvt.mm */; };
 		EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */; };
-		EFD5CD6C2CD8436000A1E057 /* NavSearchViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.mm */; };
 		EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; };
 		EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; };
 		EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD62CCE956700EA11BB /* boost_regex.xcframework */; };
@@ -61,14 +63,22 @@
 		EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		EFA4D6742D59146B00005139 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				EFA4D6732D59146B00005139 /* libnetsess.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		CEA6E87D2CD7D57E00D4588F /* ProfileStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ProfileStoryboard.storyboard; sourceTree = "<group>"; };
-		EF0D7D0F2D26F0D0000E516A /* JsonTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = JsonTools.hpp; sourceTree = "<group>"; };
-		EF0D7D102D26F0D0000E516A /* NetTypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetTypes.hpp; sourceTree = "<group>"; };
-		EF0D7D112D26F0D0000E516A /* StringTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = StringTools.hpp; sourceTree = "<group>"; };
-		EF0D7D122D26F0D0000E516A /* TimeTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TimeTools.hpp; sourceTree = "<group>"; };
-		EF0D7D132D26F0D0000E516A /* UrlSession.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UrlSession.hpp; sourceTree = "<group>"; };
-		EF0D7D162D26F0D0000E516A /* libaanetwork.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libaanetwork.xcframework; sourceTree = "<group>"; };
 		EF0D7D182D26F0E7000E516A /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = AniAnglia/Libraries/aateam/libanixart/libanixart.xcframework; sourceTree = "<group>"; };
 		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
 		EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AniAnglia.entitlements; sourceTree = "<group>"; };
@@ -78,8 +88,6 @@
 		EF4941142C723F8600832A6C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LibanixartApi.mm; sourceTree = "<group>"; };
 		EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LibanixartApi.h; sourceTree = "<group>"; };
-		EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SearchReleasesTableView.mm; sourceTree = "<group>"; };
-		EF53C7F02CE125D000C15B87 /* SearchReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchReleasesTableView.h; sourceTree = "<group>"; };
 		EF5A3CB12C7F928400B4F637 /* AppDataController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDataController.h; sourceTree = "<group>"; };
 		EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDataController.mm; sourceTree = "<group>"; };
 		EF5A3CB42C7F99A200B4F637 /* StringCvt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringCvt.h; sourceTree = "<group>"; };
@@ -1264,8 +1272,12 @@
 		EF60AC782C6FB2FE00CD33A8 /* AuthViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthViewController.h; sourceTree = "<group>"; };
 		EF60AC7E2C6FB30100CD33A8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EF60AC832C6FB30100CD33A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesSearchHistoryView.mm; sourceTree = "<group>"; };
-		EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesSearchHistoryView.h; sourceTree = "<group>"; };
+		EF65E3442D82058B00114102 /* ReleasesTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesTableViewController.h; sourceTree = "<group>"; };
+		EF65E3452D82059D00114102 /* ReleasesTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesTableViewController.mm; sourceTree = "<group>"; };
+		EF65E3472D82296C00114102 /* ReleasesHistoryTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesHistoryTableViewController.h; sourceTree = "<group>"; };
+		EF65E3482D82297C00114102 /* ReleasesHistoryTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesHistoryTableViewController.mm; sourceTree = "<group>"; };
+		EF65E34A2D8393BE00114102 /* SearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchViewController.m; sourceTree = "<group>"; };
+		EF65E34C2D8393CD00114102 /* SearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchViewController.h; sourceTree = "<group>"; };
 		EF70960B2C77A56500C95429 /* RestoreViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RestoreViewController.mm; sourceTree = "<group>"; };
 		EF70960D2C77A57200C95429 /* RestoreViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RestoreViewController.h; sourceTree = "<group>"; };
 		EF8097C32D0CC6C1006F18DF /* FilterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FilterViewController.h; sourceTree = "<group>"; };
@@ -1282,7 +1294,6 @@
 		EF8B01B22C7015A200423ECD /* AuthViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthViewController.mm; sourceTree = "<group>"; };
 		EF8B01B32C7015A300423ECD /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		EF8BFF7E2C70060600423ECD /* curl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = curl.xcframework; path = /Users/toilettrauma/AniAnglia/../Desktop/myAppFrameworks/curl.xcframework; sourceTree = "<absolute>"; };
-		EF9A38A92D19FC4E009A83EE /* libtorrenthelper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrenthelper.xcframework; path = AniAnglia/Libraries/libtorrenthelper/libtorrenthelper.xcframework; sourceTree = "<group>"; };
 		EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EpisodeSelectViewController.mm; sourceTree = "<group>"; };
 		EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EpisodeSelectViewController.h; sourceTree = "<group>"; };
 		EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlayerViewController.mm; sourceTree = "<group>"; };
@@ -1290,19 +1301,20 @@
 		EFA1F93F2CB497D500555A26 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		EFA4D6712D59146B00005139 /* libnetsess.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libnetsess.xcframework; path = AniAnglia/Libraries/aateam/libnetsess/libnetsess.xcframework; sourceTree = "<group>"; };
 		EFB158A92C80F6460070E833 /* ReleaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseViewController.h; sourceTree = "<group>"; };
 		EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseViewController.mm; sourceTree = "<group>"; };
 		EFBF59B52C768CF1008F1967 /* AuthNavigationController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthNavigationController.mm; sourceTree = "<group>"; };
 		EFBF59B72C768D12008F1967 /* AuthNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthNavigationController.h; sourceTree = "<group>"; };
 		EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextErrorField.mm; sourceTree = "<group>"; };
 		EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITextErrorField.h; sourceTree = "<group>"; };
+		EFCBC3A42D54F6C600080866 /* TorrentAVAsset.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TorrentAVAsset.mm; sourceTree = "<group>"; };
+		EFCBC3A62D54F6E900080866 /* TorrentAVAsset.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TorrentAVAsset.h; sourceTree = "<group>"; };
 		EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TypeSelectViewController.mm; sourceTree = "<group>"; };
 		EFD505DF2CAB4B4D00E87BF1 /* TypeSelectViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TypeSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E02CAC401700E87BF1 /* StringCvt.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StringCvt.mm; sourceTree = "<group>"; };
 		EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
-		EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NavSearchViewController.mm; sourceTree = "<group>"; };
-		EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NavSearchViewController.h; sourceTree = "<group>"; };
 		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
@@ -1317,7 +1329,6 @@
 			files = (
 				EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */,
 				EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */,
-				EF0D7D1F2D26F107000E516A /* libaanetwork.xcframework in Frameworks */,
 				EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */,
 				EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */,
 				EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */,
@@ -1334,42 +1345,13 @@
 				EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */,
 				EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */,
 				EF8097D02D15DC05006F18DF /* try_signal.xcframework in Frameworks */,
+				EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		EF0D7D142D26F0D0000E516A /* libaanetwork */ = {
-			isa = PBXGroup;
-			children = (
-				EF0D7D0F2D26F0D0000E516A /* JsonTools.hpp */,
-				EF0D7D102D26F0D0000E516A /* NetTypes.hpp */,
-				EF0D7D112D26F0D0000E516A /* StringTools.hpp */,
-				EF0D7D122D26F0D0000E516A /* TimeTools.hpp */,
-				EF0D7D132D26F0D0000E516A /* UrlSession.hpp */,
-			);
-			path = libaanetwork;
-			sourceTree = "<group>";
-		};
-		EF0D7D152D26F0D0000E516A /* include */ = {
-			isa = PBXGroup;
-			children = (
-				EF0D7D142D26F0D0000E516A /* libaanetwork */,
-			);
-			path = include;
-			sourceTree = "<group>";
-		};
-		EF0D7D172D26F0D0000E516A /* libaanetwork */ = {
-			isa = PBXGroup;
-			children = (
-				EF0D7D152D26F0D0000E516A /* include */,
-				EF0D7D162D26F0D0000E516A /* libaanetwork.xcframework */,
-			);
-			name = libaanetwork;
-			path = AniAnglia/Libraries/aateam/libaanetwork;
-			sourceTree = "<group>";
-		};
 		EF44D0CE2CD6A36800C8B608 /* Main */ = {
 			isa = PBXGroup;
 			children = (
@@ -1423,12 +1405,12 @@
 		EF44D0D22CD6A3D600C8B608 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
+				EFCBC3A32D54F6A600080866 /* Torrent */,
+				EFCBC3A22D54F67A00080866 /* Anixart */,
 				EF4941032C72383500832A6C /* AppColor.h */,
 				EF4941052C7238B700832A6C /* AppColor.mm */,
 				EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */,
 				EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */,
-				EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */,
-				EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */,
 				EF5A3CB12C7F928400B4F637 /* AppDataController.h */,
 				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
 				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
@@ -3366,14 +3348,14 @@
 		EF6A56202CF33BF1003D1FF0 /* Search */ = {
 			isa = PBXGroup;
 			children = (
-				EFD5CD6D2CD8436F00A1E057 /* NavSearchViewController.h */,
-				EFD5CD6B2CD8436000A1E057 /* NavSearchViewController.mm */,
-				EF53C7F02CE125D000C15B87 /* SearchReleasesTableView.h */,
-				EF53C7EE2CE125A200C15B87 /* SearchReleasesTableView.mm */,
-				EF6A56232CF33C47003D1FF0 /* ReleasesSearchHistoryView.h */,
-				EF6A56212CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm */,
 				EF8097C32D0CC6C1006F18DF /* FilterViewController.h */,
 				EF8097C42D0CC6F2006F18DF /* FilterViewController.mm */,
+				EF65E3442D82058B00114102 /* ReleasesTableViewController.h */,
+				EF65E3452D82059D00114102 /* ReleasesTableViewController.mm */,
+				EF65E3472D82296C00114102 /* ReleasesHistoryTableViewController.h */,
+				EF65E3482D82297C00114102 /* ReleasesHistoryTableViewController.mm */,
+				EF65E34C2D8393CD00114102 /* SearchViewController.h */,
+				EF65E34A2D8393BE00114102 /* SearchViewController.m */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -3381,10 +3363,9 @@
 		EFAB992D2C6FF833008208E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EFA4D6712D59146B00005139 /* libnetsess.xcframework */,
 				EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */,
 				EF0D7D182D26F0E7000E516A /* libanixart.xcframework */,
-				EF0D7D172D26F0D0000E516A /* libaanetwork */,
-				EF9A38A92D19FC4E009A83EE /* libtorrenthelper.xcframework */,
 				EF8097CF2D15DC05006F18DF /* try_signal.xcframework */,
 				EF8097CD2D15CF85006F18DF /* SystemConfiguration.framework */,
 				EF8097C62D15B92C006F18DF /* libtorrent.xcframework */,
@@ -3401,6 +3382,24 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		EFCBC3A22D54F67A00080866 /* Anixart */ = {
+			isa = PBXGroup;
+			children = (
+				EF4C948A2C7A254300CEF0BE /* LibanixartApi.h */,
+				EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */,
+			);
+			path = Anixart;
+			sourceTree = "<group>";
+		};
+		EFCBC3A32D54F6A600080866 /* Torrent */ = {
+			isa = PBXGroup;
+			children = (
+				EFCBC3A42D54F6C600080866 /* TorrentAVAsset.mm */,
+				EFCBC3A62D54F6E900080866 /* TorrentAVAsset.h */,
+			);
+			path = Torrent;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -3411,6 +3410,7 @@
 				EF60AC6B2C6FB2FE00CD33A8 /* Sources */,
 				EF60AC6C2C6FB2FE00CD33A8 /* Frameworks */,
 				EF60AC6D2C6FB2FE00CD33A8 /* Resources */,
+				EFA4D6742D59146B00005139 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3475,18 +3475,20 @@
 				EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */,
 				EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */,
 				EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */,
-				EFD5CD6C2CD8436000A1E057 /* NavSearchViewController.mm in Sources */,
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
+				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
 				EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EFC6077B2C76169500BA8B44 /* UITextErrorField.mm in Sources */,
+				EF65E34B2D8393BE00114102 /* SearchViewController.m in Sources */,
+				EFCBC3A52D54F6C600080866 /* TorrentAVAsset.mm in Sources */,
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
-				EF6A56222CF33C36003D1FF0 /* ReleasesSearchHistoryView.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
+				EF65E3492D82297C00114102 /* ReleasesHistoryTableViewController.mm in Sources */,
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
@@ -3499,7 +3501,6 @@
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
-				EF53C7EF2CE125A200C15B87 /* SearchReleasesTableView.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
 			);
@@ -3581,7 +3582,7 @@
 					"-I./AniAnglia/Libraries/include",
 					"-I./AniAnglia/Libraries/aateam/libanixart/include",
 					"-I./AniAnglia/Libraries/aateam/libtorrentrepo/include",
-					"-I./AniAnglia/Libraries/aateam/libaanetwork/include",
+					"-I./AniAnglia/Libraries/aateam/libnetsess/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";
@@ -3643,7 +3644,7 @@
 					"-I./AniAnglia/Libraries/include",
 					"-I./AniAnglia/Libraries/aateam/libanixart/include",
 					"-I./AniAnglia/Libraries/aateam/libtorrentrepo/include",
-					"-I./AniAnglia/Libraries/aateam/libaanetwork/include",
+					"-I./AniAnglia/Libraries/aateam/libnetsess/include",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "-lz";

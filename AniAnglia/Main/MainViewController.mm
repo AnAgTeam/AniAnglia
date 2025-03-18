@@ -12,20 +12,18 @@
 #import "ReleaseViewController.h"
 #import "StringCvt.h"
 #import "ReleasesTableView.h"
-#import "SearchReleasesTableView.h"
-#import "ReleasesSearchHistoryView.h"
 
 @interface NoSwipeSegmentedControl : UISegmentedControl
 
 @end
 
 @interface MainPageViewController : UIViewController <UIGestureRecognizerDelegate> {
-    libanixart::requests::FilterRequest _filter_request;
+    anixart::requests::FilterRequest _filter_request;
 }
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) ReleasesTableView* releases_table_view;
 
--(instancetype)initWithFilterRequest:(libanixart::requests::FilterRequest)request;
+-(instancetype)initWithFilterRequest:(anixart::requests::FilterRequest)request;
 
 @end
 
@@ -63,7 +61,7 @@
 
 @implementation MainPageViewController
 
--(instancetype)initWithFilterRequest:(libanixart::requests::FilterRequest)request {
+-(instancetype)initWithFilterRequest:(anixart::requests::FilterRequest)request {
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
@@ -118,32 +116,32 @@
 -(void)setupView {
     _page_view_controllers = @[
         []() -> MainPageViewController* {
-            libanixart::requests::FilterRequest request;
+            anixart::requests::FilterRequest request;
             return [[MainPageViewController alloc] initWithFilterRequest:request];
         }(),
         []() -> MainPageViewController* {
-            libanixart::requests::FilterRequest request;
-            request.status = libanixart::Release::Status::Ongoing;
+            anixart::requests::FilterRequest request;
+            request.status = anixart::Release::Status::Ongoing;
             return [[MainPageViewController alloc] initWithFilterRequest:request];
         }(),
         []() -> MainPageViewController* {
-            libanixart::requests::FilterRequest request;
-            request.status = libanixart::Release::Status::Upcoming;
+            anixart::requests::FilterRequest request;
+            request.status = anixart::Release::Status::Upcoming;
             return [[MainPageViewController alloc] initWithFilterRequest:request];
         }(),
         []() -> MainPageViewController* {
-            libanixart::requests::FilterRequest request;
-            request.status = libanixart::Release::Status::Finished;
+            anixart::requests::FilterRequest request;
+            request.status = anixart::Release::Status::Finished;
             return [[MainPageViewController alloc] initWithFilterRequest:request];
         }(),
         []() -> MainPageViewController* {
-            libanixart::requests::FilterRequest request;
-            request.category = libanixart::Release::Category::Movies;
+            anixart::requests::FilterRequest request;
+            request.category = anixart::Release::Category::Movies;
             return [[MainPageViewController alloc] initWithFilterRequest:request];
         }(),
         []() -> MainPageViewController* {
-            libanixart::requests::FilterRequest request;
-            request.category = libanixart::Release::Category::Ova;
+            anixart::requests::FilterRequest request;
+            request.category = anixart::Release::Category::Ova;
             return [[MainPageViewController alloc] initWithFilterRequest:request];
         }()
     ];
@@ -221,17 +219,11 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    /* todo: fix toolbar */
-    self.navigationController.toolbarHidden = YES;
     [self pageSegmentControlInteractionEnabled:YES];
 }
 
 -(void)viewDidLoad {
     [super viewDidLoad];
-    
-    self.inline_search_view = [ReleasesSearchHistoryView new];
-    self.search_view = [SearchReleasesTableView new];
-    self.hidesBarOnSwipe = NO;
     
     [self setupView];
 }
@@ -283,7 +275,7 @@
 }
 
 -(void)pageSegmentControlInteractionEnabled:(BOOL)interaction_enabled {
-    self.search_bar.userInteractionEnabled = interaction_enabled;
+//    self.search_bar.userInteractionEnabled = interaction_enabled;
     _pages_segment_control.userInteractionEnabled = interaction_enabled;
 }
 
@@ -292,12 +284,12 @@
 }
 
 -(void)willTransitionToPageAtIndex:(NSInteger)index {
-    self.search_bar.userInteractionEnabled = NO;
+//    self.search_bar.userInteractionEnabled = NO;
     _pages_segment_control.userInteractionEnabled = NO;
 }
 
 -(void)didTransitionToPageAtIndex:(NSInteger)index completed:(BOOL)completed {
-    self.search_bar.userInteractionEnabled = YES;
+//    self.search_bar.userInteractionEnabled = YES;
     _pages_segment_control.userInteractionEnabled = YES;
     if (_pages_segment_control.selectedSegmentIndex == index || !completed) {
         return;

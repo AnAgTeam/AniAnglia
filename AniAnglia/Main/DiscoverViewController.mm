@@ -11,8 +11,6 @@
 #import "LibanixartApi.h"
 #import "StringCvt.h"
 #import "AppColor.h"
-#import "SearchReleasesTableView.h"
-#import "ReleasesSearchHistoryView.h"
 #import "LoadableView.h"
 #import "FilterViewController.h"
 
@@ -28,7 +26,7 @@
 @interface InterestingView : UIView <UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 @property(nonatomic, retain) UIActivityIndicatorView* activity_ind;
 @property(nonatomic, retain) UICollectionView* collection_view;
-@property(nonatomic) std::vector<libanixart::Interesting::Ptr> interest_arr;
+@property(nonatomic) std::vector<anixart::Interesting::Ptr> interest_arr;
 @property(nonatomic, retain) NSCache<NSNumber*, UIImage*>* image_cache;
 @property(nonatomic, retain) DiscoverViewController* delegate;
 
@@ -44,8 +42,8 @@
 @property(nonatomic, retain) UIImageView* image_view;
 @property(nonatomic) SEL callback_sel;
 
--(instancetype)initWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback;
 +(instancetype)cellWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback;
+-(instancetype)initWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback;
 @end
 
 @protocol DiscoverOptionsTableViewDelegate
@@ -70,8 +68,9 @@
 @property(nonatomic, retain) UIView* content_view;
 @property(nonatomic, retain) InterestingView* interesting_view;
 @property(nonatomic, retain) DiscoverOptionsTableView* options_view;
+@property(nonatomic, retain) UIBarButtonItem* filter_bar_button;
 
--(void)didSelectInterestingCell:(libanixart::Interesting::Ptr)interesting;
+-(void)didSelectInterestingCell:(anixart::Interesting::Ptr)interesting;
 @end
 
 @implementation InterestingViewCell
@@ -177,7 +176,7 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self setupCollectionView];
             });
-        } catch(const libanixart::ApiError& e) {
+        } catch(const anixart::ApiError& e) {
                 // error
         }
     });
@@ -214,6 +213,10 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
 
 @implementation DiscoverOptionsTableViewCell
 
++(instancetype)cellWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback {
+    return [[DiscoverOptionsTableViewCell alloc] initWithName:name image:image callback:callback];
+}
+
 -(instancetype)initWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback_sel {
     self = [super init];
     
@@ -224,10 +227,6 @@ static CGFloat INTERESTING_VIEW_HOFFSET = 10;
     [self setupView];
     
     return self;
-}
-
-+(instancetype)cellWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback {
-    return [[DiscoverOptionsTableViewCell alloc] initWithName:name image:image callback:callback];
 }
 
 -(void)setupView {
@@ -305,91 +304,85 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 @implementation DiscoverViewController
 
-//-(void)loadView {
-////    [super loadView];
-//    
-//    _scroll_view = [UIScrollView new];
-//    self.view = _scroll_view;
-//}
-
 -(void)viewDidLoad {
     [super viewDidLoad];
     
     _api_proxy = [LibanixartApi sharedInstance];
-    self.inline_search_view = [ReleasesSearchHistoryView new];
-    self.search_view = [SearchReleasesTableView new];
-    
-    [self setupView];
-}
--(void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    
-//    [self.navigationController setNavigationBarHidden:NO];
+
+    [self setup];
+    [self setupLayout];
 }
 
--(void)setupView {    
+-(void)setup {
     _scroll_view = [UIScrollView new];
-    [self.view addSubview:_scroll_view];
-    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
-    [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor].active = YES;
-    [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-    [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
-    
     _content_view = [UIView new];
-    [_scroll_view addSubview:_content_view];
-    _content_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_content_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor].active = YES;
-    NSLayoutConstraint* hconst = [_content_view.heightAnchor constraintEqualToAnchor:_scroll_view.heightAnchor];
-    hconst.active = YES;
-    hconst.priority = UILayoutPriority(50);
-    [_content_view.leftAnchor constraintEqualToAnchor:_scroll_view.leftAnchor].active = YES;
-    [_content_view.rightAnchor constraintEqualToAnchor:_scroll_view.rightAnchor].active = YES;
-    [_content_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor].active = YES;
-    
     _interesting_view = [[InterestingView alloc] initWithDelegate:self];
-    [_content_view addSubview:_interesting_view];
-    _interesting_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_interesting_view.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor].active = YES;
-    [_interesting_view.heightAnchor constraintEqualToConstant:[_interesting_view getTotalHeight]].active = YES;
-    [_interesting_view.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor].active = YES;
-    [_interesting_view.topAnchor constraintEqualToAnchor:_content_view.topAnchor].active = YES;
-    
     _options_view = [[DiscoverOptionsTableView alloc] initWithDelegate:self];
-    [_content_view addSubview:_options_view];
-    _options_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_options_view layoutIfNeeded];
-    [_options_view.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor constant:-10].active = YES;
-    [_options_view.heightAnchor constraintEqualToConstant:[_options_view getTotalHeight]].active = YES;
-    [_options_view.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor constant:5].active = YES;
-    [_options_view.topAnchor constraintEqualToAnchor:_interesting_view.bottomAnchor constant:20].active = YES;
     _options_view.scrollEnabled = NO;
     _options_view.layer.cornerRadius = 8.0;
     _options_view.clipsToBounds = YES;
     
-    [_content_view.bottomAnchor constraintEqualToAnchor:_options_view.bottomAnchor].active = YES;
-//    _content_view.clipsToBounds = YES;
+    _filter_bar_button = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"slider.horizontal.3"] style:UIBarButtonItemStylePlain target:self action:@selector(onFilterBarButtonPressed:)];
+
+    [self.view addSubview:_scroll_view];
+    [_scroll_view addSubview:_content_view];
+    [_content_view addSubview:_interesting_view];
+    [_content_view addSubview:_options_view];
     
-    [self setupDarkLayout];
+    _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _content_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _interesting_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _options_view.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    NSLayoutConstraint* height_constraint = [_content_view.heightAnchor constraintEqualToAnchor:_scroll_view.heightAnchor];
+    height_constraint.active = YES;
+    height_constraint.priority = UILayoutPriority(50);
+    [NSLayoutConstraint activateConstraints:@[
+        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor],
+        [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor],
+        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        
+        [_content_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor],
+        [_content_view.leftAnchor constraintEqualToAnchor:_scroll_view.leftAnchor],
+        [_content_view.rightAnchor constraintEqualToAnchor:_scroll_view.rightAnchor],
+        [_content_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
+        height_constraint,
+        
+        [_interesting_view.topAnchor constraintEqualToAnchor:_content_view.topAnchor],
+        [_interesting_view.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor],
+        [_interesting_view.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor],
+        [_interesting_view.heightAnchor constraintEqualToConstant:[_interesting_view getTotalHeight]],
+        
+        [_options_view.topAnchor constraintEqualToAnchor:_interesting_view.bottomAnchor constant:20],
+        [_options_view.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor constant:5],
+        [_options_view.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor constant:-10],
+        [_options_view.heightAnchor constraintEqualToConstant:[_options_view getTotalHeight]],
+
+        [_content_view.bottomAnchor constraintEqualToAnchor:_options_view.bottomAnchor]
+    ]];
     
     [_interesting_view tryLoad];
 }
 
--(void)setupDarkLayout {
+-(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
     _interesting_view.backgroundColor = [AppColorProvider foregroundColor1];
     _options_view.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
--(void)searchBarFilterButtonPressed {
-    [self.navigationController pushViewController:[FilterViewController new] animated:YES];
+-(void)didSelectInterestingCell:(anixart::Interesting::Ptr)interesting {
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.hidesBarsOnSwipe = NO;
+    if (interesting->type == anixart::Interesting::Type::OpenRelease) {
+        [self.navigationController setNavigationBarHidden:NO];
+        anixart::ReleaseID release_id = static_cast<anixart::ReleaseID>(std::stoll(interesting->action));
+        [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release_id] animated:YES];
+    }
 }
 
--(void)didSelectInterestingCell:(libanixart::Interesting::Ptr)interesting {
-    if (interesting->type == libanixart::Interesting::Type::OpenRelease) {
-        [self.navigationController setNavigationBarHidden:NO];
-        [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:std::stoll(interesting->action)] animated:YES];
-    }
+-(IBAction)onFilterBarButtonPressed:(UIBarButtonItem*)sender {
+    [self.navigationController pushViewController:[FilterViewController new] animated:YES];
 }
 
 -(void)popularButtonPressed {

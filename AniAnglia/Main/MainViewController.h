@@ -6,8 +6,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "NavSearchViewController.h"
 
-@interface MainViewController : NavigationSearchViewController <NavigationSearchDelegate>
+@interface MainViewController : UIViewController <UISearchBarDelegate>
 
 @end
