@@ -13,6 +13,7 @@
 @property(nonatomic, retain) UIBarButtonItem* back_bar_button;
 @property(nonatomic, retain) UIViewController* inline_view_controller;
 @property(nonatomic, retain) NSArray<NSLayoutConstraint*>* inline_view_controller_constraints;
+@property(nonatomic, retain) NSString* initial_search_bar_text;
 
 @end
 
@@ -130,6 +131,14 @@
     [_search_bar endEditing:YES];
     [self setBarButtonsHidden:YES];
     [self hideInlineSearchViewController];
+}
+
+-(void)setSearchText:(NSString*)text {
+    if (!_search_bar) {
+        _initial_search_bar_text = text;
+        return;
+    }
+    _search_bar.text = text;
 }
 
 -(void)endSearching {

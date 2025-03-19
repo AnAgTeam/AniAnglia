@@ -31,10 +31,10 @@
 @property(nonatomic, retain, readonly) UIViewController* content_view_controller;
 @property(nonatomic, retain) UIBarButtonItem* right_bar_button;
 @property(nonatomic, retain) NSString* search_bar_placeholder;
-@property(nonatomic, retain) NSString* initial_search_bar_text;
 @property(nonatomic) BOOL hide_search_bar;
 
 -(instancetype)initWithContentViewController:(UIViewController*)content_view_controller;
 
+-(void)setSearchText:(NSString*)text;
 -(void)endSearching;
 @end

@@ -19,6 +19,13 @@
 #import "AppDataController.h"
 #import "FilterViewController.h"
 
+@interface ReleasesSearchController : NSObject <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesHistoryTableViewControllerDelegate>
+@property(nonatomic, strong) AppDataController* app_data_controller;
+@property(nonatomic, strong) LibanixartApi* api_proxy;
+@property(nonatomic, weak) SearchViewController* search_view_controller;
+@property(nonatomic, weak) ReleasesTableViewController* view_controller;
+@end
+
 @interface MainTabBarController ()
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, strong) AppDataController* app_data_controller;
@@ -30,6 +37,42 @@
 @property(nonatomic, retain) UIBarButtonItem* discover_filter_bar_button;
 @property(nonatomic, weak) UINavigationController* current_history_responder_nav_controller;
 @property(nonatomic, weak) SearchViewController* current_history_responder_search_view_controller;
+@property(nonatomic, retain) ReleasesSearchController* releases_search_controller;
+@end
+
+@implementation ReleasesSearchController
+
+-(instancetype)init {
+    self = [super init];
+    
+    _app_data_controller = [AppDataController sharedInstance];
+    _api_proxy = [LibanixartApi sharedInstance];
+    
+    return self;
+}
+
+-(UIViewController*)inlineViewControllerForSearchViewController:(SearchViewController*)search_view_controller {
+    ReleasesHistoryTableViewController* view_controller = [ReleasesHistoryTableViewController new];
+    view_controller.delegate = self;
+    return view_controller;
+}
+-(void)searchViewController:(SearchViewController*)search_view_controller didSearchWithQuery:(NSString*)query {
+    [_app_data_controller addSearchHistoryItem:query];
+    anixart::requests::SearchRequest request;
+    request.query = TO_STDSTRING(query);
+    anixart::ReleaseSearchPages::UPtr pages = _api_proxy.api->search().release_search(request, 0);
+        
+    [_view_controller updatePages:std::move(pages)];
+}
+-(void)releasesHistoryTableViewController:(ReleasesHistoryTableViewController*)history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
+    [_search_view_controller setSearchText:item_name];
+    [_search_view_controller endSearching];
+    anixart::requests::SearchRequest request;
+    request.query = TO_STDSTRING(item_name);
+    anixart::ReleaseSearchPages::UPtr pages = _api_proxy.api->search().release_search(request, 0);
+    [_view_controller updatePages:std::move(pages)];
+}
+
 @end
 
 @implementation MainTabBarController
@@ -121,7 +164,13 @@
     ReleasesTableViewController* releases_view_controller = [[ReleasesTableViewController alloc] initWithPages:std::move(pages)];
     SearchViewController* search_view_controller = [[SearchViewController alloc] initWithContentViewController:releases_view_controller];
     search_view_controller.search_bar_placeholder = placeholder;
-    search_view_controller.initial_search_bar_text = query;
+    [search_view_controller setSearchText:query];
+    
+    _releases_search_controller = [ReleasesSearchController new];
+    _releases_search_controller.search_view_controller = search_view_controller;
+    _releases_search_controller.view_controller = releases_view_controller;
+    search_view_controller.data_source = _releases_search_controller;
+    search_view_controller.delegate = _releases_search_controller;
     
     [navigation_controller pushViewController:search_view_controller animated:YES];
 }
@@ -151,11 +200,13 @@
 }
 -(void)searchViewController:(SearchViewController*)search_view_controller didSearchWithQuery:(NSString*)query {
     if (search_view_controller == _main_search_view_controller) {
+        [_main_search_view_controller setSearchText:@""];
         [_app_data_controller addSearchHistoryItem:query];
         [self pushReleasesSearchViewControllerTo:_main_nav_controller query:query placeholder:_main_search_view_controller.search_bar_placeholder];
         return;
     }
     if (search_view_controller == _discover_search_view_controller) {
+        [_discover_search_view_controller setSearchText:@""];
         [_app_data_controller addSearchHistoryItem:query];
         [self pushReleasesSearchViewControllerTo:_discover_nav_controller query:query placeholder:_discover_search_view_controller.search_bar_placeholder];
         return;
@@ -168,6 +219,7 @@
     }
 }
 -(void)releasesHistoryTableViewController:(ReleasesHistoryTableViewController*)history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
+    [_current_history_responder_search_view_controller setSearchText:@""];
     [_current_history_responder_search_view_controller endSearching];
     [self pushReleasesSearchViewControllerTo:_current_history_responder_nav_controller query:item_name placeholder:_current_history_responder_search_view_controller.search_bar_placeholder];
 }
