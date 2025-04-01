@@ -2,19 +2,20 @@
 #include <anixart/ApiRequestTypes.hpp>
 #include <netsess/UrlSession.hpp>
 
-namespace anixart {
-	using namespace network;
+#include <string>
+#include <string_view>
 
+namespace anixart {
 	class ApiGetRequest {
 	public:
 		std::string sub_url;
-		UrlParameters params = UrlParameters();
+		network::UrlParameters params = network::UrlParameters();
 		std::vector<std::string> headers = {};
 	};
 	class ApiPostRequest {
 	public:
 		std::string sub_url;
-		UrlParameters params = UrlParameters();
+		network::UrlParameters params = network::UrlParameters();
 		std::vector<std::string> headers = {};
 		std::string data;
 		std::string_view type;
@@ -22,9 +23,9 @@ namespace anixart {
 	class ApiPostMultipartRequest {
 	public:
 		std::string sub_url;
-		UrlParameters params = UrlParameters();
+		network::UrlParameters params = network::UrlParameters();
 		std::vector<std::string> headers = {};
-		MultipartForms forms;
+		network::MultipartForms forms;
 	};
 
 	namespace requests {
@@ -79,7 +80,7 @@ namespace anixart {
 			extern ApiPostRequest create(const CreateEditCollectionRequest& request, const std::string& token);
 			extern ApiGetRequest remove(const int64_t collection_id, const std::string& token);
 			extern ApiPostRequest edit(const int64_t collection_id, const CreateEditCollectionRequest& request, const std::string& token);
-			extern ApiPostMultipartRequest edit_image(const int64_t collection_id, const MultipartPart& image, const std::string& token);
+			extern ApiPostMultipartRequest edit_image(const int64_t collection_id, const network::MultipartPart& image, const std::string& token);
 			extern ApiGetRequest release_add(const int64_t collection_id, const int64_t release_id, const std::string& token);
 			extern ApiGetRequest releases(const int64_t collection_id, const std::string& token);
 		};
@@ -112,7 +113,7 @@ namespace anixart {
 			extern ApiGetRequest profile_list_by_profile(const int64_t profile_id, const int32_t status, const int32_t page, const int32_t sort, const std::string& token);
 		};
 		namespace profile::preferences {
-			extern ApiPostMultipartRequest avatar_edit(const MultipartPart& image, const std::string& token);
+			extern ApiPostMultipartRequest avatar_edit(const network::MultipartPart& image, const std::string& token);
 			extern ApiGetRequest change_email(const std::string& current_password, const std::string& current_email, const std::string& new_email, const std::string& token);
 			extern ApiGetRequest change_email_confirm(const std::string& current_password, const std::string& token);
 			extern ApiPostRequest change_login(const std::string& login, const std::string& token);

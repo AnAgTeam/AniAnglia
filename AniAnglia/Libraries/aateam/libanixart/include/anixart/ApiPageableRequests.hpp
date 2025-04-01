@@ -3,6 +3,7 @@
 #include <anixart/ApiSession.hpp>
 #include <anixart/ApiTypes.hpp>
 #include <anixart/ApiRequestTypes.hpp>
+#include <netsess/NetTypes.hpp>
 
 namespace anixart {
     class FilterPages : public EmptyContentPaginator<Release> {
@@ -10,7 +11,7 @@ namespace anixart {
         FilterPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::FilterRequest& request, const bool extended_mode);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -23,7 +24,7 @@ namespace anixart {
         StreamingPlatformsPages(const ApiSession& session, const int32_t page, const ReleaseID release_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         ReleaseID _release_id;
@@ -35,7 +36,7 @@ namespace anixart {
         CommentsWeekPages(const ApiSession& session);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
     };
@@ -45,7 +46,7 @@ namespace anixart {
         DiscussingPages(const ApiSession& session, const std::string& token);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -56,7 +57,7 @@ namespace anixart {
         InterestingPages(const ApiSession& session);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
     };
@@ -66,7 +67,7 @@ namespace anixart {
         RecomendationsPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -77,7 +78,7 @@ namespace anixart {
         WatchingPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -88,7 +89,7 @@ namespace anixart {
         CollectionSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -100,7 +101,7 @@ namespace anixart {
         FavoriteCollectionSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -112,7 +113,7 @@ namespace anixart {
         FavoriteSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -124,7 +125,7 @@ namespace anixart {
         HistorySearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -136,7 +137,7 @@ namespace anixart {
         ProfileCollectionSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -148,7 +149,7 @@ namespace anixart {
         ProfileListSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -160,7 +161,7 @@ namespace anixart {
         ProfileSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -171,7 +172,7 @@ namespace anixart {
     public:
         ReleaseSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
         std::vector<Release::Ptr> parse_request() override;
     private:
         const ApiSession& _session;
@@ -184,7 +185,7 @@ namespace anixart {
         LoginChangeHistoryPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -196,7 +197,7 @@ namespace anixart {
         BlockListPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -207,7 +208,7 @@ namespace anixart {
         FriendsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -219,7 +220,7 @@ namespace anixart {
         FriendRequestsInPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -230,7 +231,7 @@ namespace anixart {
         FriendRequestsOutPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -241,7 +242,7 @@ namespace anixart {
         ProfileListPages(const ApiSession& session, const std::string& token, const int32_t page, const Profile::ListStatus status, const Profile::ListSort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -254,7 +255,7 @@ namespace anixart {
         ProfileListByProfilePages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Profile::ListStatus status, const Profile::ListSort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -268,7 +269,7 @@ namespace anixart {
         AllReleaseUnvotedPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -279,7 +280,7 @@ namespace anixart {
         AllReleaseVotedPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Release::ByVoteSort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -292,7 +293,7 @@ namespace anixart {
         ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseID release_id, const ReleaseComment::FilterBy filter_by);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -305,7 +306,7 @@ namespace anixart {
         ProfileCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const ReleaseComment::Sort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -318,7 +319,7 @@ namespace anixart {
         ReleaseCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseCommentID comment_id, const ReleaseComment::FilterBy filter_by);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -331,7 +332,7 @@ namespace anixart {
         ReleaseVideoCategoryPages(const ApiSession& session, const int32_t page, const ReleaseID release_id, const ReleaseVideoCategoryID category_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         ReleaseID _release_id;
@@ -343,7 +344,7 @@ namespace anixart {
         ProfileReleaseVideoPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -355,7 +356,7 @@ namespace anixart {
         ReleaseVideoPages(const ApiSession& session, const int32_t page, const ReleaseID release_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         ReleaseID _release_id;
@@ -366,7 +367,7 @@ namespace anixart {
         ReleaseVideoAppealPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -377,7 +378,7 @@ namespace anixart {
         ProfileReleaseVideoFavoritesPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -389,7 +390,7 @@ namespace anixart {
         HistoryPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -400,7 +401,7 @@ namespace anixart {
         CollectionsPages(const ApiSession& session, const std::string& token, const int32_t page, const int32_t where, const Collection::Sort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -413,7 +414,7 @@ namespace anixart {
         ProfileCollectionsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -425,7 +426,7 @@ namespace anixart {
         ReleaseCollectionsPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseID release_id, const Collection::Sort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -438,7 +439,7 @@ namespace anixart {
         CollectionReleasesPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -450,7 +451,7 @@ namespace anixart {
         CollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id, const CollectionComment::Sign sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -463,7 +464,7 @@ namespace anixart {
         ProfileCollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const CollectionComment::Sort sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -476,7 +477,7 @@ namespace anixart {
         CollectionCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionCommentID comment_id, const CollectionComment::Sign sort);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
@@ -489,7 +490,7 @@ namespace anixart {
         FavoriteCollectionsPages(const ApiSession& session, const std::string& token, const int32_t page);
 
     protected:
-        JsonObject do_request(const int32_t page) const override;
+        json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;

@@ -1,12 +1,11 @@
 #pragma once
 #include <anixart/StrongTypedef.hpp>
+#include <anixart/CachingJson.hpp>
 #include <netsess/NetTypes.hpp>
 #include <chrono>
 #include <vector>
 
 namespace anixart {
-	using namespace network;
-
 	namespace aux {
 		struct ProfileIDTag {};
 		struct ReleaseIDTag {};
@@ -22,6 +21,9 @@ namespace anixart {
 		struct ReleaseStreamingPlatformIDTag {};
 		struct ReleaseVideoCategoryIDTag {};
 		struct ReleaseVideoHostingIDTag {};
+		namespace experimental {
+			struct BadgeIDTag {};
+		};
 	};
 
 	using ProfileID = aux::StrongTypedef<int64_t, aux::ProfileIDTag>;
@@ -43,11 +45,23 @@ namespace anixart {
 	using TimestampDuration = std::chrono::seconds;
 	using TimestampPoint = std::chrono::time_point<std::chrono::system_clock, TimestampDuration>;
 
+	namespace experimental {
+		using BadgeID = aux::StrongTypedef<int64_t, aux::experimental::BadgeIDTag>;
+		class Bagde {
+		public:
+			BadgeID id;
+			int64_t type;
+			std::string name;
+			TimestampPoint date;
+			std::string image_url; // actually a JSON file url. Probably vector graphics
+		};
+	}
+
 	class ProfileToken {
 	public:
 		ProfileToken() = default;
 		ProfileToken(const int64_t id, const std::string& token);
-		ProfileToken(JsonObject& object);
+		ProfileToken(json::CachingJsonObject& object);
 
 		int64_t id;
 		std::string token;
@@ -56,7 +70,7 @@ namespace anixart {
 	class Profile {
 	public:
 		using Ptr = std::shared_ptr<Profile>;
-		Profile(JsonObject& object);
+		Profile(json::CachingJsonObject& object);
 
 		enum class PrivilegeLevel {
 			None = 0,
@@ -65,6 +79,7 @@ namespace anixart {
 			Moderator = 3,
 			Administrator = 4,
 			Developer = 5
+			// ??? = 6
 		};
 
 		enum class List {
@@ -90,6 +105,12 @@ namespace anixart {
 			Watched = 3,
 			HoldOn = 4,
 			Dropped = 5
+		};
+		enum class FriendStatus {
+			NotFriends = 0,
+			Friends = 1,
+			SendedRequest = 2,
+			RecievedRequest = 3
 		};
 
 		enum class StatsPermission {
@@ -121,6 +142,8 @@ namespace anixart {
 		std::string instagram_page;
 		std::string discord_page;
 		std::string tt_page;
+		
+		// experimental::Badge badge;
 
 		bool is_banned;
 		bool is_perm_banned;
@@ -128,8 +151,8 @@ namespace anixart {
 		std::string ban_reason;
 
 		PrivilegeLevel privilege_level;
-		int64_t watched_time;
-		int32_t completed_count;
+		std::chrono::minutes watched_time;
+		int32_t watched_count; // renamed "completed_count"
 		int32_t dropped_count;
 		int32_t watching_count;
 		int32_t plan_count;
@@ -140,12 +163,11 @@ namespace anixart {
 		int32_t comment_count;
 		int32_t collection_count;
 		int32_t rating_score;
-		int32_t friend_status;
+		int32_t friend_status; // (-1) = NotFriends, (2) = Friends, (0-1) = SendedRequest or RecievedRequest
 		int32_t friend_count;
 		TimestampPoint last_activity_time;
 		TimestampPoint register_date;
 
-		
 		bool is_blocked;
 		bool is_me_blocked;
 		TimestampPoint block_added_date;
@@ -171,12 +193,14 @@ namespace anixart {
 		bool is_login_changed;
 		bool is_vk_bound;
 		bool is_google_bound;
+
+		FriendStatus get_friend_status_to(ProfileID other_id) const;
 	};
 
 	class EpisodeUpdate {
 	public:
 		using Ptr = std::shared_ptr<EpisodeUpdate>;
-		EpisodeUpdate(JsonObject& object);
+		EpisodeUpdate(json::CachingJsonObject& object);
 
 		int64_t last_episode_source_update_id;
 		int64_t last_episode_type_update_id;
@@ -188,7 +212,7 @@ namespace anixart {
 	class EpisodeSource {
 	public:
 		using Ptr = std::shared_ptr<EpisodeSource>;
-		EpisodeSource(JsonObject& object);
+		EpisodeSource(json::CachingJsonObject& object);
 
 		EpisodeSourceID id;
 		std::string name;
@@ -198,7 +222,7 @@ namespace anixart {
 	class EpisodeType {
 	public:
 		using Ptr = std::shared_ptr<EpisodeType>;
-		EpisodeType(JsonObject& object);
+		EpisodeType(json::CachingJsonObject& object);
 
 		EpisodeTypeID id;
 		int64_t view_count;
@@ -209,7 +233,7 @@ namespace anixart {
 	class Episode {
 	public:
 		using Ptr = std::shared_ptr<Episode>;
-		Episode(JsonObject& object);
+		Episode(json::CachingJsonObject& object);
 
 		enum class Sort {
 			FromLeast = 1,
@@ -228,11 +252,26 @@ namespace anixart {
 		bool is_filler;
 	};
 	
+	class ReleaseRelated {
+	public:
+		using Ptr = std::shared_ptr<ReleaseRelated>;
+
+		ReleaseRelated(json::CachingJsonObject& object);
+
+		ReleaseID id;
+		std::string name;
+		std::string name_ru;
+		std::string description;
+		std::string image_url;
+		std::vector<std::string> image_urls;
+		int64_t release_count;
+	};
+
 	class Release {
 	public:
 		using Ptr = std::shared_ptr<Release>;
 		
-		Release(JsonObject& object);
+		Release(json::CachingJsonObject& object);
 
 		enum class Season {
 			Unknown = 0,
@@ -292,6 +331,10 @@ namespace anixart {
 		std::string release_date;
 		TimestampPoint creation_date;
 		TimestampPoint last_update_date;
+		std::vector<std::string> screenshot_image_urls;
+		std::vector<Release::Ptr> recomended_releases;
+		std::vector<Release::Ptr> related_releases;
+		ReleaseRelated::Ptr related;
 
 		AgeRating age_rating;
 		std::chrono::minutes duration;
@@ -313,7 +356,7 @@ namespace anixart {
 		int32_t favorite_count;
 		int64_t comment_count;
 		int32_t comment_per_day_count;
-		int32_t completed_count;
+		int32_t watched_count; // renamed from "completed_count"
 		int32_t dropped_count;
 		int32_t hold_on_count;
 		int32_t plan_count;
@@ -351,7 +394,7 @@ namespace anixart {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideoCategory>;
 		ReleaseVideoCategory();
-		ReleaseVideoCategory(JsonObject& object);
+		ReleaseVideoCategory(json::CachingJsonObject& object);
 
 		ReleaseVideoCategoryID id;
 		std::string name;
@@ -359,7 +402,7 @@ namespace anixart {
 	class ReleaseVideoHosting {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideoHosting>;
-		ReleaseVideoHosting(JsonObject& object);
+		ReleaseVideoHosting(json::CachingJsonObject& object);
 
 		ReleaseVideoHostingID id;
 		std::string name;
@@ -368,7 +411,7 @@ namespace anixart {
 	class ReleaseComment {
 	public:
 		using Ptr = std::shared_ptr<ReleaseComment>;
-		ReleaseComment(JsonObject& object);
+		ReleaseComment(json::CachingJsonObject& object);
 
 		enum class FilterBy {
 			All = 1,
@@ -393,6 +436,8 @@ namespace anixart {
 		int32_t vote_count;
 		int64_t reply_count;
 		TimestampPoint date;
+		Profile::Ptr author; // renamed from "profile"
+		Release::Ptr release;
 
 		bool is_deleted;
 		bool is_edited;
@@ -401,7 +446,7 @@ namespace anixart {
 	class ReleaseVideo {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideo>;
-		ReleaseVideo(JsonObject& object);
+		ReleaseVideo(json::CachingJsonObject& object);
 
 		ReleaseVideoID id;
 		std::string title;
@@ -421,7 +466,7 @@ namespace anixart {
 	class ReleaseVideoBlock {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideoBlock>;
-		ReleaseVideoBlock(JsonObject& object);
+		ReleaseVideoBlock(json::CachingJsonObject& object);
 
 		ReleaseVideoCategory::Ptr category;
 		std::vector<ReleaseVideo::Ptr> videos;
@@ -429,7 +474,7 @@ namespace anixart {
 	class ReleaseStreamingPlatform {
 	public:
 		using Ptr = std::shared_ptr<ReleaseStreamingPlatform>;
-		ReleaseStreamingPlatform(JsonObject& object);
+		ReleaseStreamingPlatform(json::CachingJsonObject& object);
 
 		ReleaseStreamingPlatformID id;
 		std::string name;
@@ -439,7 +484,7 @@ namespace anixart {
 	class ReleaseVideos {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideos>;
-		ReleaseVideos(JsonObject& object);
+		ReleaseVideos(json::CachingJsonObject& object);
 
 		std::vector<ReleaseVideoBlock::Ptr> blocks;
 		std::vector<ReleaseVideo::Ptr> last_videos;
@@ -450,7 +495,7 @@ namespace anixart {
 	class Collection {
 	public:
 		using Ptr = std::shared_ptr<Collection>;
-		Collection(JsonObject& object);
+		Collection(json::CachingJsonObject& object);
 
 		enum class Sort {
 			RatingLeader = 1,
@@ -481,7 +526,7 @@ namespace anixart {
 	class CollectionComment {
 	public:
 		using Ptr = std::shared_ptr<CollectionComment>;
-		CollectionComment(JsonObject& object);
+		CollectionComment(json::CachingJsonObject& object);
 
 		enum class Sign {
 			Neutral = 0,
@@ -510,21 +555,21 @@ namespace anixart {
 	class Category {
 	public:
 		using Ptr = std::shared_ptr<Category>;
-		Category(JsonObject& object);
+		Category(json::CachingJsonObject& object);
 
 		// not implemented
 	};
 	class Related {
 	public:
 		using Ptr = std::shared_ptr<Related>;
-		Related(JsonObject& object);
+		Related(json::CachingJsonObject& object);
 
 		// not implemented
 	};
 	class Interesting {
 	public:
 		using Ptr = std::shared_ptr<Interesting>;
-		Interesting(JsonObject& object);
+		Interesting(json::CachingJsonObject& object);
 
 		enum class Type {
 			OpenRelease = 1,
@@ -544,7 +589,7 @@ namespace anixart {
 	class LoginChange {
 	public:
 		using Ptr = std::shared_ptr<LoginChange>;
-		LoginChange(JsonObject& object);
+		LoginChange(json::CachingJsonObject& object);
 
 		LoginChangeID id;
 		std::string new_login;
@@ -553,7 +598,7 @@ namespace anixart {
 	class ProfileSocial {
 	public:
 		using Ptr = std::shared_ptr<ProfileSocial>;
-		ProfileSocial(JsonObject& object);
+		ProfileSocial(json::CachingJsonObject& object);
 
 		std::string discord_page;
 		std::string instagram_page;
@@ -566,7 +611,7 @@ namespace anixart {
 	class ProfilePreferenceStatus {
 	public:
 		using Ptr = std::shared_ptr<ProfilePreferenceStatus>;
-		ProfilePreferenceStatus(JsonObject& object);
+		ProfilePreferenceStatus(json::CachingJsonObject& object);
 
 		TimestampPoint change_avatar_ban_expires;
 		TimestampPoint change_login_ban_expires;
@@ -587,7 +632,7 @@ namespace anixart {
 	class LoginChangeInfo {
 	public:
 		using Ptr = std::shared_ptr<LoginChangeInfo>;
-		LoginChangeInfo(JsonObject& object);
+		LoginChangeInfo(json::CachingJsonObject& object);
 
 		bool is_change_available;
 		TimestampPoint last_change_date;
@@ -598,7 +643,7 @@ namespace anixart {
 	class CollectionGetInfo {
 	public:
 		using Ptr = std::shared_ptr<CollectionGetInfo>;
-		CollectionGetInfo(JsonObject& object);
+		CollectionGetInfo(json::CachingJsonObject& object);
 
 		Collection::Ptr collection;
 		int64_t completed_count;

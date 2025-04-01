@@ -2,6 +2,9 @@
 #include <anixart/ApiSession.hpp>
 #include <anixart/ApiTypes.hpp>
 
+#include <memory>
+#include <string>
+
 namespace anixart {
 	class ApiAuthPending {
 	public:

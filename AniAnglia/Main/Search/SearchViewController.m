@@ -23,7 +23,6 @@
     self = [super init];
     
     _content_view_controller = content_view_controller;
-    _hide_search_bar = NO;
     
     return self;
 }
@@ -37,15 +36,18 @@
 -(void)setup {
 //    _content_view_controller.root_search_view_controller = self;
     _content_view_controller.additionalSafeAreaInsets = self.view.safeAreaInsets;
+    
     _search_bar = [UISearchBar new];
     _search_bar.delegate = self;
     _search_bar.placeholder = _search_bar_placeholder;
     _search_bar.text = _initial_search_bar_text;
+    _search_bar.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     _back_bar_button = [[UIBarButtonItem alloc] initWithPrimaryAction:[UIAction actionWithTitle:@"" image:[UIImage systemImageNamed:@"chevron.left"] identifier:nil handler:^(UIAction* action){
         [self onBackButtonPressed];
     }]];
     
-    self.navigationItem.titleView = _hide_search_bar ? nil : _search_bar;
+    [self addChildViewController:_content_view_controller];
+    self.navigationItem.titleView = _search_bar;
     [self.view addSubview:_content_view_controller.view];
     
     _content_view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -57,6 +59,8 @@
         [_content_view_controller.view.widthAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor],
         [_content_view_controller.view.heightAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.heightAnchor]
     ]];
+    
+    [_content_view_controller didMoveToParentViewController:self];
 }
 -(void)setupLayout {
     
@@ -68,11 +72,16 @@
         self.navigationItem.rightBarButtonItem = nil;
         return;
     }
-    self.navigationItem.leftBarButtonItem = _back_bar_button;
-    self.navigationItem.rightBarButtonItem = _right_bar_button;
+    [self.navigationItem setLeftBarButtonItem:_back_bar_button animated:YES];
+    [self.navigationItem setRightBarButtonItem:_right_bar_button animated:YES];
 }
 
 -(void)showInlineSearchViewController:(UIViewController*)view_controller {
+    if (!view_controller) {
+        return;
+    }
+    _inline_view_controller = view_controller;
+    [self addChildViewController:_inline_view_controller];
     [self.view addSubview:view_controller.view];
     
     view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -92,10 +101,16 @@
         ];
     }
     [NSLayoutConstraint activateConstraints:_inline_view_controller_constraints];
+    [_inline_view_controller didMoveToParentViewController:self];
 }
 -(void)hideInlineSearchViewController {
+    if (!_inline_view_controller) {
+        return;
+    }
+    [_inline_view_controller willMoveToParentViewController:nil];
     [NSLayoutConstraint deactivateConstraints:_inline_view_controller_constraints];
     [_inline_view_controller.view removeFromSuperview];
+    [_inline_view_controller removeFromParentViewController];
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar*)search_bar {
@@ -105,9 +120,7 @@
     [self setBarButtonsHidden:NO];
     
     _inline_view_controller = [_data_source inlineViewControllerForSearchViewController:self];
-    if (_inline_view_controller) {
-        [self showInlineSearchViewController:_inline_view_controller];
-    }
+    [self showInlineSearchViewController:_inline_view_controller];
 }
 
 -(void)searchBarSearchButtonClicked:(UISearchBar *)search_bar {

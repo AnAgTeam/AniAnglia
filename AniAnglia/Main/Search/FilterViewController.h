@@ -9,6 +9,6 @@
 #import "SearchViewController.h"
 #import "ReleasesHistoryTableViewController.h"
 
-@interface FilterViewController : UIViewController <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesHistoryTableViewControllerDelegate>
+@interface FilterViewController : UIViewController
 
 @end

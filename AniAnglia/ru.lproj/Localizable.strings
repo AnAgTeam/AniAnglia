@@ -70,12 +70,53 @@
 "app.releases.search_bar.placeholder" = "Найти релиз...";
 "app.release.play_button.title" = "Смотреть";
 "app.release.add_list_button.menu.title" = "В список";
-"app.release.state.none.title" = "Не указано";
-"app.release.state.watching.title" = "Смотрю";
-"app.release.state.plan.title" = "В планах";
-"app.release.state.watched.title" = "Просмотрено";
-"app.release.state.deffered.title" = "Отложено";
-"app.release.state.dropped.title" = "Брошено";
+"app.release.list_status.none.name" = "Не указано";
+"app.release.list_status.watching.name" = "Смотрю";
+"app.release.list_status.plan.name" = "В планах";
+"app.release.list_status.watched.name" = "Просмотрено";
+"app.release.list_status.holdon.name" = "Отложено";
+"app.release.list_status.dropped.name" = "Брошено";
+
+"app.release.season.unknown.name" = "Неизвестно";
+"app.release.season.winter.name" = "Зима";
+"app.release.season.spring.name" = "Весна";
+"app.release.season.summer.name" = "Лето";
+"app.release.season.fall.name" = "Осень";
+
+"app.release.category.unknown.name" = "Неизвестно";
+"app.release.category.series.name" = "Сериал";
+"app.release.category.movies.name" = "Фильм";
+"app.release.category.ova.name" = "OVA";
+
+"app.release.status.unknown.name" = "Неизвестно";
+"app.release.status.finished.name" = "Вышел";
+"app.release.status.ongoing.name" = "Онгоинг";
+"app.release.status.upcoming.name" = "Анонс";
+
+"app.release.general.year.end" = "г.";
+"app.release.general.ep_info.separator" = "эп. по";
+"app.release.general.ep_info.end" = "мин.";
+"app.release.general.author_info.studio" = "Студия";
+"app.release.general.author_info.author" = "автор";
+"app.release.general.author_info.director" = "режиссёр";
+
+"app.release.lists.title" = "В списках";
+"app.release.rating.title" = "Рейтинг";
+"app.release.rating.vote_count.end" = "Голосов";
+
+"app.release.video_blocks.title" = "Видео";
+"app.release.video_block.show_all_button.title" = "Показать все";
+
+"app.release.previews.title" = "Скриншоты";
+
+"app.release.related.title" = "Связанное";
+
+"app.release.comments.title" = "Комментарии";
+"app.release.comments.show_all_button.title" = "Показать все";
+"app.release.comments.reply_button.title" = "Ответить";
+"app.release.comments.show_replies_button.title" = "Показать ответы";
+
+/* TO PLAY SELECT */
 
 "app.type_select.nav_item.title" = "Озвучка";
 "app.type_select.cell.ep_count.name" = "эп.";

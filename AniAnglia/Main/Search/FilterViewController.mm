@@ -165,32 +165,36 @@
     _title = title;
     _actions = actions;
     
-    [self setupView];
-    _label.text = title;
-    [_label sizeToFit];
-    [_button setTitle:actions[0].title forState:UIControlStateNormal];
+    [self setup];
+    [self setupLayout];
     
     [self updateActions:actions];
     
     return self;
 }
 
--(void)setupView {
+-(void)setup {
     _label = [UILabel new];
-    [self addSubview:_label];
-    _label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10].active = YES;
-    [_label.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    
+    _label.text = _title;
     _button = [UIButton new];
-    [self addSubview:_button];
-    _button.translatesAutoresizingMaskIntoConstraints = NO;
-    [_button.topAnchor constraintEqualToAnchor:_label.bottomAnchor].active = YES;
-    [_button.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-    [_button.heightAnchor constraintEqualToConstant:50].active = YES;
+    [_button setTitle:_actions[0].title forState:UIControlStateNormal];
     _button.showsMenuAsPrimaryAction = YES;
     
-    [self setupLayout];
+    [self addSubview:_label];
+    [self addSubview:_button];
+    
+    _label.translatesAutoresizingMaskIntoConstraints = NO;
+    _button.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10],
+        [_label.topAnchor constraintEqualToAnchor:self.topAnchor],
+
+        [_button.topAnchor constraintEqualToAnchor:_label.bottomAnchor],
+        [_button.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+        [_button.heightAnchor constraintEqualToConstant:50],
+        [_button.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
+    ]];
+    [_label sizeToFit];
 }
 -(void)setupLayout {
     _label.textColor = [AppColorProvider textColor];
@@ -222,35 +226,38 @@
     _actions = actions;
     
     [self setupView];
-    _label.text = title;
-    [_label sizeToFit];
-    
-    [_button setTitle:title forState:UIControlStateNormal];
-    [_button addTarget:self action:@selector(onButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [self setupLayout];
     
     return self;
 }
 
 -(void)setupView {
     _label = [UILabel new];
-    [self addSubview:_label];
-    _label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10].active = YES;
-    [_label.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    
+    _label.text = _title;
     _button = [UIButton new];
-    [self addSubview:_button];
-    _button.translatesAutoresizingMaskIntoConstraints = NO;
-    [_button.topAnchor constraintEqualToAnchor:_label.bottomAnchor].active = YES;
-    [_button.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-    [_button.heightAnchor constraintEqualToConstant:50].active = YES;
+    [_button setTitle:_title forState:UIControlStateNormal];
+    [_button addTarget:self action:@selector(onButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _button.showsMenuAsPrimaryAction = YES;
+    _button.layer.cornerRadius = 8;
     
-    [self setupLayout];
+    [self addSubview:_label];
+    [self addSubview:_button];
+    
+    _label.translatesAutoresizingMaskIntoConstraints = NO;
+    _button.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10],
+        [_label.topAnchor constraintEqualToAnchor:self.topAnchor],
+        
+        [_button.topAnchor constraintEqualToAnchor:_label.bottomAnchor],
+        [_button.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+        [_button.heightAnchor constraintEqualToConstant:50],
+        [_button.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
+    ]];
+    [_label sizeToFit];
 }
 -(void)setupLayout {
     _label.textColor = [AppColorProvider textColor];
-    _button.layer.cornerRadius = 8;
     [_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _button.backgroundColor = [AppColorProvider foregroundColor1];
     self.backgroundColor = [UIColor clearColor];
@@ -731,19 +738,6 @@
         [_stack_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
         [_stack_view.heightAnchor constraintGreaterThanOrEqualToAnchor:_scroll_view.heightAnchor],
         
-        [_status_select_button.bottomAnchor constraintEqualToAnchor:_status_select_button.button.bottomAnchor],
-        [_category_select_button.bottomAnchor constraintEqualToAnchor:_category_select_button.button.bottomAnchor],
-        [_genres_select_button.bottomAnchor constraintEqualToAnchor:_genres_select_button.button.bottomAnchor],
-        [_country_select_button.bottomAnchor constraintEqualToAnchor:_country_select_button.button.bottomAnchor],
-        [_types_select_button.bottomAnchor constraintEqualToAnchor:_types_select_button.button.bottomAnchor],
-        [_studio_select_button.bottomAnchor constraintEqualToAnchor:_studio_select_button.button.bottomAnchor],
-        [_season_select_button.bottomAnchor constraintEqualToAnchor:_season_select_button.button.bottomAnchor],
-        [_episode_count_select_button.bottomAnchor constraintEqualToAnchor:_episode_count_select_button.button.bottomAnchor],
-        [_episode_duration_select_button.bottomAnchor constraintEqualToAnchor:_episode_duration_select_button.button.bottomAnchor],
-        [_list_exclude_select_button.bottomAnchor constraintEqualToAnchor:_list_exclude_select_button.button.bottomAnchor],
-        [_age_rating_select_button.bottomAnchor constraintEqualToAnchor:_age_rating_select_button.button.bottomAnchor],
-        [_sort_select_button.bottomAnchor constraintEqualToAnchor:_sort_select_button.button.bottomAnchor],
-        
         [_genres_exclude_mode_button.centerYAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.centerYAnchor],
         [_genres_exclude_mode_button.trailingAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.trailingAnchor],
         [_genres_exclude_mode_button.widthAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.heightAnchor],
@@ -946,10 +940,8 @@
     anixart::FilterPages::UPtr pages = _api_proxy.api->search().filter_search(_filter_request, false, 0);
     
     ReleasesTableViewController* releases_view_controller = [[ReleasesTableViewController alloc] initWithPages:std::move(pages)];
-    SearchViewController* search_view_controller = [[SearchViewController alloc] initWithContentViewController:releases_view_controller];
-    search_view_controller.hide_search_bar = YES;
     
-    [self.navigationController pushViewController:search_view_controller animated:YES];
+    [self.navigationController pushViewController:releases_view_controller animated:YES];
 }
 
 @end

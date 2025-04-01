@@ -10,6 +10,7 @@
 
 @interface ReleaseViewController : UIViewController
 
+-(instancetype)initWithRelease:(anixart::Release::Ptr)release;
 -(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id;
 
 @end

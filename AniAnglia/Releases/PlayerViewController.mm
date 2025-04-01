@@ -121,6 +121,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     
     _player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
     _player_view_controller.player = nil;
+    [_pip_controller stopPictureInPicture];
     
     [_pip_controller setDelegate:self];
     [self loadStreamsAndAutoPlay:YES completion:completion_handler];
@@ -193,6 +194,11 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 }
 
 -(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler {
+    /* cancelled by PlayerController */
+    if (!_player_view_controller.player) {
+        completion_handler(YES);
+        return;
+    }
     [self showViewController:_player_view_controller];
 //    completion_handler(YES);
 }

@@ -46,11 +46,14 @@
         catch (anixart::ApiError& e) {
             NSLog(@"Uncatched libanixart api exception: %s", e.what());
         }
-        catch (anixart::JsonError& e) {
+        catch (network::JsonError& e) {
             NSLog(@"Uncatched libanixart api json exception: %s", e.what());
         }
-        catch (anixart::UrlSessionError& e) {
+        catch (network::UrlSessionError& e) {
             NSLog(@"Uncatched libanixart::UrlSession exception: %s", e.what());
+        }
+        catch (std::runtime_error& e) {
+            NSLog(@"Uncatched libanixart runtime error: %s)", e.what());
         }
     });
 }

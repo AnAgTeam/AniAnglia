@@ -1,5 +1,6 @@
 #pragma once
 #include <anixart/ApiErrors.hpp>
+#include <anixart/CachingJson.hpp>
 #include <netsess/NetTypes.hpp>
 #include <netsess/JsonTools.hpp>
 
@@ -28,8 +29,6 @@ namespace anixart {
 
 	template<typename T>
 	class Paginator : public Pageable<T> {
-		using ParseJson = network::json::ParseJson;
-
 	public:
 		using typename Pageable<T>::ValueType;
 		/*
@@ -86,18 +85,16 @@ namespace anixart {
 		}
 
 	protected:
-		virtual JsonObject do_request(const int32_t page) const = 0;
+		virtual json::CachingJsonObject do_request(const int32_t page) const = 0;
 
 		std::vector<ValueType> parse_request() override {
-			JsonObject resp = this->do_request(_current_page);
+			json::CachingJsonObject resp(this->do_request(_current_page));
 			assert_status_code<PageableError>(resp);
-			_current_page = ParseJson::get<int32_t>(resp, "current_page");
-			_total_page_count = ParseJson::get<int32_t>(resp, "total_page_count");
-			_total_count = ParseJson::get<int64_t>(resp, "total_count");
+			_current_page = resp.get<int32_t>("current_page");
+			_total_page_count = resp.get<int32_t>("total_page_count");
+			_total_count = resp.get<int64_t>("total_count");
 
-			std::vector<ValueType> out;
-			ParseJson::assign_to_objects_array(resp, "content", out);
-			return out;
+			return resp.get<json::CachingJsonArray>("content").to_vector<ValueType>();
 		}
 
 		int32_t _previous_page;
@@ -108,8 +105,6 @@ namespace anixart {
 
 	template<typename T>
 	class EmptyContentPaginator : public Pageable<T> {
-		using ParseJson = network::json::ParseJson;
-
 	public:
 		using typename Pageable<T>::ValueType;
 
@@ -163,13 +158,12 @@ namespace anixart {
 
 
 	protected:
-		virtual JsonObject do_request(const int32_t page) const = 0;
+		virtual json::CachingJsonObject do_request(const int32_t page) const = 0;
 
 		std::vector<ValueType> parse_request() {
-			JsonObject resp = do_request(_current_page);
+			json::CachingJsonObject resp = do_request(_current_page);
 			assert_status_code<PageableError>(resp);
-			std::vector<ValueType> out;
-			ParseJson::assign_to_objects_array(resp, "content", out);
+			std::vector<ValueType> out = resp.get<json::CachingJsonArray>("content").to_vector<ValueType>();
 			_is_end = out.empty();
 			return out;
 		}

@@ -1,6 +1,7 @@
 #pragma once
 #include <anixart/ApiErrorCodes.hpp>
 #include <anixart/ApiTypes.hpp>
+#include <anixart/CachingJson.hpp>
 #include <netsess/JsonTools.hpp>
 
 #include <exception>
@@ -150,8 +151,12 @@ namespace anixart {
 		}
 	}
 	template<typename T>
-	void assert_status_code(JsonObject& object) {
-		assert_status_code<T>(json::ParseJson::get<int32_t>(object, "code"));
+	void assert_status_code(network::JsonObject& object) {
+		assert_status_code<T>(network::json::ParseJson::get<int32_t>(object, "code"));
+	}
+	template<typename T>
+	void assert_status_code(json::CachingJsonObject& object) {
+		assert_status_code<T>(object.get<int32_t>("code"));
 	}
 }
 

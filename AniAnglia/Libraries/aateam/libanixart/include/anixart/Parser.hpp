@@ -6,8 +6,6 @@
 #include <unordered_map>
 
 namespace anixart::parsers {
-	using namespace network;
-
 	enum class ParserParameterType {
 		Unknown = 0,
 		CustomHeader,
@@ -38,7 +36,7 @@ namespace anixart::parsers {
 		virtual std::unordered_map<std::string, std::string> extract_info(const std::string& url, const std::vector<ParserParameter>& params) = 0;
 
 	protected:
-		UrlSession _session;
+		network::UrlSession _session;
 		bool _is_debug;
 	};
 };
