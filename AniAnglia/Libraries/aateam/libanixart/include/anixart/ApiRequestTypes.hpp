@@ -9,6 +9,8 @@ namespace anixart {
 	namespace requests {
 		class Serializable {
 		public:
+			virtual ~Serializable() = default;
+
 			virtual std::string serialize() const = 0;
 		};
 

@@ -70,12 +70,6 @@
 "app.releases.search_bar.placeholder" = "Найти релиз...";
 "app.release.play_button.title" = "Смотреть";
 "app.release.add_list_button.menu.title" = "В список";
-"app.release.list_status.none.name" = "Не указано";
-"app.release.list_status.watching.name" = "Смотрю";
-"app.release.list_status.plan.name" = "В планах";
-"app.release.list_status.watched.name" = "Просмотрено";
-"app.release.list_status.holdon.name" = "Отложено";
-"app.release.list_status.dropped.name" = "Брошено";
 
 "app.release.season.unknown.name" = "Неизвестно";
 "app.release.season.winter.name" = "Зима";
@@ -130,6 +124,46 @@
 
 /* PROFILE */
 "app.profile.search_bar.placeholder" = "Найти пользователя...";
+
+"app.profile.status.online.name" = "Онлайн";
+"app.profile.status.offline.name" = "Не в сети";
+
+"app.profile.stats_block.comment_count.name" = "Комментариев";
+"app.profile.stats_block.video_count.name" = "Видео";
+"app.profile.stats_block.collection_count.name" = "Коллекций";
+"app.profile.stats_block.friend_count.name" = "Друзей";
+
+"app.profile.actions.edit_button.title" = "Редактировать";
+"app.profile.actions.add_to_friends_button.title" = "Добавить в друзья";
+"app.profile.actions.remove_from_friends.title" = "Удалить из друзей";
+"app.profile.actions.cancel_friend_request_button.title" = "Отменить запрос дружбы";
+"app.profile.actions.accept_friend_request_button.title" = "Принять";
+"app.profile.actions.reject_friend_request_button.title" = "Отклонить";
+
+"app.profile.lists.title" = "Статистика";
+"app.profile.lists.total_watched.start" = "Просмотрено серий";
+"app.profile.lists.watched_time.start" = "Общее время просмотра";
+"app.profile.list_status.none.name" = "Не указано";
+"app.profile.list_status.watching.name" = "Смотрю";
+"app.profile.list_status.plan.name" = "В планах";
+"app.profile.list_status.watched.name" = "Просмотрено";
+"app.profile.list_status.holdon.name" = "Отложено";
+"app.profile.list_status.dropped.name" = "Брошено";
+
+"app.profile.lists.watched_time.days" = "дней";
+"app.profile.lists.watched_time.hours" = "часов";
+"app.profile.lists.watched_time.minutes" = "минут";
+"app.profile.lists.watched_time.seconds" = "секунд";
+
+"app.profile.votes.title" = "Оценки релизов";
+
+"app.profile.watch_dynamics.title" = "Динамика просмотра";
+
+"app.profile.watched_recently.title" = "Просмотрено недавно";
+
+/* PROFILE FRIENDS */
+"app.profile_friends.title" = "Друзья";
+"app.profile_friends.friends_count.end" = "друзей";
 
 /* PLAYER */
 "app.player.stream_not_found_error.title" = "Ошибка";

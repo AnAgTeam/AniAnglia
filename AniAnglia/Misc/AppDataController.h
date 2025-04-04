@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "LibanixartApi.h"
 
 @interface AppDataReleaseTypeObject
 @property(nonatomic, retain) NSString* name;
@@ -24,6 +25,8 @@
 
 -(NSString*)getToken;
 -(void)setToken:(NSString*)token;
+-(anixart::ProfileID)getMyProfileID;
+-(void)setMyProfileID:(anixart::ProfileID)profile_id;
 
 -(NSArray<NSString*>*)getSearchHistory;
 -(void)addSearchHistoryItem:(NSString*)item;

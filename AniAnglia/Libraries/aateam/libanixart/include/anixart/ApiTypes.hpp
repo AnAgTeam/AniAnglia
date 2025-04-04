@@ -21,6 +21,8 @@ namespace anixart {
 		struct ReleaseStreamingPlatformIDTag {};
 		struct ReleaseVideoCategoryIDTag {};
 		struct ReleaseVideoHostingIDTag {};
+		struct ProfileWatchDynamicIDTag {};
+		struct RoleIDTag {};
 		namespace experimental {
 			struct BadgeIDTag {};
 		};
@@ -40,6 +42,8 @@ namespace anixart {
 	using ReleaseStreamingPlatformID = aux::StrongTypedef<int64_t, aux::ReleaseStreamingPlatformIDTag>;
 	using ReleaseVideoCategoryID = aux::StrongTypedef<int64_t, aux::ReleaseVideoCategoryIDTag>;
 	using ReleaseVideoHostingID = aux::StrongTypedef<int64_t, aux::ReleaseVideoHostingIDTag>;
+	using ProfileWatchDynamicID = aux::StrongTypedef<int64_t, aux::ProfileWatchDynamicIDTag>;
+	using RoleID = aux::StrongTypedef<int64_t, aux::RoleIDTag>;
 
 	//using Clock = std::chrono::system_clock;
 	using TimestampDuration = std::chrono::seconds;
@@ -66,6 +70,29 @@ namespace anixart {
 		int64_t id;
 		std::string token;
 	};
+
+	class ProfileWatchDynamic {
+	public:
+		using Ptr = std::shared_ptr<ProfileWatchDynamic>;
+		ProfileWatchDynamic(json::CachingJsonObject& object);
+
+		ProfileWatchDynamicID id;
+		std::chrono::day day;
+		int32_t watched_count;
+		TimestampPoint date;
+	};
+
+	class Role {
+	public:
+		using Ptr = std::shared_ptr<Role>;
+		Role(json::CachingJsonObject& object);
+
+		RoleID id;
+		std::string name;
+		std::string color;
+	};
+
+	class Release;
 
 	class Profile {
 	public:
@@ -134,7 +161,7 @@ namespace anixart {
 		};
 
 		ProfileID id;
-		std::string login;
+		std::string username;
 		std::string avatar_url;
 		std::string status;
 		std::string telegram_page;
@@ -142,6 +169,8 @@ namespace anixart {
 		std::string instagram_page;
 		std::string discord_page;
 		std::string tt_page;
+		TimestampPoint last_activity_time;
+		TimestampPoint register_date;
 		
 		// experimental::Badge badge;
 
@@ -165,8 +194,10 @@ namespace anixart {
 		int32_t rating_score;
 		int32_t friend_status; // (-1) = NotFriends, (2) = Friends, (0-1) = SendedRequest or RecievedRequest
 		int32_t friend_count;
-		TimestampPoint last_activity_time;
-		TimestampPoint register_date;
+		std::vector<std::shared_ptr<Release>> votes; // TODO: remove recursive definition
+		std::vector<std::shared_ptr<Release>> history; // TODO: remove recursive definition
+		std::vector<ProfileWatchDynamic::Ptr> watch_dynamics;
+		std::vector<Role::Ptr> roles;
 
 		bool is_blocked;
 		bool is_me_blocked;
@@ -209,6 +240,7 @@ namespace anixart {
 		std::string last_episode_source_update_name;
 		std::string last_episode_type_update_name;
 	};
+
 	class EpisodeSource {
 	public:
 		using Ptr = std::shared_ptr<EpisodeSource>;
@@ -218,6 +250,7 @@ namespace anixart {
 		std::string name;
 		int64_t episodes_count;
 	};
+
 	/* Типо озвучка */
 	class EpisodeType {
 	public:
@@ -230,6 +263,7 @@ namespace anixart {
 		std::string name;
 		std::string workers;
 	};
+
 	class Episode {
 	public:
 		using Ptr = std::shared_ptr<Episode>;
@@ -265,6 +299,61 @@ namespace anixart {
 		std::string image_url;
 		std::vector<std::string> image_urls;
 		int64_t release_count;
+	};
+
+	class ReleaseVideoBanner {
+	public:
+		using Ptr = std::shared_ptr<ReleaseVideoBanner>;
+
+		ReleaseVideoBanner(json::CachingJsonObject& object);
+
+		enum class Action {
+			Unknown = 0,
+			Url = 1,
+			VideoCategory = 2
+		};
+
+		Action action_id;
+		std::string name;
+		std::string image_url;
+		std::string value;
+		bool is_new;
+	};
+
+	class ReleaseComment {
+	public:
+		using Ptr = std::shared_ptr<ReleaseComment>;
+		ReleaseComment(json::CachingJsonObject& object);
+
+		enum class FilterBy {
+			All = 1,
+			Negative = 2,
+			Positive = 3
+		};
+		enum class Sort {
+			Newest = 1,
+			Oldest = 2,
+			Popular = 3
+		};
+		enum class Sign {
+			Neutral = 0,
+			Negative = 1,
+			Positive = 2
+		};
+
+		ReleaseCommentID id;
+		ReleaseCommentID parent_comment_id;
+		std::string message;
+		int32_t vote;
+		int32_t vote_count;
+		int64_t reply_count;
+		TimestampPoint date;
+		Profile::Ptr author; // renamed from "profile"
+		std::shared_ptr<Release> release; // TODO: remove recursive definition
+
+		bool is_deleted;
+		bool is_edited;
+		bool is_spoiler;
 	};
 
 	class Release {
@@ -325,8 +414,8 @@ namespace anixart {
 		std::string genres;
 		int32_t rating;
 		double grade;
-		Status status; // fake property
-		Category category; // fake property
+		Status status; // fake field
+		Category category; // fake field
 		Season season;
 		std::string release_date;
 		TimestampPoint creation_date;
@@ -335,10 +424,12 @@ namespace anixart {
 		std::vector<Release::Ptr> recomended_releases;
 		std::vector<Release::Ptr> related_releases;
 		ReleaseRelated::Ptr related;
+		std::vector<ReleaseVideoBanner::Ptr> video_banners;
+		std::vector<ReleaseComment::Ptr> comments;
 
 		AgeRating age_rating;
 		std::chrono::minutes duration;
-		std::chrono::weekday broadcast;
+		std::chrono::weekday broadcast; // '255' means Finished
 		TimestampPoint aired_on_date;
 		int32_t profile_release_type_notification_preference_count;
 		int32_t vote1_count;
@@ -373,8 +464,9 @@ namespace anixart {
 		TimestampPoint last_set_viewed_date;
 		TimestampPoint last_set_watching_date;
 		TimestampPoint last_view_date;
-		std::string last_view_episode_name;
-		std::string last_view_episode_type_name;
+		Episode::Ptr last_view_episode;
+		// std::string last_view_episode_name; // removed. Use last_view_episode
+		// std::string last_view_episode_type_name; // removed. Use last_view_episode
 
 		std::string note;
 		Profile::ListStatus profile_list_status;
@@ -399,6 +491,7 @@ namespace anixart {
 		ReleaseVideoCategoryID id;
 		std::string name;
 	};
+
 	class ReleaseVideoHosting {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideoHosting>;
@@ -408,41 +501,7 @@ namespace anixart {
 		std::string name;
 		std::string icon_url;
 	};
-	class ReleaseComment {
-	public:
-		using Ptr = std::shared_ptr<ReleaseComment>;
-		ReleaseComment(json::CachingJsonObject& object);
 
-		enum class FilterBy {
-			All = 1,
-			Negative = 2,
-			Positive = 3
-		};
-		enum class Sort {
-			Newest = 1,
-			Oldest = 2,
-			Popular = 3
-		};
-		enum class Sign {
-			Neutral = 0,
-			Negative = 1,
-			Positive = 2
-		};
-
-		ReleaseCommentID id;
-		ReleaseCommentID parent_comment_id;
-		std::string message;
-		int32_t vote;
-		int32_t vote_count;
-		int64_t reply_count;
-		TimestampPoint date;
-		Profile::Ptr author; // renamed from "profile"
-		Release::Ptr release;
-
-		bool is_deleted;
-		bool is_edited;
-		bool is_spoiler;
-	};
 	class ReleaseVideo {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideo>;
@@ -463,6 +522,7 @@ namespace anixart {
 
 		bool is_favorite;
 	};
+
 	class ReleaseVideoBlock {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideoBlock>;
@@ -471,6 +531,7 @@ namespace anixart {
 		ReleaseVideoCategory::Ptr category;
 		std::vector<ReleaseVideo::Ptr> videos;
 	};
+
 	class ReleaseStreamingPlatform {
 	public:
 		using Ptr = std::shared_ptr<ReleaseStreamingPlatform>;
@@ -481,6 +542,7 @@ namespace anixart {
 		std::string icon_url;
 		std::string url;
 	};
+
 	class ReleaseVideos {
 	public:
 		using Ptr = std::shared_ptr<ReleaseVideos>;
@@ -566,6 +628,7 @@ namespace anixart {
 
 		// not implemented
 	};
+
 	class Interesting {
 	public:
 		using Ptr = std::shared_ptr<Interesting>;
@@ -586,6 +649,7 @@ namespace anixart {
 
 		bool is_hidden;
 	};
+
 	class LoginChange {
 	public:
 		using Ptr = std::shared_ptr<LoginChange>;
@@ -595,6 +659,7 @@ namespace anixart {
 		std::string new_login;
 		TimestampPoint date;
 	};
+
 	class ProfileSocial {
 	public:
 		using Ptr = std::shared_ptr<ProfileSocial>;
@@ -629,6 +694,7 @@ namespace anixart {
 		std::string vk_page;
 		std::string tg_page;
 	};
+
 	class LoginChangeInfo {
 	public:
 		using Ptr = std::shared_ptr<LoginChangeInfo>;
@@ -640,6 +706,7 @@ namespace anixart {
 		std::string login;
 		std::string avatar_url;
 	};
+
 	class CollectionGetInfo {
 	public:
 		using Ptr = std::shared_ptr<CollectionGetInfo>;

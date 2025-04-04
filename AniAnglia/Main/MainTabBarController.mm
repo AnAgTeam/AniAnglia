@@ -116,9 +116,7 @@
     _bookmarks_search_view_controller.data_source = self;
     _bookmarks_search_view_controller.delegate = self;
     _bookmarks_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.bookmarks.search_bar.placeholder", "");
-    UIStoryboard* profile_storyboard = [UIStoryboard storyboardWithName:@"ProfileStoryboard" bundle:nil];
-    ProfileViewController* profile_view_controller = [profile_storyboard instantiateViewControllerWithIdentifier:@"ProfileViewController"];
-    _profile_search_view_controller = [[SearchViewController alloc] initWithContentViewController:profile_view_controller];
+    _profile_search_view_controller = [[SearchViewController alloc] initWithContentViewController:[[ProfileViewController alloc] initWithMyProfile]];
     _profile_search_view_controller.data_source = self;
     _profile_search_view_controller.delegate = self;
     _profile_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.profile.search_bar.placeholder", "");
@@ -151,6 +149,7 @@
 }
 
 -(void)setupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
     self.tabBar.unselectedItemTintColor = [UIColor systemGrayColor];
     self.tabBar.tintColor = [AppColorProvider primaryColor];
     self.tabBar.backgroundColor = [AppColorProvider backgroundColor];

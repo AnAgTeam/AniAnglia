@@ -13,10 +13,9 @@
 #import "StringCvt.h"
 #import "TypeSelectViewController.h"
 #import "LoadableView.h"
-
-@interface DynamicTableView : UITableView
-@property(nonatomic, retain) NSLayoutConstraint* my_height_constraint;
-@end
+#import "TimeCvt.h"
+#import "DynamicTableView.h"
+#import "ProfileListsView.h"
 
 @class ReleaseRatingView;
 @class ReleaseVideoBlocksView;
@@ -29,7 +28,7 @@
 @end
 
 @protocol ReleaseVideoBlocksViewDelegate <NSObject>
--(void)releaseVideoBlocksView:(ReleaseVideoBlocksView*)release_video_blocks didSelectBlock:(anixart::ReleaseVideoBlock::Ptr)block;
+-(void)releaseVideoBlocksView:(ReleaseVideoBlocksView*)release_video_blocks didSelectBanner:(anixart::ReleaseVideoBanner::Ptr)block;
 -(void)didShowAllPressedForReleaseVideoBlocksView:(ReleaseVideoBlocksView*)release_video_blocks;
 @end
 
@@ -64,17 +63,6 @@
 -(void)setVoteCount:(NSInteger)vote_count totalVoteCount:(NSInteger)total_vote_count;
 @end
 
-@interface ReleaseListLegendView : UIView
-@property(nonatomic, retain, readonly) NSString* legend_name;
-@property(nonatomic, retain, readonly) UIColor* legend_color;
-@property(nonatomic, readonly) NSInteger legend_count;
-@property(nonatomic, retain) UIView* legend_color_view;
-@property(nonatomic, retain) UILabel* legend_name_label;
-@property(nonatomic, retain) UILabel* legend_count_label;
-
--(instancetype)initWithLegendName:(NSString*)name color:(UIColor*)color count:(NSInteger)count;
-@end
-
 @interface ReleaseNamedImageView : UIView
 @property(nonatomic, retain, readonly) UIImage* image;
 @property(nonatomic, retain, readonly) NSString* content;
@@ -97,7 +85,6 @@
 
 @interface ReleaseVideoBlocksView : LoadableView <UICollectionViewDataSource, UICollectionViewDelegate> {
     anixart::Release::Ptr _release;
-    std::vector<anixart::ReleaseVideoBlock::Ptr> _video_blocks;
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, weak) id<ReleaseVideoBlocksViewDelegate> delegate;
@@ -120,25 +107,6 @@
 @property(nonatomic, retain) NSArray<ReleaseVoteIndicatorView*>* vote_indicators;
 @property(nonatomic, retain) NSArray<UIButton*>* vote_buttons;
 @property(nonatomic, retain) UIStackView* my_votes_stack_view;
-
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
-@end
-
-@interface ReleaseListsView : UIView {
-    anixart::Release::Ptr _release;
-}
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UIView* total_indicator_view;
-@property(nonatomic, retain) UIView* watching_indicator_view;
-@property(nonatomic, retain) UIView* plan_indicator_view;
-@property(nonatomic, retain) UIView* watched_indicator_view;
-@property(nonatomic, retain) UIView* holdon_indicator_view;
-@property(nonatomic, retain) UIView* dropped_indicator_view;
-@property(nonatomic, retain) ReleaseListLegendView* watching_legend_view;
-@property(nonatomic, retain) ReleaseListLegendView* plan_legend_view;
-@property(nonatomic, retain) ReleaseListLegendView* watched_legend_view;
-@property(nonatomic, retain) ReleaseListLegendView* holdon_legend_view;
-@property(nonatomic, retain) ReleaseListLegendView* dropped_legend_view;
 
 -(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
 @end
@@ -226,7 +194,6 @@ enum class ReleaseCommentsViewTableViewCellAction {
 
 @interface ReleaseCommentsView : LoadableView <UITableViewDataSource, UITableViewDelegate> {
     anixart::Release::Ptr _release;
-    std::vector<anixart::ReleaseComment::Ptr> _comments;
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, weak) id<ReleaseCommentsViewDelegate> delegate;
@@ -255,6 +222,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
 @property(nonatomic, retain) UIButton* add_list_button;
 @property(nonatomic, retain) UIButton* bookmark_button;
 @property(nonatomic, retain) UIButton* play_button;
+@property(nonatomic, retain) UILabel* note_label;
 
 @property(nonatomic, retain) UIStackView* info_stack_view;
 @property(nonatomic, retain) ReleaseNamedImageView* prod_info_view;
@@ -265,34 +233,11 @@ enum class ReleaseCommentsViewTableViewCellAction {
 @property(nonatomic, retain) UILabel* description_label;
 
 @property(nonatomic, retain) ReleaseRatingView* rating_view;
-@property(nonatomic, retain) ReleaseListsView* lists_view;
+@property(nonatomic, retain) ProfileListsView* lists_view;
 @property(nonatomic, retain) ReleaseVideoBlocksView* video_blocks_view;
 @property(nonatomic, retain) ReleasePreviewsView* previews_view;
 @property(nonatomic, retain) ReleaseRelatedView* related_view;
 @property(nonatomic, retain) ReleaseCommentsView* comments_view;
-
-@end
-
-@implementation DynamicTableView
-
--(void)setContentSize:(CGSize)content_size {
-    [super setContentSize:content_size];
-    if (!_my_height_constraint) {
-        _my_height_constraint = [self.heightAnchor constraintEqualToConstant:content_size.height];
-        _my_height_constraint.active = YES;
-    } else {
-        _my_height_constraint.constant = content_size.height;
-    }
-    [self invalidateIntrinsicContentSize];
-}
--(CGSize)contentSize {
-    [self layoutIfNeeded];
-    return [super contentSize];
-}
--(void)reloadData {
-    [super reloadData];
-    [self invalidateIntrinsicContentSize];
-}
 
 @end
 
@@ -358,61 +303,6 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _filled_indicator_width.active = YES;
     [self setNeedsLayout];
 }
-@end
-
-@implementation ReleaseListLegendView
-
--(instancetype)initWithLegendName:(NSString*)name color:(UIColor*)color count:(NSInteger)count {
-    self = [super init];
-    
-    _legend_name = name;
-    _legend_color = color;
-    _legend_count = count;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _legend_color_view = [UIView new];
-    _legend_color_view.layer.cornerRadius = 3;
-    _legend_name_label = [UILabel new];
-    _legend_name_label.text = _legend_name;
-    _legend_name_label.textAlignment = NSTextAlignmentLeft;
-    _legend_count_label = [UILabel new];
-    _legend_count_label.text = [@(_legend_count) stringValue];
-    _legend_count_label.textAlignment = NSTextAlignmentRight;
-    
-    [self addSubview:_legend_color_view];
-    [self addSubview:_legend_name_label];
-    [self addSubview:_legend_count_label];
-    
-    _legend_color_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _legend_name_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _legend_count_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_legend_color_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-        [_legend_color_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [_legend_color_view.widthAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.7],
-        [_legend_color_view.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.7],
-        
-        [_legend_name_label.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [_legend_name_label.leadingAnchor constraintEqualToAnchor:_legend_color_view.trailingAnchor constant:5],
-        [_legend_name_label.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        
-        [_legend_count_label.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [_legend_count_label.leadingAnchor constraintEqualToAnchor:_legend_name_label.trailingAnchor constant:5],
-        [_legend_count_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-        [_legend_count_label.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
-    ]];
-    [_legend_name_label sizeToFit];
-}
--(void)setupLayout {
-    _legend_color_view.backgroundColor = _legend_color;
-    _legend_name_label.textColor = [AppColorProvider textSecondaryColor];
-    _legend_count_label.textColor = [AppColorProvider textColor];
-}
-
 @end
 
 @implementation ReleaseNamedImageView
@@ -501,7 +391,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
 -(void)setupLayout {
     self.backgroundColor = [AppColorProvider foregroundColor1];
     _title_label.textColor = [AppColorProvider textColor];
-    _title_label.backgroundColor = [AppColorProvider backgroundColor];
+    _title_label.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
 }
 
 -(void)setTitle:(NSString*)title {
@@ -656,7 +546,6 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _release = release;
     [self setup];
     [self setupLayout];
-    [self tryLoadVideoBlocks];
     
     return self;
 }
@@ -706,31 +595,19 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _me_label.textColor = [AppColorProvider textColor];
     [_show_all_button setTitleColor:[AppColorProvider primaryColor] forState:UIControlStateNormal];
 }
--(void)tryLoadVideoBlocks {
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        self->_video_blocks = api->releases().release_video_main(self->_release->id);
-        return !self->_video_blocks.empty();
-    }
-    withUICompletion:^{
-        [self->_videos_collection_view reloadData];
-    }];
-}
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collection_view {
     return 1;
 }
 -(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _video_blocks.size();
+    return _release->video_banners.size();
 }
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     ReleaseVideoBlocksCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[ReleaseVideoBlocksCollectionViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    anixart::ReleaseVideoBlock::Ptr video_block = _video_blocks[index];
-    NSURL* image_url = nil;
-    if (video_block->videos.size() != 0) {
-        image_url = [NSURL URLWithString:TO_NSSTRING(video_block->videos[0]->image_url)];
-    }
+    anixart::ReleaseVideoBanner::Ptr video_block = _release->video_banners[index];
+    NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(video_block->image_url)];
     
-    [cell setTitle:TO_NSSTRING(video_block->category->name)];
+    [cell setTitle:TO_NSSTRING(video_block->name)];
     [cell setImageUrl:image_url];
     
     return cell;
@@ -742,7 +619,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = [index_path item];
-    [_delegate releaseVideoBlocksView:self didSelectBlock:_video_blocks[index]];
+    [_delegate releaseVideoBlocksView:self didSelectBanner:_release->video_banners[index]];
 }
 
 -(IBAction)onShowAllButtonPressed:(UIButton*)sender {
@@ -785,141 +662,6 @@ enum class ReleaseCommentsViewTableViewCellAction {
 
 -(void)setImageUrl:(NSURL*)image_url {
     [_image_view tryLoadImageWithURL:image_url];
-}
-@end
-
-@implementation ReleaseListsView
-
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release {
-    self = [super init];
-    
-    _release = release;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.text = NSLocalizedString(@"app.release.lists.title", "");
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _total_indicator_view = [UIView new];
-    _total_indicator_view.layer.cornerRadius = 5;
-    _total_indicator_view.clipsToBounds = YES;
-    _watching_indicator_view = [UIView new];
-    _plan_indicator_view = [UIView new];
-    _watched_indicator_view = [UIView new];
-    _holdon_indicator_view = [UIView new];
-    _dropped_indicator_view = [UIView new];
-    
-    _watching_legend_view = [[ReleaseListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.release.list_status.watching.name", "") color:[UIColor systemIndigoColor] count:_release->watching_count];
-    _plan_legend_view = [[ReleaseListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.release.list_status.plan.name", "") color:[UIColor systemYellowColor] count:_release->plan_count];
-    _watched_legend_view = [[ReleaseListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.release.list_status.watched.name", "") color:[UIColor systemGreenColor] count:_release->watched_count];
-    _holdon_legend_view = [[ReleaseListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.release.list_status.holdon.name", "") color:[UIColor systemPurpleColor] count:_release->hold_on_count];
-    _dropped_legend_view = [[ReleaseListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.release.list_status.dropped.name", "") color:[UIColor systemRedColor] count:_release->dropped_count];
-    double total_lists_count = _release->watching_count + _release->plan_count + _release->watched_count + _release->hold_on_count + _release->dropped_count;
-    
-    [self addSubview:_me_label];
-    [self addSubview:_watching_indicator_view];
-    [self addSubview:_total_indicator_view];
-    [_total_indicator_view addSubview:_watching_indicator_view];
-    [_total_indicator_view addSubview:_plan_indicator_view];
-    [_total_indicator_view addSubview:_watched_indicator_view];
-    [_total_indicator_view addSubview:_holdon_indicator_view];
-    [_total_indicator_view addSubview:_dropped_indicator_view];
-    [self addSubview:_watching_legend_view];
-    [self addSubview:_plan_legend_view];
-    [self addSubview:_watched_legend_view];
-    [self addSubview:_holdon_legend_view];
-    [self addSubview:_dropped_legend_view];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _total_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _watching_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _watched_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _plan_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _holdon_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _dropped_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _watching_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _plan_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _watched_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _holdon_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _dropped_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_total_indicator_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_total_indicator_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor constant:5],
-        [_total_indicator_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor constant:-5],
-        [_total_indicator_view.heightAnchor constraintEqualToConstant:20],
-        
-        [_watching_indicator_view.topAnchor constraintEqualToAnchor:_total_indicator_view.topAnchor],
-        [_watching_indicator_view.leadingAnchor constraintEqualToAnchor:_total_indicator_view.leadingAnchor],
-        [_watching_indicator_view.heightAnchor constraintEqualToAnchor:_total_indicator_view.heightAnchor],
-        
-        [_plan_indicator_view.topAnchor constraintEqualToAnchor:_total_indicator_view.topAnchor],
-        [_plan_indicator_view.leadingAnchor constraintEqualToAnchor:_watching_indicator_view.trailingAnchor],
-        [_plan_indicator_view.heightAnchor constraintEqualToAnchor:_total_indicator_view.heightAnchor],
-        
-        [_watched_indicator_view.topAnchor constraintEqualToAnchor:_total_indicator_view.topAnchor],
-        [_watched_indicator_view.leadingAnchor constraintEqualToAnchor:_plan_indicator_view.trailingAnchor],
-        [_watched_indicator_view.heightAnchor constraintEqualToAnchor:_total_indicator_view.heightAnchor],
-        
-        [_holdon_indicator_view.topAnchor constraintEqualToAnchor:_total_indicator_view.topAnchor],
-        [_holdon_indicator_view.leadingAnchor constraintEqualToAnchor:_watched_indicator_view.trailingAnchor],
-        [_holdon_indicator_view.heightAnchor constraintEqualToAnchor:_total_indicator_view.heightAnchor],
-        
-        [_dropped_indicator_view.topAnchor constraintEqualToAnchor:_total_indicator_view.topAnchor],
-        [_dropped_indicator_view.leadingAnchor constraintEqualToAnchor:_holdon_indicator_view.trailingAnchor],
-        [_dropped_indicator_view.trailingAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.trailingAnchor],
-        [_dropped_indicator_view.heightAnchor constraintEqualToAnchor:_total_indicator_view.heightAnchor],
-        
-        [_watching_legend_view.topAnchor constraintEqualToAnchor:_total_indicator_view.bottomAnchor constant:5],
-        [_watching_legend_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_watching_legend_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor constant:-5],
-        [_watching_legend_view.heightAnchor constraintEqualToConstant:40],
-        
-        [_plan_legend_view.topAnchor constraintEqualToAnchor:_total_indicator_view.bottomAnchor constant:5],
-        [_plan_legend_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor constant:5],
-        [_plan_legend_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_plan_legend_view.heightAnchor constraintEqualToConstant:40],
-        
-        [_watched_legend_view.topAnchor constraintEqualToAnchor:_watching_legend_view.bottomAnchor constant:5],
-        [_watched_legend_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_watched_legend_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor constant:-5],
-        [_watched_legend_view.heightAnchor constraintEqualToConstant:40],
-        
-        [_holdon_legend_view.topAnchor constraintEqualToAnchor:_plan_legend_view.bottomAnchor constant:5],
-        [_holdon_legend_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor constant:5],
-        [_holdon_legend_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_holdon_legend_view.heightAnchor constraintEqualToConstant:40],
-        
-        [_dropped_legend_view.topAnchor constraintEqualToAnchor:_watched_legend_view.bottomAnchor constant:5],
-        [_dropped_legend_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_dropped_legend_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor constant:-5],
-        [_dropped_legend_view.heightAnchor constraintEqualToConstant:40],
-        [_dropped_legend_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-    ]];
-    if (total_lists_count != 0) {
-        [NSLayoutConstraint activateConstraints:@[
-            [_watching_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_release->watching_count / total_lists_count)],
-            [_plan_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_release->plan_count / total_lists_count)],
-            [_watched_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_release->watched_count / total_lists_count)],
-            [_holdon_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_release->hold_on_count / total_lists_count)],
-            [_dropped_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_release->dropped_count / total_lists_count)]
-        ]];
-    }
-    [_me_label sizeToFit];
-}
--(void)setupLayout {
-    _total_indicator_view.backgroundColor = [AppColorProvider foregroundColor1];
-    _watching_indicator_view.backgroundColor = [UIColor systemIndigoColor];
-    _plan_indicator_view.backgroundColor = [UIColor systemYellowColor];
-    _watched_indicator_view.backgroundColor = [UIColor systemGreenColor];
-    _holdon_indicator_view.backgroundColor = [UIColor systemPurpleColor];
-    _dropped_indicator_view.backgroundColor = [UIColor systemRedColor];
 }
 @end
 
@@ -1189,21 +931,28 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _avatar_image_view = [LoadableImageView new];
     _avatar_image_view.clipsToBounds = YES;
     _avatar_image_view.layer.cornerRadius = 20;
+    
     _username_label = [UILabel new];
     _publish_date_label = [UILabel new];
+    
     _content_label = [UILabel new];
     _content_label.numberOfLines = 0;
     _content_label.textAlignment = NSTextAlignmentJustified;
+    
     _reply_button = [UIButton new];
     [_reply_button setTitle:NSLocalizedString(@"app.release.comments.reply_button.title", "") forState:UIControlStateNormal];
     [_reply_button addTarget:self action:@selector(onReplyButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
     _show_replies_button = [UIButton new];
     [_show_replies_button setTitle:NSLocalizedString(@"app.release.comments.show_replies_button.title", "") forState:UIControlStateNormal];
     [_show_replies_button setImage:[UIImage systemImageNamed:@"chevron.down"] forState:UIControlStateNormal];
     [_show_replies_button addTarget:self action:@selector(onShowRepliesButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    _show_replies_button.clipsToBounds = YES;
+    
     _upvote_button = [UIButton new];
     [_upvote_button setImage:[UIImage systemImageNamed:@"heart"] forState:UIControlStateNormal];
     [_upvote_button addTarget:self action:@selector(onUpvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
     _downvote_button = [UIButton new];
     [_downvote_button setImage:[UIImage systemImageNamed:@"hand.thumbsdown"] forState:UIControlStateNormal];
     [_downvote_button addTarget:self action:@selector(onDownvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -1230,7 +979,8 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _vote_count_label.translatesAutoresizingMaskIntoConstraints = NO;
     
     _show_replies_button_height_constraint =
-    [_show_replies_button.heightAnchor constraintEqualToConstant:35];    [NSLayoutConstraint activateConstraints:@[
+    [_show_replies_button.heightAnchor constraintEqualToConstant:0];
+    [NSLayoutConstraint activateConstraints:@[
         [_avatar_image_view.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
         [_avatar_image_view.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
         [_avatar_image_view.widthAnchor constraintEqualToConstant:40],
@@ -1240,7 +990,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
         [_username_label.leadingAnchor constraintEqualToAnchor:_avatar_image_view.trailingAnchor constant:9],
         
         [_publish_date_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
-        [_publish_date_label.leadingAnchor constraintEqualToAnchor:_username_label.trailingAnchor constant:4],
+        [_publish_date_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_username_label.trailingAnchor constant:4],
         [_publish_date_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
         [_publish_date_label.bottomAnchor constraintEqualToAnchor:_username_label.bottomAnchor],
         
@@ -1270,7 +1020,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
         [_show_replies_button.topAnchor constraintEqualToAnchor:_reply_button.bottomAnchor constant:9],
         [_show_replies_button.leadingAnchor constraintEqualToAnchor:_reply_button.leadingAnchor],
         [_show_replies_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
-//        _show_replies_button_height_constraint,
+        _show_replies_button_height_constraint,
         [_show_replies_button.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor]
     ]];
     [_username_label sizeToFit];
@@ -1303,7 +1053,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
 }
 -(void)setRepliesCount:(NSInteger)replies_count {
     // enable "show_replies" button if has replies
-    _show_replies_button_height_constraint.active = replies_count != 0;
+    _show_replies_button_height_constraint.constant = replies_count != 0 ? 35 : 0;
     // TODO: add replies count to button
 }
 -(void)setVoteCount:(NSInteger)vote_count {
@@ -1338,7 +1088,6 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _release = release;
     [self setup];
     [self setupLayout];
-    [self loadFirstComments];
     
     return self;
 }
@@ -1385,29 +1134,17 @@ enum class ReleaseCommentsViewTableViewCellAction {
     [_show_all_button setTitleColor:[AppColorProvider primaryColor] forState:UIControlStateNormal];
 }
 
--(void)loadFirstComments {
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        self->_comments = api->releases().release_comments(self->_release->id, 0, anixart::ReleaseComment::FilterBy::All)->get();
-        return !self->_comments.empty();
-    } withUICompletion:^{
-        [self->_comments_table_view reloadData];
-    }];
-}
-
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
-    return _comments.size();
+    return _release->comments.size();
 }
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     ReleaseCommentsViewTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleaseCommentsViewTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    anixart::ReleaseComment::Ptr& comment = _comments[index];
-    std::chrono::year_month_day publish_ymd = std::chrono::floor<std::chrono::days>(comment->date);
-    
-    NSString* publish_date = [NSString stringWithFormat:@"%u.%u.%u", static_cast<unsigned int>(publish_ymd.day()), static_cast<unsigned int>(publish_ymd.month()), static_cast<int>(publish_ymd.year())];
+    anixart::ReleaseComment::Ptr& comment = _release->comments[index];
     
     [cell setAvatarUrl:[NSURL URLWithString:TO_NSSTRING(comment->author->avatar_url)]];
-    [cell setUsername:TO_NSSTRING(comment->author->login)];
-    [cell setPublishDate:publish_date]; // TODO
+    [cell setUsername:TO_NSSTRING(comment->author->username)];
+    [cell setPublishDate:to_utc_yy_mm_dd_string_from_gmt(comment->date)];
     [cell setContent:TO_NSSTRING(comment->message)];
     [cell setRepliesCount:comment->reply_count];
     [cell setVoteCount:comment->vote_count];
@@ -1429,7 +1166,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
 }
 
 -(void)handleCellAction:(ReleaseCommentsViewTableViewCellAction)action atIndex:(NSInteger)index {
-    anixart::ReleaseComment::Ptr& comment = _comments[index];
+    anixart::ReleaseComment::Ptr& comment = _release->comments[index];
     switch (action) {
         case ReleaseCommentsViewTableViewCellAction::ReplyPressed:
             [_delegate releaseCommentsView:self didReplyPressedForComment:comment];
@@ -1566,6 +1303,11 @@ enum class ReleaseCommentsViewTableViewCellAction {
     [_play_button setTitle:NSLocalizedString(@"app.release.play_button.title", "") forState:UIControlStateNormal];
     _play_button.layer.cornerRadius = 9.0;
     [_play_button addTarget:self action:@selector(onPlayButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+
+    _note_label = [UILabel new];
+    _note_label.text = TO_NSSTRING(_release->note);
+    _note_label.numberOfLines = 0;
+    _note_label.textAlignment = NSTextAlignmentJustified;
     
     _info_stack_view = [UIStackView new];
     _info_stack_view.axis = UILayoutConstraintAxisVertical;
@@ -1591,7 +1333,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _rating_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     _rating_view.delegate = self;
     
-    _lists_view = [[ReleaseListsView alloc] initWithReleaseInfo:_release];
+    _lists_view = [[ProfileListsView alloc] initWithReleaseInfo:_release name:NSLocalizedString(@"app.release.lists.title", "")];
     _lists_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     
     _video_blocks_view = [[ReleaseVideoBlocksView alloc] initWithReleaseInfo:_release];
@@ -1621,6 +1363,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
     [_content_stack_view addArrangedSubview:_orig_title_label];
     [_content_stack_view addArrangedSubview:_actions_stack_view];
     [_content_stack_view addArrangedSubview:_play_button];
+    [_content_stack_view addArrangedSubview:_note_label];
     [_content_stack_view addArrangedSubview:_prod_info_view];
     [_content_stack_view addArrangedSubview:_ep_info_view];
     [_content_stack_view addArrangedSubview:_status_info_view];
@@ -1650,6 +1393,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _title_label.translatesAutoresizingMaskIntoConstraints = NO;
     _orig_title_label.translatesAutoresizingMaskIntoConstraints = NO;
     _play_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _note_label.translatesAutoresizingMaskIntoConstraints = NO;
     _add_list_button.translatesAutoresizingMaskIntoConstraints = NO;
     _bookmark_button.translatesAutoresizingMaskIntoConstraints = NO;
     _actions_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1689,6 +1433,8 @@ enum class ReleaseCommentsViewTableViewCellAction {
 
         [_play_button.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_play_button.heightAnchor constraintEqualToConstant:50],
+        
+        [_note_label.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
 
         [_rating_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_lists_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
@@ -1700,6 +1446,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
     [_title_label sizeToFit];
     [_orig_title_label sizeToFit];
     [_description_label sizeToFit];
+    [_note_label sizeToFit];
     
     [_release_image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_release->image_url)]];
     
@@ -1720,6 +1467,8 @@ enum class ReleaseCommentsViewTableViewCellAction {
     [_bookmark_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _play_button.backgroundColor = [AppColorProvider primaryColor];
     [_play_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
+    _note_label.textColor = [AppColorProvider textSecondaryColor];
+//    _note_label.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
 -(NSString*)getSeasonNameFor:(anixart::Release::Season)season {
@@ -1763,22 +1512,22 @@ enum class ReleaseCommentsViewTableViewCellAction {
 -(NSString*)getListStatusNameFor:(anixart::Profile::ListStatus)list_status {
     switch(list_status) {
         case anixart::Profile::ListStatus::Watching:
-            return NSLocalizedString(@"app.release.list_status.watching.name", "");
+            return NSLocalizedString(@"app.profile.list_status.watching.name", "");
             break;
         case anixart::Profile::ListStatus::Plan:
-            return NSLocalizedString(@"app.release.list_status.plan.name", "");
+            return NSLocalizedString(@"app.profile.list_status.plan.name", "");
             break;
         case anixart::Profile::ListStatus::Watched:
-            return NSLocalizedString(@"app.release.list_status.watched.name", "");
+            return NSLocalizedString(@"app.profile.list_status.watched.name", "");
             break;
         case anixart::Profile::ListStatus::HoldOn:
-            return NSLocalizedString(@"app.release.list_status.holdon.name", "");
+            return NSLocalizedString(@"app.profile.list_status.holdon.name", "");
             break;
         case anixart::Profile::ListStatus::Dropped:
-            return NSLocalizedString(@"app.release.list_status.dropped.name", "");
+            return NSLocalizedString(@"app.profile.list_status.dropped.name", "");
             break;
         default:
-            return NSLocalizedString(@"app.release.list_status.none.name", "");
+            return NSLocalizedString(@"app.profile.list_status.none.name", "");
             break;
     }
 }
@@ -1836,7 +1585,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
     // TODO
 }
 
--(void)releaseVideoBlocksView:(ReleaseVideoBlocksView *)release_video_blocks didSelectBlock:(anixart::ReleaseVideoBlock::Ptr)block {
+-(void)releaseVideoBlocksView:(ReleaseVideoBlocksView *)release_video_blocks didSelectBanner:(anixart::ReleaseVideoBanner::Ptr)block {
     // TODO
 }
 

@@ -12,7 +12,7 @@
 #endif
 
 /*
-TODO: edit all Caching objects to support json object references
+TODO: edit all Caching objects to support CachingJson without value copy. Maybe not needed
 */
 
 namespace anixart::json {
@@ -26,7 +26,7 @@ namespace anixart::json {
 
 	namespace detail {
 		template<typename T>
-		concept smart_pointer_with_constructible_from_caching_json_object = network::json::smart_pointer<T> && std::constructible_from<typename T::element_type, CachingJsonObject&>;
+		concept smart_pointer_with_constructible_from_caching_json_object = network::smart_pointer<T> && std::constructible_from<typename T::element_type, CachingJsonObject&>;
 		class SharedCache;
 
 		class CachedObject {

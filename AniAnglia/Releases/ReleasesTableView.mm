@@ -38,7 +38,6 @@
 @implementation ReleasesTableViewCell
 
 static const CGFloat RATING_BADGE_HEIGHT = 35;
-static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
 
 +(NSString*)getIndentifier {
     return @"ReleasesTableViewCell";
@@ -48,64 +47,73 @@ static const CGFloat TOP_BOTTOM_CELL_OFFSET = 7;
     self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
     
     [self setup];
+    [self setupLayout];
     
     return self;
 }
 
 -(void)setup {
-//    self.preservesSuperviewLayoutMargins = YES;
+    //    self.preservesSuperviewLayoutMargins = YES;
     _image_view = [LoadableImageView new];
-    [self addSubview:_image_view];
-    _image_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_image_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
-    [_image_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:9].active = YES;
-    [_image_view.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.93 constant:-TOP_BOTTOM_CELL_OFFSET * 2].active = YES;
-    [_image_view.widthAnchor constraintEqualToAnchor:_image_view.heightAnchor multiplier:0.56].active = YES;
     _image_view.layer.cornerRadius = 6.0;
     _image_view.clipsToBounds = YES;
     _image_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(10, 0, 10, 0);
-
+    
     _title_label = [UILabel new];
-    [self addSubview:_title_label];
-    _title_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_title_label.topAnchor constraintEqualToAnchor:_image_view.topAnchor].active = YES;
-    [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:5].active = YES;
-    [_title_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor].active = YES;
-//    [_title_label.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.25].active = YES;
     _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 2;
     _title_label.font = [_title_label.font fontWithSize:23];
-    [_title_label sizeToFit];
     
     _ep_count_label = [UILabel new];
-    [self addSubview:_ep_count_label];
-    _ep_count_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_ep_count_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor].active = YES;
-    [_ep_count_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor].active = YES;
-    [_ep_count_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
     
     _description_label = [UILabel new];
-    [self addSubview:_description_label];
-    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_description_label.topAnchor constraintEqualToAnchor:_ep_count_label.bottomAnchor].active = YES;
-    [_description_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor].active = YES;
-    [_description_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor].active = YES;
-    [_description_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor].active = YES;
     _description_label.textAlignment = NSTextAlignmentJustified;
     _description_label.numberOfLines = -1;
     
     _rating_label = [UILabel new];
-    [self addSubview:_rating_label];
-    _rating_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [_rating_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor].active = YES;
-    [_rating_label.trailingAnchor constraintEqualToAnchor:_image_view.trailingAnchor].active = YES;
-    [_rating_label.heightAnchor constraintEqualToConstant:RATING_BADGE_HEIGHT].active = YES;
-    [_rating_label.widthAnchor constraintEqualToAnchor:_rating_label.heightAnchor].active = YES;
     _rating_label.layer.cornerRadius = RATING_BADGE_HEIGHT / 2;
     _rating_label.layer.masksToBounds = YES;
     _rating_label.textAlignment = NSTextAlignmentCenter;
     
-    [self setupLayout];
+    [self addSubview:_image_view];
+    [self addSubview:_title_label];
+    [self addSubview:_ep_count_label];
+    [self addSubview:_description_label];
+    [self addSubview:_rating_label];
+    
+    _image_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _title_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _ep_count_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _rating_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_image_view.centerYAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
+        [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_image_view.heightAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:0.93],
+        [_image_view.widthAnchor constraintEqualToAnchor:_image_view.heightAnchor multiplier:(9. / 16)],
+        
+        [_title_label.topAnchor constraintEqualToAnchor:_image_view.topAnchor],
+        [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:8],
+        [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        //    [_title_label.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.25],
+        
+        [_ep_count_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor],
+        [_ep_count_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
+        [_ep_count_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        
+        [_description_label.topAnchor constraintEqualToAnchor:_ep_count_label.bottomAnchor],
+        [_description_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor],
+        [_description_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
+        [_description_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        
+        [_rating_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor],
+        [_rating_label.trailingAnchor constraintEqualToAnchor:_image_view.trailingAnchor],
+        [_rating_label.heightAnchor constraintEqualToConstant:RATING_BADGE_HEIGHT],
+        [_rating_label.widthAnchor constraintEqualToAnchor:_rating_label.heightAnchor],
+    ]];
+    [_title_label sizeToFit];
+    [_ep_count_label sizeToFit];
+    [_description_label sizeToFit];
 }
 
 -(void)setupLayout {

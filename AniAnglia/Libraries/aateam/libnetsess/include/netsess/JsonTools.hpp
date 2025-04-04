@@ -1,6 +1,7 @@
 #pragma once
 #include <netsess/NetTypes.hpp>
 #include <netsess/TimeTools.hpp>
+#include <netsess/UtilConcepts.hpp>
 
 #include <string>
 #include <vector>
@@ -15,12 +16,6 @@ namespace network::json {
     using Clock = std::chrono::system_clock;
 
     template<typename T>
-    class Nullable;
-
-    template<typename T, typename ... U>
-    concept same_as_any_of = (std::same_as<T, U> || ...);
-
-    template<typename T>
     concept serializable_to_json_array =
         std::is_array_v<T> ||
         std::same_as<T, std::vector<typename T::value_type>> ||
@@ -33,16 +28,8 @@ namespace network::json {
         std::same_as<T, std::unordered_map<typename T::key_type, typename T::mapped_type, typename T::hasher, typename T::key_equal, typename T::allocator_type>>;
 
     template<typename T>
-    concept enumeration = std::is_enum_v<T>;
-
-    template<typename T>
     concept nullable =
         std::same_as<T, std::optional<typename T::value_type>>;
-
-    template<typename T>
-    concept smart_pointer =
-        std::same_as<T, std::shared_ptr<typename T::element_type>> ||
-        std::same_as<T, std::unique_ptr<typename T::element_type>>;
 
     class InlineJson {
     public:
@@ -80,7 +67,7 @@ namespace network::json {
             else if constexpr (requires { InlineJson::serialize(value); }) {
                 json_str += InlineJson::serialize(value);
             }
-            else if constexpr (clock_time_point<Type> || clock_duration<Type>) {
+            else if constexpr (convertible_time_tools_to_integer<Type>) {
                 json_str += std::to_string(TimeTools::to_integer(value));
             }
             else if constexpr (same_as_any_of<Type, std::string, std::string_view, char*>) {
@@ -200,13 +187,7 @@ namespace network::json {
         static T get_if(JsonObject& object, const std::string_view key, PredicateFunc predicate) {
             return predicate(object, key) ? static_cast<T>(get<int32_t>(object, key)) : static_cast<T>(0);
         }
-        template<typename T>
-            requires clock_time_point<std::remove_cvref_t<T>>
-        static T get_if(JsonObject& object, const std::string_view key, PredicateFunc predicate) {
-            return predicate(object, key) ? TimeTools::from_integer<T>(get<int64_t>(object, key)) : TimeTools::from_integer<T>(0ULL);
-        }
-        template<typename T>
-            requires clock_duration<std::remove_cvref_t<T>>
+        template<convertible_time_tools_from_integer T>
         static T get_if(JsonObject& object, const std::string_view key, PredicateFunc predicate) {
             return predicate(object, key) ? TimeTools::from_integer<T>(get<int64_t>(object, key)) : TimeTools::from_integer<T>(0ULL);
         }

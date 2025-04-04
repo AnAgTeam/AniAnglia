@@ -21,7 +21,8 @@
     _user_defaults = [NSUserDefaults standardUserDefaults];
     [_user_defaults registerDefaults:@{
         @"search_history": @[],
-        @"token": @""
+        @"token": @"",
+        @"profile_id": @0
     }];
     
     return self;
@@ -32,6 +33,12 @@
 }
 -(void)setToken:(NSString*)token {
     [_user_defaults setObject:token forKey:@"token"];
+}
+-(anixart::ProfileID)getMyProfileID {
+    return static_cast<anixart::ProfileID>([_user_defaults integerForKey:@"profile_id"]);
+}
+-(void)setMyProfileID:(anixart::ProfileID)profile_id {
+    [_user_defaults setInteger:static_cast<int64_t>(profile_id) forKey:@"profile_id"];
 }
 -(NSArray<NSString*>*)getSearchHistory {
     return [_user_defaults arrayForKey:@"search_history"];

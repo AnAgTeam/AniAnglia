@@ -8,7 +8,8 @@ namespace anixart {
 	public:
 		ApiProfiles(const ApiSession& session, const std::string& token);
 
-		Profile::Ptr get_profile(const ProfileID profile_id) const;
+		/* returns Profile and is_my_profile */
+		std::pair<Profile::Ptr, bool> get_profile(const ProfileID profile_id) const;
 		FriendsPages::UPtr get_friends(const ProfileID profile_id, const int32_t start_page) const;
 		LoginChangeHistoryPages::UPtr get_profile_login_history(const ProfileID profile_id, const int32_t start_page) const;
 		ProfileSocial::Ptr get_profile_social(const ProfileID profile_id) const;
