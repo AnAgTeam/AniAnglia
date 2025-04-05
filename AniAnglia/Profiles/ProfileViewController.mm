@@ -74,6 +74,7 @@
 @interface ProfileActionsView : UIView {
     anixart::Profile::Ptr _profile;
     bool _is_my_profile;
+    anixart::Profile::FriendStatus _friend_status;
 }
 @property(nonatomic, strong) AppDataController* app_data_controller;
 @property(nonatomic, weak) id<ProfileActionViewDelegate> delegate;
@@ -81,6 +82,8 @@
 @property(nonatomic, retain) UIStackView* actions_stack_view;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile isMyProfile:(BOOL)is_my_profile;
+
+-(void)updateActions;
 @end
 
 @interface ProfileVotesViewTableViewCell : UITableViewCell
@@ -305,6 +308,7 @@
     _app_data_controller = [AppDataController sharedInstance];
     _is_my_profile = is_my_profile;
     _profile = profile;
+    _friend_status = _profile->get_friend_status_to([_app_data_controller getMyProfileID]);
     [self setup];
     [self setupLayout];
     
@@ -312,13 +316,13 @@
 }
 -(void)setup {
     _actions_stack_view = [UIStackView new];
-    
-    _action_buttons = [self makeActionButtons];
+    _actions_stack_view.axis = UILayoutConstraintAxisHorizontal;
+    _actions_stack_view.distribution = UIStackViewDistributionFillEqually;
+    _actions_stack_view.alignment = UIStackViewAlignmentFill;
+    _actions_stack_view.spacing = 8;
     
     [self addSubview:_actions_stack_view];
-    for (UIButton* button : _action_buttons) {
-        [_actions_stack_view addArrangedSubview:button];
-    }
+    [self updateActions];
     
     _actions_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
@@ -330,12 +334,15 @@
     ]];
 }
 -(void)setupLayout {
+    [self setupActionsLayout];
+}
+-(void)setupActionsLayout {
     for (UIButton* button : _action_buttons) {
         button.backgroundColor = [AppColorProvider primaryColor];
     }
 }
+
 -(NSArray<UIButton*>*)makeActionButtons {
-    anixart::Profile::FriendStatus friend_status = _profile->get_friend_status_to([_app_data_controller getMyProfileID]);
     if (_is_my_profile) {
         UIButton* edit_button = [UIButton new];
         [edit_button setTitle:NSLocalizedString(@"app.profile.actions.edit_button.title", "") forState:UIControlStateNormal];
@@ -343,14 +350,14 @@
         edit_button.layer.cornerRadius = 8.0;
         return @[edit_button];
     }
-    else if (friend_status == anixart::Profile::FriendStatus::NotFriends) {
+    else if (_friend_status == anixart::Profile::FriendStatus::NotFriends) {
         UIButton* add_to_friends_button = [UIButton new];
         [add_to_friends_button setTitle:NSLocalizedString(@"app.profile.actions.add_to_friends_button.title", "") forState:UIControlStateNormal];
         [add_to_friends_button addTarget:self action:@selector(onAddToFriendsButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         add_to_friends_button.layer.cornerRadius = 8.0;
         return @[add_to_friends_button];
     }
-    else if (friend_status == anixart::Profile::FriendStatus::Friends) {
+    else if (_friend_status == anixart::Profile::FriendStatus::Friends) {
         // TODO: add message button. Maybe useless button? ;)
         UIButton* remove_from_friends_button = [UIButton new];
         [remove_from_friends_button setTitle:NSLocalizedString(@"app.profile.actions.remove_from_friends.title", "") forState:UIControlStateNormal];
@@ -358,14 +365,14 @@
         remove_from_friends_button.layer.cornerRadius = 8.0;
         return @[remove_from_friends_button];
     }
-    else if (friend_status == anixart::Profile::FriendStatus::SendedRequest) {
+    else if (_friend_status == anixart::Profile::FriendStatus::SendedRequest) {
         UIButton* cancel_friend_request_button = [UIButton new];
         [cancel_friend_request_button setTitle:NSLocalizedString(@"app.profile.actions.cancel_friend_request_button.title", "") forState:UIControlStateNormal];
         [cancel_friend_request_button addTarget:self action:@selector(onCancelFriendRequestButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         cancel_friend_request_button.layer.cornerRadius = 8.0;
         return @[cancel_friend_request_button];
     }
-    else if (friend_status == anixart::Profile::FriendStatus::RecievedRequest) {
+    else if (_friend_status == anixart::Profile::FriendStatus::RecievedRequest) {
         UIButton* accept_friend_request_button = [UIButton new];
         [accept_friend_request_button setTitle:NSLocalizedString(@"app.profile.actions.accept_friend_request_button.title", "") forState:UIControlStateNormal];
         [accept_friend_request_button addTarget:self action:@selector(onAcceptFriendRequestButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -377,6 +384,25 @@
         return @[accept_friend_request_button, reject_friend_request_button];
     }
     return @[];
+}
+
+-(void)setFriendStatus:(anixart::Profile::FriendStatus)friend_status {
+    // TODO: just update buttons title and action
+    _friend_status = friend_status;
+    [self updateActions];
+}
+-(void)updateActions {
+    if (_action_buttons) {
+        for (UIButton* button : _action_buttons) {
+            [button removeFromSuperview];
+            [_actions_stack_view removeArrangedSubview:button];
+        }
+    }
+    _action_buttons = [self makeActionButtons];
+    for (UIButton* button : _action_buttons) {
+        [_actions_stack_view addArrangedSubview:button];
+    }
+    [self setupActionsLayout];
 }
 
 -(IBAction)onEditButtonPressed:(UIButton*)sender {
@@ -902,6 +928,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [super viewDidLoad];
     
     [self preSetup];
+    [self preSetupLayout];
     
     if (_profile) {
         [self setup];
@@ -1020,8 +1047,10 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_profile->avatar_url)];
     [_avatar_image_view tryLoadImageWithURL:avatar_url];
 }
--(void)setupLayout {
+-(void)preSetupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
+}
+-(void)setupLayout {
     _username_label.textColor = [AppColorProvider textColor];
     _custom_status_label.textColor = [AppColorProvider textColor];
     _status_label.textColor = [AppColorProvider textSecondaryColor];
@@ -1057,15 +1086,33 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didAcceptFriendRequestPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
-    // TODO
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().send_friend_request(self->_profile->id);
+        return YES;
+    } withUICompletion:^{
+        // TODO: verify friend status
+        [self->_actions_view setFriendStatus:anixart::Profile::FriendStatus::Friends];
+    }];
 }
 
 -(void)didAddToFriendsPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
-    // TODO
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().send_friend_request(self->_profile->id);
+        return YES;
+    } withUICompletion:^{
+        // TODO: verify friend status
+        [self->_actions_view setFriendStatus:anixart::Profile::FriendStatus::SendedRequest];
+    }];
 }
 
 -(void)didCancelFriendRequestPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
-    // TODO
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().remove_friend_request(self->_profile->id);
+        return YES;
+    } withUICompletion:^{
+        // TODO: verify friend status
+        [self->_actions_view setFriendStatus:anixart::Profile::FriendStatus::NotFriends];
+    }];
 }
 
 -(void)didEditPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
@@ -1077,19 +1124,32 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didRejectFriendRequestPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
-    // TODO
+    // TODO: check
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().remove_friend_request(self->_profile->id);
+        return YES;
+    } withUICompletion:^{
+        // TODO: verify friend status
+        [self->_actions_view setFriendStatus:anixart::Profile::FriendStatus::NotFriends];
+    }];
 }
 
 - (void)didRemoveFromFriendsPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view { 
-    // TODO
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().remove_friend_request(self->_profile->id);
+        return YES;
+    } withUICompletion:^{
+        // TODO: verify friend status
+        [self->_actions_view setFriendStatus:anixart::Profile::FriendStatus::RecievedRequest];
+    }];
 }
 
 -(void)profileVotesView:(ProfileVotesView *)profile_votes_view didSelectVotedRelease:(anixart::Release::Ptr)release {
-    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithRelease:release] animated:YES];
+    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
 -(void)profileWatchedRecentlyView:(ProfileWatchedRecentlyView *)profile_watched_recently_view didSelectRelease:(anixart::Release::Ptr)release {
-    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithRelease:release] animated:YES];
+    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
 @end
