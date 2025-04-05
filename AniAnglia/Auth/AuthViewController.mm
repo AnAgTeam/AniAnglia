@@ -7,19 +7,21 @@
 
 #import "AuthViewController.h"
 #import "AppColor.h"
-#import "UITextErrorField.h"
-#import "AuthNavigationController.h"
+#import "TextErrorField.h"
 #import "LibanixartApi.h"
 #import "AppDataController.h"
 #import "StringCvt.h"
+#import "RestoreViewController.h"
+#import "SignUpViewController.h"
+#import "MainWindow.h"
+#import "MainTabBarController.h"
 
 @interface AuthViewController ()
-@property(nonatomic, retain) AuthNavigationController* auth_nav_controller;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic, retain) AppDataController* data_controller;
-@property(nonatomic, retain) UITextErrorField* login_view;
+@property(nonatomic, retain) TextErrorField* login_view;
 @property(nonatomic, retain) UITextField* login_field;
-@property(nonatomic, retain) UITextErrorField* password_view;
+@property(nonatomic, retain) TextErrorField* password_view;
 @property(nonatomic, retain) UITextField* password_field;
 @property(nonatomic, retain) UIButton* login_button;
 @property(nonatomic, retain) UIActivityIndicatorView* login_indicator;
@@ -29,10 +31,9 @@
 
 @implementation AuthViewController
 
--(instancetype)initWithNavController:(UINavigationController*)nav_controller {
+-(instancetype)init {
     self = [super init];
     
-    _auth_nav_controller = (AuthNavigationController*)nav_controller;
     _api_proxy = [LibanixartApi sharedInstance];
     _data_controller = [AppDataController sharedInstance];
     
@@ -45,18 +46,13 @@
     _screen_width = UIScreen.mainScreen.bounds.size.width;
     _screen_height = UIScreen.mainScreen.bounds.size.height;
     
-    [self setupView];
+    [self setup];
+    [self setupLayout];
 }
 
--(void)setupView {
-    _login_view = [UITextErrorField new];
+-(void)setup {
+    _login_view = [TextErrorField new];
     _login_field = _login_view.field;
-    [self.view addSubview:_login_view];
-    _login_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_login_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_login_view.heightAnchor constraintEqualToConstant:80.0].active = YES;
-    [NSLayoutConstraint constraintWithItem:_login_view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:0.38 constant:0].active = YES;
-    [_login_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     _login_field.keyboardType = UIKeyboardTypeDefault;
     _login_field.placeholder = NSLocalizedString(@"app.auth.login_field.placeholder", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -68,14 +64,8 @@
     _login_field.layer.borderWidth = 0.8;
     [_login_field setDelegate:self];
     
-    _password_view = [UITextErrorField new];
+    _password_view = [TextErrorField new];
     _password_field = _password_view.field;
-    [self.view addSubview:_password_view];
-    _password_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_password_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20.0].active = YES;
-    [_password_view.heightAnchor constraintEqualToConstant:80.0].active = YES;
-    [_password_view.topAnchor constraintEqualToAnchor:_login_view.bottomAnchor constant:5.0].active = YES;
-    [_password_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     _password_field.keyboardType = UIKeyboardTypeDefault;
     _password_field.placeholder = NSLocalizedString(@"app.auth.password_field.placeholder", "");
     _password_field.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -89,46 +79,65 @@
     [_password_field setDelegate:self];
     
     _login_button = [UIButton new];
-    [self.view addSubview:_login_button];
-    _login_button.translatesAutoresizingMaskIntoConstraints = NO;
-    [_login_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.45].active = YES;
-    [_login_button.heightAnchor constraintEqualToConstant:50].active = YES;
-    [_login_button.topAnchor constraintEqualToAnchor:_password_view.bottomAnchor constant:15.0].active = YES;
-    [_login_button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-10.0].active = YES;
     [_login_button setTitle:NSLocalizedString(@"app.auth.login_button.normal.title", "") forState:UIControlStateNormal];
     _login_button.layer.cornerRadius = 8.0;
     [_login_button addTarget:self action:@selector(loginButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     _login_indicator = [UIActivityIndicatorView new];
-    [_login_button addSubview:_login_indicator];
-    _login_indicator.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint constraintWithItem: _login_indicator attribute: NSLayoutAttributeCenterY relatedBy: NSLayoutRelationEqual toItem: _login_button attribute: NSLayoutAttributeBottom multiplier: 0.5 constant: 0].active = YES;
-    [_login_indicator.leadingAnchor constraintEqualToAnchor:_login_button.leadingAnchor constant:15.0].active = YES;
     
     _forgot_button = [UIButton new];
-    [self.view addSubview:_forgot_button];
-    _forgot_button.translatesAutoresizingMaskIntoConstraints = NO;
-    [_forgot_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.45].active = YES;
-    [_forgot_button.heightAnchor constraintEqualToConstant:30.0].active = YES;
-    [_forgot_button.centerYAnchor constraintEqualToAnchor:_login_button.centerYAnchor].active = YES;
-    [_forgot_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     [_forgot_button setTitle:NSLocalizedString(@"app.auth.forgot_button.title", "") forState:UIControlStateNormal];
     [_forgot_button addTarget:self action:@selector(forgotButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     _signup_button = [UIButton new];
-    [self.view addSubview:_signup_button];
-    _signup_button.translatesAutoresizingMaskIntoConstraints = NO;
-    [_signup_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_signup_button.heightAnchor constraintEqualToConstant:30.0].active = YES;
-    [_signup_button.topAnchor constraintEqualToAnchor:_login_button.bottomAnchor constant:40.0].active = YES;
-    [_signup_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     [_signup_button setTitle:NSLocalizedString(@"app.auth.signup_button.title", "") forState:UIControlStateNormal];
     [_signup_button addTarget:self action:@selector(signUpButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self setupDarkLayout];
+    [self.view addSubview:_login_view];
+    [self.view addSubview:_password_view];
+    [self.view addSubview:_login_button];
+    [_login_button addSubview:_login_indicator];
+    [self.view addSubview:_forgot_button];
+    [self.view addSubview:_signup_button];
+    
+    _login_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _password_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _login_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _login_indicator.translatesAutoresizingMaskIntoConstraints = NO;
+    _forgot_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _signup_button.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_login_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_login_view.heightAnchor constraintEqualToConstant:80.0],
+        [NSLayoutConstraint constraintWithItem:_login_view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:0.38 constant:0],
+        [_login_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_password_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20.0],
+        [_password_view.heightAnchor constraintEqualToConstant:80.0],
+        [_password_view.topAnchor constraintEqualToAnchor:_login_view.bottomAnchor constant:5.0],
+        [_password_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_login_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.45],
+        [_login_button.heightAnchor constraintEqualToConstant:50],
+        [_login_button.topAnchor constraintEqualToAnchor:_password_view.bottomAnchor constant:15.0],
+        [_login_button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-10.0],
+        
+        [NSLayoutConstraint constraintWithItem: _login_indicator attribute: NSLayoutAttributeCenterY relatedBy: NSLayoutRelationEqual toItem: _login_button attribute: NSLayoutAttributeBottom multiplier: 0.5 constant: 0],
+        [_login_indicator.leadingAnchor constraintEqualToAnchor:_login_button.leadingAnchor constant:15.0],
+        
+        [_forgot_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.45],
+        [_forgot_button.heightAnchor constraintEqualToConstant:30.0],
+        [_forgot_button.centerYAnchor constraintEqualToAnchor:_login_button.centerYAnchor],
+        [_forgot_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_signup_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_signup_button.heightAnchor constraintEqualToConstant:30.0],
+        [_signup_button.topAnchor constraintEqualToAnchor:_login_button.bottomAnchor constant:40.0],
+        [_signup_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0]
+    ]];
 }
 
--(void)setupDarkLayout {
+-(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
     _login_field.textColor = [AppColorProvider textShyColor];
     _login_field.backgroundColor = [AppColorProvider foregroundColor1];
@@ -141,40 +150,49 @@
 }
 
 -(IBAction)loginButtonTapped:(id)sender {
+    if (![self checkAllFieldsIsCorrect]) {
+        return;
+    }
     [_login_field resignFirstResponder];
     [_password_field resignFirstResponder];
     [_login_indicator startAnimating];
     
-    using anixart::codes::auth::SignInCode;
     std::string login = TO_STDSTRING(_login_field.text);
     std::string password = TO_STDSTRING(_password_field.text);
-    anixart::Api* api = _api_proxy.api;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    __block BOOL errored = NO;
+    __block anixart::codes::auth::SignInCode error_code;
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        // TODO: change api to always execute UICompletion block and return error
         try {
             auto [profile, token] = api->auth().sign_in(login, password);
             [self->_data_controller setToken:TO_NSSTRING(token.token)];
+            [self->_data_controller setMyProfileID:profile->id];
             self->_api_proxy.api->set_token(token.token);
         }
         catch (anixart::SignInError& e) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (e.code == SignInCode::InvalidLogin) {
-                    [self->_login_view showError:NSLocalizedString(@"app.auth.login_field.error_invalid.text", "")];
-                }
-                else if (e.code == SignInCode::InvalidPassword) {
-                    [self->_password_view showError:NSLocalizedString(@"app.auth.password_field.error_invalid.text", "")];
-                }
-            });
+            errored = YES;
+            error_code = e.code;
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self->_login_indicator stopAnimating];
-        });
-    });
+        return YES;
+    } withUICompletion:^{
+        [self->_login_indicator stopAnimating];
+        if (errored) {
+            if (error_code == anixart::codes::auth::SignInCode::InvalidLogin) {
+                [self->_login_view showError:NSLocalizedString(@"app.auth.login_field.error_invalid.text", "")];
+            }
+            else if (error_code == anixart::codes::auth::SignInCode::InvalidPassword) {
+                [self->_password_view showError:NSLocalizedString(@"app.auth.password_field.error_invalid.text", "")];
+            }
+        } else {
+            [self setRootViewControllerToMain];
+        }
+    }];
 }
 -(IBAction)forgotButtonTapped:(id)sender {
-    [_auth_nav_controller pushRestoreViewController];
+    [self.navigationController pushViewController:[RestoreViewController new] animated:YES];
 }
 -(IBAction)signUpButtonTapped:(id)sender {
-    [_auth_nav_controller pushSignUpViewController];
+    [self.navigationController pushViewController:[SignUpViewController new] animated:YES];
 }
 
 -(void)textFieldDidBeginEditing:(UITextField *)text_field {
@@ -187,19 +205,30 @@
 }
 
 -(void)textFieldDidEndEditing:(UITextField *)text_field reason:(UITextFieldDidEndEditingReason)reason {
-    if ([text_field.text length] == 0) {
-        if (text_field == _login_field) {
-            [_login_view showError:NSLocalizedString(@"app.auth.login_field.error_empty.text", "")];
-        }
-        else if (text_field == _password_field) {
-            [_password_view showError:NSLocalizedString(@"app.auth.password_field.error_empty.text", "")];
-        }
-    }
+    [self checkAllFieldsIsCorrect];
 }
 
 -(BOOL)textFieldShouldReturn:(UITextField *)text_field {
     [text_field resignFirstResponder];
     return NO;
+}
+
+-(void)setRootViewControllerToMain {
+    MainWindow* main_window = (MainWindow*)[[[UIApplication sharedApplication] delegate] window];
+    [main_window setRootViewController:[MainTabBarController new]];
+}
+
+-(BOOL)checkAllFieldsIsCorrect {
+    BOOL is_all_corrent = YES;
+    if ([_login_field.text length] == 0) {
+        [_login_view showError:NSLocalizedString(@"app.auth.login_field.error_empty.text", "")];
+        is_all_corrent = NO;
+    }
+    if ([_password_field.text length] == 0) {
+        [_password_view showError:NSLocalizedString(@"app.auth.password_field.error_empty.text", "")];
+        is_all_corrent = NO;
+    }
+    return is_all_corrent;
 }
 
 @end

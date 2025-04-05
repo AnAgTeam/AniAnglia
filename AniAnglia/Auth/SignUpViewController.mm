@@ -7,31 +7,28 @@
 
 #import <Foundation/Foundation.h>
 #import "SignUpViewController.h"
-#import "UITextErrorField.h"
-#import "AuthNavigationController.h"
+#import "TextErrorField.h"
 #import "AppColor.h"
 #import "AuthChecker.h"
 
 @interface SignUpViewController ()
-@property(nonatomic, retain) AuthNavigationController* auth_nav_controller;
 @property(nonatomic, retain) AuthChecker* auth_checker;
-@property(nonatomic, retain) UITextErrorField* login_view;
+@property(nonatomic, retain) TextErrorField* login_view;
 @property(nonatomic, retain) UITextField* login_field;
-@property(nonatomic, retain) UITextErrorField* email_view;
+@property(nonatomic, retain) TextErrorField* email_view;
 @property(nonatomic, retain) UITextField* email_field;
-@property(nonatomic, retain) UITextErrorField* password_view;
+@property(nonatomic, retain) TextErrorField* password_view;
 @property(nonatomic, retain) UITextField* password_field;
-@property(nonatomic, retain) UITextErrorField* password_re_view;
+@property(nonatomic, retain) TextErrorField* password_re_view;
 @property(nonatomic, retain) UITextField* password_re_field;
 @property(nonatomic, retain) UIButton* signup_button;
 @end
 
 @implementation SignUpViewController
 
--(instancetype)initWithNavController:(UINavigationController*)nav_controller {
+-(instancetype)init {
     self = [super init];
     
-    _auth_nav_controller = (AuthNavigationController*)nav_controller;
     _auth_checker = [AuthChecker new];
     
     return self;
@@ -40,18 +37,13 @@
 -(void)viewDidLoad {
     [super viewDidLoad];
     
-    [self setupView];
+    [self setup];
+    [self setupLayout];
 }
 
--(void)setupView {
-    _login_view = [UITextErrorField new];
+-(void)setup {
+    _login_view = [TextErrorField new];
     _login_field = _login_view.field;
-    [self.view addSubview:_login_view];
-    _login_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_login_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_login_view.heightAnchor constraintEqualToConstant:80.0].active = YES;
-    [NSLayoutConstraint constraintWithItem:_login_view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:0.28 constant:0].active = YES;
-    [_login_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     _login_field.keyboardType = UIKeyboardTypeDefault;
     _login_field.placeholder = NSLocalizedString(@"app.signup.login_field.placeholder", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -63,14 +55,8 @@
     _login_field.layer.borderWidth = 0.8;
     [_login_field setDelegate:self];
     
-    _email_view = [UITextErrorField new];
+    _email_view = [TextErrorField new];
     _email_field = _email_view.field;
-    [self.view addSubview:_email_view];
-    _email_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_email_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_email_view.heightAnchor constraintEqualToConstant:80.0].active = YES;
-    [_email_view.topAnchor constraintEqualToAnchor:_login_view.bottomAnchor constant:5.0].active = YES;
-    [_email_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     _email_field.keyboardType = UIKeyboardTypeDefault;
     _email_field.placeholder = NSLocalizedString(@"app.signup.email_field.placeholder", "");
     _email_field.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -82,14 +68,8 @@
     _email_field.layer.borderWidth = 0.8;
     [_email_field setDelegate:self];
     
-    _password_view = [UITextErrorField new];
+    _password_view = [TextErrorField new];
     _password_field = _password_view.field;
-    [self.view addSubview:_password_view];
-    _password_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_password_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_password_view.heightAnchor constraintEqualToConstant:80.0].active = YES;
-    [_password_view.topAnchor constraintEqualToAnchor:_email_view.bottomAnchor constant:5.0].active = YES;
-    [_password_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     _password_field.keyboardType = UIKeyboardTypeDefault;
     _password_field.placeholder = NSLocalizedString(@"app.signup.password_field.placeholder", "");
     _password_field.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -102,14 +82,8 @@
     [_password_field setSecureTextEntry:YES];
     [_password_field setDelegate:self];
     
-    _password_re_view = [UITextErrorField new];
+    _password_re_view = [TextErrorField new];
     _password_re_field = _password_re_view.field;
-    [self.view addSubview:_password_re_view];
-    _password_re_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [_password_re_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_password_re_view.heightAnchor constraintEqualToConstant:80.0].active = YES;
-    [_password_re_view.topAnchor constraintEqualToAnchor:_password_view.bottomAnchor constant:5.0].active = YES;
-    [_password_re_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     _password_re_field.keyboardType = UIKeyboardTypeDefault;
     _password_re_field.placeholder = NSLocalizedString(@"app.restore.password_re_field.placeholder", "");
     _password_re_field.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -123,20 +97,50 @@
     [_password_re_field setDelegate:self];
     
     _signup_button = [UIButton new];
-    [self.view addSubview:_signup_button];
-    _signup_button.translatesAutoresizingMaskIntoConstraints = NO;
-    [_signup_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20].active = YES;
-    [_signup_button.heightAnchor constraintEqualToConstant:50].active = YES;
-    [_signup_button.topAnchor constraintEqualToAnchor:_password_re_view.bottomAnchor constant:15.0].active = YES;
-    [_signup_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0].active = YES;
     [_signup_button setTitle:NSLocalizedString(@"app.signup.signup_button.normal.title", "") forState:UIControlStateNormal];
     _signup_button.layer.cornerRadius = 8.0;
     [_signup_button addTarget:self action:@selector(signupButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self setupDarkLayout];
+    [self.view addSubview:_login_view];
+    [self.view addSubview:_password_re_view];
+    [self.view addSubview:_password_view];
+    [self.view addSubview:_email_view];
+    [self.view addSubview:_signup_button];
+    
+    _login_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _password_re_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _password_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _email_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _signup_button.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_login_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_login_view.heightAnchor constraintEqualToConstant:80.0],
+        [NSLayoutConstraint constraintWithItem:_login_view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:0.28 constant:0],
+        [_login_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_password_re_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_password_re_view.heightAnchor constraintEqualToConstant:80.0],
+        [_password_re_view.topAnchor constraintEqualToAnchor:_password_view.bottomAnchor constant:5.0],
+        [_password_re_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_password_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_password_view.heightAnchor constraintEqualToConstant:80.0],
+        [_password_view.topAnchor constraintEqualToAnchor:_email_view.bottomAnchor constant:5.0],
+        [_password_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_email_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_email_view.heightAnchor constraintEqualToConstant:80.0],
+        [_email_view.topAnchor constraintEqualToAnchor:_login_view.bottomAnchor constant:5.0],
+        [_email_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_signup_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
+        [_signup_button.heightAnchor constraintEqualToConstant:50],
+        [_signup_button.topAnchor constraintEqualToAnchor:_password_re_view.bottomAnchor constant:15.0],
+        [_signup_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0]
+    ]];
 }
 
--(void)setupDarkLayout {
+-(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
     _login_field.textColor = [AppColorProvider textShyColor];
     _login_field.backgroundColor = [AppColorProvider foregroundColor1];
@@ -150,7 +154,11 @@
 }
 
 -(IBAction)signupButtonTapped:(id)sender {
-    
+    UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"app.sign_up.sign_up_not_implemented.title", "") message:@"" preferredStyle:UIAlertControllerStyleAlert];
+    [alert_controller addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+        
+    }]];
+    [self presentViewController:alert_controller animated:YES completion:nil];
 }
 
 -(void)textFieldDidBeginEditing:(UITextField *)text_field {

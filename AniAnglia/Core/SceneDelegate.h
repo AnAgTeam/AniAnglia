@@ -6,10 +6,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MainWindow.h"
 
 @interface SceneDelegate : UIResponder <UIWindowSceneDelegate>
-
-@property (strong, nonatomic) UIWindow * window;
-
+@property(strong, nonatomic) MainWindow* window;
 @end
 

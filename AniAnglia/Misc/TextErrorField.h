@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface UITextErrorField : UIView
+@interface TextErrorField : UIView
 @property(nonatomic, retain) UITextField* field;
 @property(nonatomic, retain) UILabel* label;
 -(instancetype)init;

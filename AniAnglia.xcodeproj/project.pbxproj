@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
 		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
+		EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568982DA1C2C000086593 /* MainWindow.mm */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -47,8 +48,7 @@
 		EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */; };
 		EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA4D6712D59146B00005139 /* libnetsess.xcframework */; };
 		EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */; };
-		EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFBF59B52C768CF1008F1967 /* AuthNavigationController.mm */; };
-		EFC6077B2C76169500BA8B44 /* UITextErrorField.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */; };
+		EFC6077B2C76169500BA8B44 /* TextErrorField.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFC6077A2C76169500BA8B44 /* TextErrorField.mm */; };
 		EFCBC3A52D54F6C600080866 /* TorrentAVAsset.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFCBC3A42D54F6C600080866 /* TorrentAVAsset.mm */; };
 		EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */; };
 		EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E02CAC401700E87BF1 /* StringCvt.mm */; };
@@ -68,6 +68,8 @@
 		EF0D7D182D26F0E7000E516A /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = AniAnglia/Libraries/aateam/libanixart/libanixart.xcframework; sourceTree = "<group>"; };
 		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
 		EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AniAnglia.entitlements; sourceTree = "<group>"; };
+		EF3568972DA1C2B500086593 /* MainWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = "<group>"; };
+		EF3568982DA1C2C000086593 /* MainWindow.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
 		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -1297,10 +1299,8 @@
 		EFA4D6712D59146B00005139 /* libnetsess.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libnetsess.xcframework; path = AniAnglia/Libraries/aateam/libnetsess/libnetsess.xcframework; sourceTree = "<group>"; };
 		EFB158A92C80F6460070E833 /* ReleaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseViewController.h; sourceTree = "<group>"; };
 		EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseViewController.mm; sourceTree = "<group>"; };
-		EFBF59B52C768CF1008F1967 /* AuthNavigationController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthNavigationController.mm; sourceTree = "<group>"; };
-		EFBF59B72C768D12008F1967 /* AuthNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthNavigationController.h; sourceTree = "<group>"; };
-		EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextErrorField.mm; sourceTree = "<group>"; };
-		EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITextErrorField.h; sourceTree = "<group>"; };
+		EFC6077A2C76169500BA8B44 /* TextErrorField.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TextErrorField.mm; sourceTree = "<group>"; };
+		EFC6077C2C7616B200BA8B44 /* TextErrorField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextErrorField.h; sourceTree = "<group>"; };
 		EFCBC3A42D54F6C600080866 /* TorrentAVAsset.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TorrentAVAsset.mm; sourceTree = "<group>"; };
 		EFCBC3A62D54F6E900080866 /* TorrentAVAsset.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TorrentAVAsset.h; sourceTree = "<group>"; };
 		EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TypeSelectViewController.mm; sourceTree = "<group>"; };
@@ -1388,6 +1388,8 @@
 				EF8B01B12C7015A200423ECD /* SceneDelegate.mm */,
 				EF60AC722C6FB2FE00CD33A8 /* AppDelegate.h */,
 				EF60AC732C6FB2FE00CD33A8 /* AppDelegate.mm */,
+				EF3568972DA1C2B500086593 /* MainWindow.h */,
+				EF3568982DA1C2C000086593 /* MainWindow.mm */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -1399,8 +1401,8 @@
 				EFCBC3A22D54F67A00080866 /* Anixart */,
 				EF4941032C72383500832A6C /* AppColor.h */,
 				EF4941052C7238B700832A6C /* AppColor.mm */,
-				EFC6077C2C7616B200BA8B44 /* UITextErrorField.h */,
-				EFC6077A2C76169500BA8B44 /* UITextErrorField.mm */,
+				EFC6077C2C7616B200BA8B44 /* TextErrorField.h */,
+				EFC6077A2C76169500BA8B44 /* TextErrorField.mm */,
 				EF5A3CB12C7F928400B4F637 /* AppDataController.h */,
 				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
 				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
@@ -1415,8 +1417,6 @@
 		EF44D0D32CD6A3F600C8B608 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
-				EFBF59B72C768D12008F1967 /* AuthNavigationController.h */,
-				EFBF59B52C768CF1008F1967 /* AuthNavigationController.mm */,
 				EF70960D2C77A57200C95429 /* RestoreViewController.h */,
 				EF70960B2C77A56500C95429 /* RestoreViewController.mm */,
 				EF875C812C78FC7B00DAECB1 /* SignUpViewController.h */,
@@ -3496,15 +3496,15 @@
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EF7CD2912DA040EC00F88227 /* ProfileListsView.mm in Sources */,
-				EFC6077B2C76169500BA8B44 /* UITextErrorField.mm in Sources */,
+				EFC6077B2C76169500BA8B44 /* TextErrorField.mm in Sources */,
 				EF65E34B2D8393BE00114102 /* SearchViewController.m in Sources */,
 				EFCBC3A52D54F6C600080866 /* TorrentAVAsset.mm in Sources */,
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
 				EF65E3492D82297C00114102 /* ReleasesHistoryTableViewController.mm in Sources */,
+				EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */,
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
-				EFBF59B62C768CF1008F1967 /* AuthNavigationController.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
 				EF7CD28E2DA0400F00F88227 /* DynamicTableView.mm in Sources */,

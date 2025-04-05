@@ -27,6 +27,7 @@
 "app.restore.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
 "app.restore.password_field.error_long.text" = "Пароль слишком длинный";
 "app.restore.password_re_field.error_not_equal.text" = "Пароль не совпадает";
+"app.restore.restore_not_implemented.title" = "Восстановление пароля ещё не сделано";
 
 "app.signup.login_field.placeholder" = "Имя пользователя";
 "app.signup.email_field.placeholder" = "Email";
@@ -41,6 +42,7 @@
 "app.signup.password_field.error_long.text" = "Пароль слишком длинный";
 "app.signup.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
 "app.signup.password_re_field.error_not_equal.text" = "Пароль не совпадает";
+"app.sign_up.sign_up_not_implemented.title" = "Регистрация ещё не сделана ;P";
 
 /* MAIN TAB BAR STRINGS */
 "app.main_tab_bar.main_tab.title" = "Главная";
