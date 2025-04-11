@@ -22,6 +22,8 @@
 /* completion executed if block returned TRUE, if returned FALSE or libanixart error catched it isn't executed */
 -(void)performAsyncBlock:(BOOL(^)(anixart::Api* api))block withUICompletion:(void(^)())completion;
 
+-(void)setIsAlternativeConnection:(BOOL)is_alternative_connection;
+
 -(NSArray<NSString*>*)getGenresArray;
 -(NSArray<NSString*>*)getStudiosArray;
 

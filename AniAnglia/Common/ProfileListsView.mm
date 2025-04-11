@@ -238,7 +238,7 @@
             [_plan_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
             [_watched_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
             [_holdon_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
-            [_dropped_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_dropped_count / total_lists_count)]
+            [_dropped_indicator_view.trailingAnchor constraintEqualToAnchor:_total_indicator_view.trailingAnchor]
         ]];
     }
     [_me_label sizeToFit];

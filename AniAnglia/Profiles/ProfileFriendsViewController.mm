@@ -12,6 +12,12 @@
 #import "StringCvt.h"
 #import "ProfileViewController.h"
 
+enum class ProfileFriendsSections {
+    RequestsIn = 1,
+    RequestsOut = 2,
+    Friends = 3
+};
+
 @interface FriendsTableViewCell : UITableViewCell
 @property(nonatomic, retain) LoadableImageView* avatar_image;
 @property(nonatomic, retain) UILabel* username_label;
@@ -24,10 +30,19 @@
 -(void)setFriendCount:(NSString*)friend_count;
 @end
 
-@interface ProfileFriendsViewController () <UITableViewDataSource, UITableViewDelegate> {
+@interface ProfileFriendsViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching> {
     anixart::ProfileID _profile_id;
-    anixart::Pageable<anixart::Profile>::UPtr _pages;
+    BOOL _is_my_profile;
+    
+    anixart::Pageable<anixart::Profile>::Ptr _pages;
+    anixart::Pageable<anixart::Profile>::Ptr _pages_requests_in;
+    anixart::Pageable<anixart::Profile>::Ptr _pages_requests_out;
+    
+    std::vector<anixart::Profile::Ptr> _profiles_requests_in;
+    std::vector<anixart::Profile::Ptr> _profiles_requests_out;
     std::vector<anixart::Profile::Ptr> _profiles;
+    
+    ProfileFriendsSections _sections[3];
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UILabel* friends_label;
@@ -105,12 +120,17 @@
 
 @implementation ProfileFriendsViewController
 
--(instancetype)initWithProfileID:(anixart::ProfileID)profile_id {
+-(instancetype)initWithProfileID:(anixart::ProfileID)profile_id isMyProfile:(BOOL)is_my_profile {
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
     _profile_id = profile_id;
+    _is_my_profile = is_my_profile;
+    
     _pages = _api_proxy.api->profiles().get_friends(_profile_id, 0);
+    _pages_requests_in = _api_proxy.api->profiles().friend_requests_in(0);
+    _pages_requests_out = _api_proxy.api->profiles().friend_requests_out(0);
+    
     
     return self;
 }
@@ -130,6 +150,7 @@
     [_friends_table_view registerClass:FriendsTableViewCell.class forCellReuseIdentifier:[FriendsTableViewCell getIndentifier]];
     _friends_table_view.dataSource = self;
     _friends_table_view.delegate = self;
+    _friends_table_view.prefetchDataSource = self;
     
     [self.view addSubview:_friends_label];
     [self.view addSubview:_friends_table_view];
@@ -148,16 +169,67 @@
     _friends_label.textColor = [AppColorProvider textColor];
 }
 
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)table_view {
+    NSInteger section = 0;
+    if (!_profiles_requests_in.empty()) {
+        _sections[section++] = ProfileFriendsSections::RequestsIn;
+    }
+    if (!_profiles_requests_out.empty()) {
+        _sections[section++] = ProfileFriendsSections::RequestsOut;
+    }
+    if (!_profiles.empty()) {
+        _sections[section++] = ProfileFriendsSections::Friends;
+    }
+    return section;
+}
+
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
-    return _profiles.size();
+    switch(_sections[section]) {
+        case ProfileFriendsSections::RequestsIn:
+            return _profiles_requests_in.size();
+        case ProfileFriendsSections::RequestsOut:
+            return _profiles_requests_out.size();
+        case ProfileFriendsSections::Friends:
+            return _profiles.size();
+        default:
+            return 0;
+    }
 }
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path {
     return 80;
 }
+-(NSString *)tableView:(UITableView *)table_view titleForHeaderInSection:(NSInteger)section {
+    switch(_sections[section]) {
+        case ProfileFriendsSections::RequestsIn:
+            return NSLocalizedString(@"app.profile_friends.requests_in.header", "");
+        case ProfileFriendsSections::RequestsOut:
+            return NSLocalizedString(@"app.profile_friends.requests_out.header", "");
+        case ProfileFriendsSections::Friends:
+            return NSLocalizedString(@"app.profile_friends.friends.header", "");
+        default:
+            return nil;
+    }
+}
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     FriendsTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[FriendsTableViewCell getIndentifier] forIndexPath:index_path];
-    NSInteger index = [index_path item];
-    anixart::Profile::Ptr& profile = _profiles[index];
+    NSInteger section = index_path.section;
+    NSInteger row = index_path.row;
+    
+    anixart::Profile::Ptr profile;
+    switch(_sections[section]) {
+        case ProfileFriendsSections::RequestsIn:
+            profile = _profiles_requests_in[row];
+            break;
+        case ProfileFriendsSections::RequestsOut:
+            profile = _profiles_requests_out[row];
+            break;
+        case ProfileFriendsSections::Friends:
+            profile = _profiles[row];
+            break;
+        default:
+            // should never reach here
+            return nil;
+    }
     
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(profile->avatar_url)];
     NSString* friend_count = [NSString stringWithFormat:@"%d %@", profile->friend_count, NSLocalizedString(@"app.profile_friends.friends_count.end", "")];
@@ -171,30 +243,73 @@
 
 -(void)tableView:(UITableView*)table_view
 prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
-    if (_pages->is_end()) {
-        return;
-    }
-    NSUInteger item_count = [self tableView:_friends_table_view numberOfRowsInSection:0];
+    BOOL section_loaded = NO;
+    NSInteger section = index_paths[0].section;
+    NSUInteger item_count = [self tableView:_friends_table_view numberOfRowsInSection:section];
     for (NSIndexPath* index_path in index_paths) {
-        if ([index_path row] >= item_count - 1) {
-            [self loadNextPage];
-            return;
+        if (section_loaded) continue;
+        
+        if (section != index_path.section) {
+            section = index_path.section;
+            item_count = [self tableView:_friends_table_view numberOfRowsInSection:section];
+            section_loaded = NO;
+        }
+        if (index_path.row >= item_count - 1) {
+            [self loadNextPageForSection:section];
+            section_loaded = YES;
         }
     }
 }
 
 -(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
-    NSInteger index = [index_path item];
-    anixart::Profile::Ptr& profile = _profiles[index];
+    NSInteger section = index_path.section;
+    NSInteger row = index_path.row;
+    
+    anixart::Profile::Ptr profile;
+    switch(_sections[section]) {
+        case ProfileFriendsSections::RequestsIn:
+            profile = _profiles_requests_in[row];
+            break;
+        case ProfileFriendsSections::RequestsOut:
+            profile = _profiles_requests_out[row];
+            break;
+        case ProfileFriendsSections::Friends:
+            profile = _profiles[row];
+            break;
+        default:
+            return;
+    }
     
     [self.navigationController pushViewController:[[ProfileViewController alloc] initWithProfileID:profile->id] animated:YES];
 }
 
--(void)loadNextPage {
+-(void)loadNextPageForSection:(NSInteger)section {
+    ProfileFriendsSections load_section = _sections[section];
+    
+    if (load_section == ProfileFriendsSections::RequestsIn && _pages_requests_in->is_end()) {
+        return;
+    }
+    else if (load_section == ProfileFriendsSections::RequestsOut && _pages_requests_out->is_end()) {
+        return;
+    }
+    else if (load_section == ProfileFriendsSections::Friends && _pages->is_end()) {
+        return;
+    }
+    
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        std::vector<anixart::Profile::Ptr> profiles = self->_pages->next();
-        self->_profiles.insert(self->_profiles.end(), profiles.begin(), profiles.end());
+        if (load_section == ProfileFriendsSections::RequestsIn) {
+            std::vector<anixart::Profile::Ptr> profiles = self->_pages_requests_in->next();
+            self->_profiles_requests_in.insert(self->_profiles_requests_in.end(), profiles.begin(), profiles.end());
+        }
+        else if (load_section == ProfileFriendsSections::RequestsOut) {
+            std::vector<anixart::Profile::Ptr> profiles = self->_pages_requests_out->next();
+            self->_profiles_requests_out.insert(self->_profiles_requests_out.end(), profiles.begin(), profiles.end());
+        }
+        else if (load_section == ProfileFriendsSections::Friends) {
+            std::vector<anixart::Profile::Ptr> profiles = self->_pages->next();
+            self->_profiles.insert(self->_profiles.end(), profiles.begin(), profiles.end());
+        }
         return YES;
     } withUICompletion:^{
         [self->_friends_table_view reloadData];
@@ -202,6 +317,10 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 }
 -(void)loadFirstPage {
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        if (self->_is_my_profile) {
+            self->_profiles_requests_in = self->_pages_requests_in->get();
+            self->_profiles_requests_out = self->_pages_requests_out->get();
+        }
         self->_profiles = self->_pages->get();
         return YES;
     } withUICompletion:^{

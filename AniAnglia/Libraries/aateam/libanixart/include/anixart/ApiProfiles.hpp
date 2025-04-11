@@ -29,6 +29,7 @@ namespace anixart {
 		std::vector<Profile::Ptr> friend_requests_out_last() const;
 
 		// ----- MY PROFILE PREFERENCES
+		/* *only* .jpg supported. No .png and .jpeg */
 		ProfilePreferenceStatus::Ptr edit_avatar(const std::filesystem::path& image_path) const;
 		void change_email(const std::string& current_password, const std::string& current_email, const std::string& new_email) const;
 		void confirm_change_email(const std::string& current_password) const;

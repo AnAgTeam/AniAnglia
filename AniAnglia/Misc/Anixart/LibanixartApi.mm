@@ -11,6 +11,7 @@
 #import "StringCvt.h"
 
 @interface LibanixartApi ()
+@property(nonatomic, strong) AppDataController* app_data_controller;
 @end
 
 @implementation LibanixartApi
@@ -18,9 +19,11 @@
 -(instancetype)init {
     self = [super init];
     
+    _app_data_controller = [AppDataController sharedInstance];
     _api = new anixart::Api("ru_RU", "AniAnglia");
     _api->set_verbose(false, false);
-    _api->set_token(TO_STDSTRING([[AppDataController sharedInstance] getToken]));
+    _api->set_token(TO_STDSTRING([_app_data_controller getToken]));
+    _api->get_session().switch_base_url([[_app_data_controller getSettingsController] getAlternativeConnection]);
     _parsers = new anixart::parsers::Parsers();
     
     return self;
@@ -56,6 +59,10 @@
             NSLog(@"Uncatched libanixart runtime error: %s)", e.what());
         }
     });
+}
+
+-(void)setIsAlternativeConnection:(BOOL)is_alternative_connection {
+    _api->get_session().switch_base_url(is_alternative_connection);
 }
 
 -(NSArray<NSString*>*)getGenresArray {
@@ -286,12 +293,12 @@
 }
 
 +(instancetype)sharedInstance {
-    static LibanixartApi* sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [LibanixartApi new];
+    static LibanixartApi* shared_instance = nil;
+    static dispatch_once_t once_token;
+    dispatch_once(&once_token, ^{
+        shared_instance = [LibanixartApi new];
     });
-    return sharedInstance;
+    return shared_instance;
 }
 
 @end

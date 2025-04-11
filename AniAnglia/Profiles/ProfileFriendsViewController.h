@@ -13,7 +13,7 @@
 
 @interface ProfileFriendsViewController : UIViewController
 
--(instancetype)initWithProfileID:(anixart::ProfileID)profile_id;
+-(instancetype)initWithProfileID:(anixart::ProfileID)profile_id isMyProfile:(BOOL)is_my_profile;
 @end
 
 #endif /* ProfileFriendsViewController_h */

@@ -18,6 +18,8 @@
 #import "StringCvt.h"
 #import "AppDataController.h"
 #import "FilterViewController.h"
+#import "ProfileViewController.h"
+#import "SettingsViewController.h"
 
 @interface ReleasesSearchController : NSObject <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesHistoryTableViewControllerDelegate>
 @property(nonatomic, strong) AppDataController* app_data_controller;
@@ -107,19 +109,23 @@
     _main_search_view_controller.delegate = self;
     _main_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.main.search_bar.placeholder", "");
     _main_search_view_controller.right_bar_button = _main_filter_bar_button;
+    
     _discover_search_view_controller = [[SearchViewController alloc] initWithContentViewController:[DiscoverViewController new]];
     _discover_search_view_controller.data_source = self;
     _discover_search_view_controller.delegate = self;
     _discover_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.discover.search_bar.placeholder", "");
     _discover_search_view_controller.right_bar_button = _discover_filter_bar_button;
+    
     _bookmarks_search_view_controller = [[SearchViewController alloc] initWithContentViewController:[BookmarksViewController new]];
     _bookmarks_search_view_controller.data_source = self;
     _bookmarks_search_view_controller.delegate = self;
     _bookmarks_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.bookmarks.search_bar.placeholder", "");
+    
     _profile_search_view_controller = [[SearchViewController alloc] initWithContentViewController:[[ProfileViewController alloc] initWithMyProfile]];
     _profile_search_view_controller.data_source = self;
     _profile_search_view_controller.delegate = self;
     _profile_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.profile.search_bar.placeholder", "");
+    _profile_search_view_controller.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"gear"] style:UIBarButtonItemStylePlain target:self action:@selector(onSettingsBarButtonPressed:)];
     
     _main_nav_controller = [[UINavigationController alloc] initWithRootViewController:_main_search_view_controller];
     _discover_nav_controller = [[UINavigationController alloc] initWithRootViewController:_discover_search_view_controller];
@@ -229,6 +235,10 @@
 -(void)onDiscoverFilterBarButtonPressed {
     [_discover_search_view_controller endSearching];
     [_discover_nav_controller pushViewController:[FilterViewController new] animated:YES];
+}
+-(IBAction)onSettingsBarButtonPressed:(id)sender {
+    UINavigationController* nav_controller = self.selectedViewController;
+    [nav_controller pushViewController:[SettingsViewController new] animated:YES];
 }
 
 @end

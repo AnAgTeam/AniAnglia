@@ -163,9 +163,72 @@
 
 "app.profile.watched_recently.title" = "Просмотрено недавно";
 
+/* SETTINGS */
+"app.settings.title" = "Настройки";
+"app.settings.profile.name" = "Профиль";
+"app.settings.privacy_and_security.name" = "Приватность и безопасность";
+
+"app.settings.appearance.name" = "Внешний вид";
+"app.settings.notifications.name" = "Уведомления";
+"app.settings.data_control.name" = "Управление данными";
+"app.settings.playback.name" = "Воспроизведение";
+
+"app.settings.alternative_connection.name" = "Альтернативное соединение";
+"app.settings.alternative_connection.footer" = "Активируйте только если испытываете проблемы с работой приложения, связанные с блокировкой в вашей стране";
+
+"app.settings.help.name" = "Помощь";
+"app.settings.rules.name" = "Правила";
+
+/* SETTINGS APPEARANCE */
+"app.settings.appearance.theme" = "Тема";
+"app.settings.appearance.theme.dark" = "Тёмная";
+"app.settings.appearance.theme.light" = "Светлая";
+"app.settings.appearance.theme.system" = "Системная";
+
+"app.settings.appearance.main_display_style" = "Вид отображения релизов";
+"app.settings.appearance.main_display_style.table" = "Таблица";
+"app.settings.appearance.main_display_style.cards" = "Карточки";
+
 /* PROFILE FRIENDS */
 "app.profile_friends.title" = "Друзья";
 "app.profile_friends.friends_count.end" = "друзей";
+"app.profile_friends.requests_in.header" = "Входищие запросы";
+"app.profile_friends.requests_out.header" = "Исходящие запросы";
+"app.profile_friends.friends.header" = "Друзья";
+
+/* PROFILE SETTINGS */
+"app.settings.profile.save_button.title" = "Сохранить";
+
+"app.settings.profile.username.placeholder" = "Никнейм";
+"app.settings.profile.username.footer" = "";
+
+"app.settings.profile.custom_status.placeholder" = "Статус";
+"app.settings.profile.custom_status.footer" = "";
+
+"app.settings.profile.social_vkonakte.placeholder" = "ВКонтакте";
+"app.settings.profile.social_telegram.placeholder" = "Telegram";
+"app.settings.profile.social_discord.placeholder" = "Discord";
+"app.settings.profile.social_instagram.placeholder" = "Instagram";
+"app.settings.profile.social_tiktok.placeholder" = "TikTok";
+"app.settings.profile.socials.footer" = "Укажите свои социальные сети, чтобы другие пользователи могли с вами связаться";
+
+"app.settings.profile.logout.text" = "Выйти";
+
+/* PRIVACY AND SECURITY SETTINGS */
+"app.settings.privacy_and_security.change_email.name" = "Изменить Email";
+"app.settings.privacy_and_security.change_password.name" = "Изменить пароль";
+
+"app.settings.privacy_and_security.privacy.header" = "Приватность";
+"app.settings.privacy_and_security.privacy.footer" = "";
+"app.settings.privacy_and_security.stats.name" = "Статистика";
+"app.settings.privacy_and_security.social.name" = "Соцсети";
+"app.settings.privacy_and_security.activity.name" = "Активность";
+"app.settings.privacy_and_security.friend_requests.name" = "Заявки в друзья";
+
+"app.settings.privacy_and_security.privacy.all" = "Все";
+"app.settings.privacy_and_security.privacy.only_friends" = "Только друзья";
+"app.settings.privacy_and_security.privacy.only_me" = "Только я";
+"app.settings.privacy_and_security.privacy.nobody" = "Никто";
 
 /* PLAYER */
 "app.player.stream_not_found_error.title" = "Ошибка";

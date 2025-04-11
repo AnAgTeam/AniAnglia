@@ -10,6 +10,13 @@
 		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
 		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
 		EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568982DA1C2C000086593 /* MainWindow.mm */; };
+		EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF35689B2DA3124C00086593 /* SettingsViewController.mm */; };
+		EF35689F2DA568E800086593 /* SettingsProfileViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF35689E2DA568E800086593 /* SettingsProfileViewController.mm */; };
+		EF3568A22DA583C800086593 /* CustomTableViewCells.m in Sources */ = {isa = PBXBuildFile; fileRef = EF3568A12DA583C800086593 /* CustomTableViewCells.m */; };
+		EF3568A52DA84F1D00086593 /* SharedRunningData.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568A42DA84F1D00086593 /* SharedRunningData.mm */; };
+		EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568A82DA87AB700086593 /* SettingsAppearanceViewController.mm */; };
+		EF3568AC2DA94D8D00086593 /* SettingsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF3568AB2DA94D8D00086593 /* SettingsTableViewController.m */; };
+		EF3568AF2DA95D0800086593 /* SettingsSecurityViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568AE2DA95D0800086593 /* SettingsSecurityViewController.mm */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -70,6 +77,20 @@
 		EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AniAnglia.entitlements; sourceTree = "<group>"; };
 		EF3568972DA1C2B500086593 /* MainWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = "<group>"; };
 		EF3568982DA1C2C000086593 /* MainWindow.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = "<group>"; };
+		EF35689A2DA3123B00086593 /* SettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsViewController.h; sourceTree = "<group>"; };
+		EF35689B2DA3124C00086593 /* SettingsViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsViewController.mm; sourceTree = "<group>"; };
+		EF35689D2DA568D800086593 /* SettingsProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProfileViewController.h; sourceTree = "<group>"; };
+		EF35689E2DA568E800086593 /* SettingsProfileViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsProfileViewController.mm; sourceTree = "<group>"; };
+		EF3568A02DA5839A00086593 /* CustomTableViewCells.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomTableViewCells.h; sourceTree = "<group>"; };
+		EF3568A12DA583C800086593 /* CustomTableViewCells.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomTableViewCells.m; sourceTree = "<group>"; };
+		EF3568A42DA84F1D00086593 /* SharedRunningData.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SharedRunningData.mm; sourceTree = "<group>"; };
+		EF3568A62DA84F2A00086593 /* SharedRunningData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SharedRunningData.h; sourceTree = "<group>"; };
+		EF3568A72DA87AA400086593 /* SettingsAppearanceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsAppearanceViewController.h; sourceTree = "<group>"; };
+		EF3568A82DA87AB700086593 /* SettingsAppearanceViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsAppearanceViewController.mm; sourceTree = "<group>"; };
+		EF3568AA2DA94D7F00086593 /* SettingsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsTableViewController.h; sourceTree = "<group>"; };
+		EF3568AB2DA94D8D00086593 /* SettingsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsTableViewController.m; sourceTree = "<group>"; };
+		EF3568AD2DA95CFA00086593 /* SettingsSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsSecurityViewController.h; sourceTree = "<group>"; };
+		EF3568AE2DA95D0800086593 /* SettingsSecurityViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsSecurityViewController.mm; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
 		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -1345,9 +1366,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EF3568A32DA84BD000086593 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				EF35689A2DA3123B00086593 /* SettingsViewController.h */,
+				EF35689B2DA3124C00086593 /* SettingsViewController.mm */,
+				EF35689D2DA568D800086593 /* SettingsProfileViewController.h */,
+				EF35689E2DA568E800086593 /* SettingsProfileViewController.mm */,
+				EF3568A72DA87AA400086593 /* SettingsAppearanceViewController.h */,
+				EF3568A82DA87AB700086593 /* SettingsAppearanceViewController.mm */,
+				EF3568AA2DA94D7F00086593 /* SettingsTableViewController.h */,
+				EF3568AB2DA94D8D00086593 /* SettingsTableViewController.m */,
+				EF3568AD2DA95CFA00086593 /* SettingsSecurityViewController.h */,
+				EF3568AE2DA95D0800086593 /* SettingsSecurityViewController.mm */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 		EF44D0CE2CD6A36800C8B608 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				EF3568A32DA84BD000086593 /* Settings */,
 				EF6A56202CF33BF1003D1FF0 /* Search */,
 				EF5A3CBA2C7F9C0800B4F637 /* MainTabBarController.h */,
 				EF5A3CB82C7F9BEC00B4F637 /* MainTabBarController.mm */,
@@ -1410,6 +1449,8 @@
 				EFED8F552CE2985300C53C1C /* LoadableView.h */,
 				EFED8F562CE2986300C53C1C /* LoadableView.mm */,
 				EF7CD28A2DA03C3F00F88227 /* TimeCvt.h */,
+				EF3568A62DA84F2A00086593 /* SharedRunningData.h */,
+				EF3568A42DA84F1D00086593 /* SharedRunningData.mm */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -3356,6 +3397,8 @@
 		EF7CD28B2DA03FE800F88227 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				EF3568A02DA5839A00086593 /* CustomTableViewCells.h */,
+				EF3568A12DA583C800086593 /* CustomTableViewCells.m */,
 				EF7CD28C2DA03FFF00F88227 /* DynamicTableView.h */,
 				EF7CD28D2DA0400F00F88227 /* DynamicTableView.mm */,
 				EF7CD28F2DA040C900F88227 /* ProfileListsView.h */,
@@ -3489,8 +3532,10 @@
 				EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */,
 				EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */,
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
+				EF3568A22DA583C800086593 /* CustomTableViewCells.m in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
+				EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
 				EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
@@ -3498,6 +3543,7 @@
 				EF7CD2912DA040EC00F88227 /* ProfileListsView.mm in Sources */,
 				EFC6077B2C76169500BA8B44 /* TextErrorField.mm in Sources */,
 				EF65E34B2D8393BE00114102 /* SearchViewController.m in Sources */,
+				EF3568AF2DA95D0800086593 /* SettingsSecurityViewController.mm in Sources */,
 				EFCBC3A52D54F6C600080866 /* TorrentAVAsset.mm in Sources */,
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
@@ -3507,15 +3553,19 @@
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
+				EF3568A52DA84F1D00086593 /* SharedRunningData.mm in Sources */,
 				EF7CD28E2DA0400F00F88227 /* DynamicTableView.mm in Sources */,
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
+				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,
 				EF5A3CD02C7FA1AB00B4F637 /* BookmarksViewController.mm in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
+				EF3568AC2DA94D8D00086593 /* SettingsTableViewController.m in Sources */,
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EF7CD2952DA0648C00F88227 /* ProfileFriendsViewController.mm in Sources */,
+				EF35689F2DA568E800086593 /* SettingsProfileViewController.mm in Sources */,
 				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
@@ -3691,7 +3741,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -3721,7 +3771,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;

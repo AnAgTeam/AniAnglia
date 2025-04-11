@@ -17,6 +17,7 @@
 #import "DynamicTableView.h"
 #import "ProfileFriendsViewController.h"
 #import "ReleaseViewController.h"
+#import "SharedRunningData.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -343,14 +344,7 @@
 }
 
 -(NSArray<UIButton*>*)makeActionButtons {
-    if (_is_my_profile) {
-        UIButton* edit_button = [UIButton new];
-        [edit_button setTitle:NSLocalizedString(@"app.profile.actions.edit_button.title", "") forState:UIControlStateNormal];
-        [edit_button addTarget:self action:@selector(onEditButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-        edit_button.layer.cornerRadius = 8.0;
-        return @[edit_button];
-    }
-    else if (_friend_status == anixart::Profile::FriendStatus::NotFriends) {
+    if (_friend_status == anixart::Profile::FriendStatus::NotFriends) {
         UIButton* add_to_friends_button = [UIButton new];
         [add_to_friends_button setTitle:NSLocalizedString(@"app.profile.actions.add_to_friends_button.title", "") forState:UIControlStateNormal];
         [add_to_friends_button addTarget:self action:@selector(onAddToFriendsButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -740,7 +734,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     anixart::ProfileWatchDynamic::Ptr watch_dynamic = _profile->watch_dynamics[index];
     
     [cell setCount:watch_dynamic->watched_count totalCount:_max_dynamic_count];
-    [cell setTime:to_utc_mm_dd_string_from_gmt(watch_dynamic->date)];
+    [cell setTime:to_gmt_mm_dd_string_from_gmt(watch_dynamic->date)];
     
     return cell;
 }
@@ -920,6 +914,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _api_proxy = [LibanixartApi sharedInstance];
     _app_data_controller = [AppDataController sharedInstance];
     _profile_id = [_app_data_controller getMyProfileID];
+    _is_my_profile = YES;
     
     return self;
 }
@@ -934,6 +929,14 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
         [self setup];
         [self setupLayout];
     } else {
+        if (_is_my_profile) {
+            [[SharedRunningData sharedInstance] asyncGetMyProfile:^(anixart::Profile::Ptr profile) {
+                self->_profile = profile;
+                [self setup];
+                [self setupLayout];
+            }];
+            return;
+        }
         [self loadProfile];
     }
 }
@@ -971,11 +974,16 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _status_label = [UILabel new];
     _status_label.text = _profile->is_online ? NSLocalizedString(@"app.profile.status.online.name", "") : NSLocalizedString(@"app.profile.status.offline.name", "");
     
+    NSMutableArray<NSLayoutConstraint*>* optional_constraints = [NSMutableArray arrayWithCapacity:2];
+    
     _stats_view = [[ProfileStatsBlockView alloc] initWithProfile:_profile];
     _stats_view.delegate = self;
     
-    _actions_view = [[ProfileActionsView alloc] initWithProfile:_profile isMyProfile:_is_my_profile];
-    _actions_view.delegate = self;
+    if (!_is_my_profile) {
+        _actions_view = [[ProfileActionsView alloc] initWithProfile:_profile isMyProfile:_is_my_profile];
+        _actions_view.delegate = self;
+        [optional_constraints addObject:[_actions_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor]];
+    }
     
     _lists_view = [[ProfileListsView alloc] initWithProfile:_profile name:NSLocalizedString(@"app.profile.lists.title", "")];
     _lists_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
@@ -1034,12 +1042,12 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
         [_custom_status_label.widthAnchor constraintLessThanOrEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_status_label.widthAnchor constraintLessThanOrEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_stats_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_actions_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_lists_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_votes_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_watch_dynamics_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_watched_recently_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor]
     ]];
+    [NSLayoutConstraint activateConstraints:optional_constraints];
     [_username_label sizeToFit];
     [_custom_status_label sizeToFit];
     [_status_label sizeToFit];
@@ -1051,6 +1059,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 -(void)setupLayout {
+    _avatar_image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _username_label.textColor = [AppColorProvider textColor];
     _custom_status_label.textColor = [AppColorProvider textColor];
     _status_label.textColor = [AppColorProvider textSecondaryColor];
@@ -1078,7 +1087,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didFriendsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {
-    [self.navigationController pushViewController:[[ProfileFriendsViewController alloc] initWithProfileID:_profile->id] animated:YES];
+    [self.navigationController pushViewController:[[ProfileFriendsViewController alloc] initWithProfileID:_profile->id isMyProfile:_is_my_profile] animated:YES];
 }
 
 -(void)didVideosPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {
@@ -1116,7 +1125,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didEditPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
-    // TODO
+
 }
 
 -(void)didMessagePressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {

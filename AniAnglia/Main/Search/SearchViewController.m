@@ -15,6 +15,8 @@
 @property(nonatomic, retain) NSArray<NSLayoutConstraint*>* inline_view_controller_constraints;
 @property(nonatomic, retain) NSString* initial_search_bar_text;
 
+@property(nonatomic) UIBarButtonItem* orig_right_bar_button;
+
 @end
 
 @implementation SearchViewController
@@ -69,9 +71,10 @@
 -(void)setBarButtonsHidden:(BOOL)hidden {
     if (hidden) {
         self.navigationItem.leftBarButtonItem = nil;
-        self.navigationItem.rightBarButtonItem = nil;
+        self.navigationItem.rightBarButtonItem = _orig_right_bar_button;
         return;
     }
+    _orig_right_bar_button = self.navigationItem.rightBarButtonItem;
     [self.navigationItem setLeftBarButtonItem:_back_bar_button animated:YES];
     [self.navigationItem setRightBarButtonItem:_right_bar_button animated:YES];
 }
