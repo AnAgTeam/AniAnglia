@@ -17,6 +17,7 @@
 @interface ReleasesTableViewController () {
     anixart::Pageable<anixart::Release>::UPtr _pages;
 }
+@property(atomic) BOOL trailing_action_enabled;
 @property(nonatomic, retain) ReleasesTableView* releases_table_view;
 
 @end
@@ -27,6 +28,15 @@
     self = [super init];
     
     _pages = std::move(pages);
+    _trailing_action_enabled = YES;
+    
+    return self;
+}
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages trailingActionEnabled:(BOOL)trailing_action_enabled {
+    self = [super init];
+    
+    _pages = std::move(pages);
+    _trailing_action_enabled = trailing_action_enabled;
     
     return self;
 }
@@ -39,6 +49,7 @@
 }
 -(void)setup {
     _releases_table_view = [[ReleasesTableView alloc] initWithPages:std::move(_pages)];
+    _releases_table_view.trailing_action_disabled = !_trailing_action_enabled;
     
     [self.view addSubview:_releases_table_view];
     

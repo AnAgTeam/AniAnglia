@@ -70,6 +70,8 @@
 @property(nonatomic, retain) ProfileStatsButton* friend_count_stat_button;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
+
+-(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
 @interface ProfileActionsView : UIView {
@@ -84,6 +86,7 @@
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile isMyProfile:(BOOL)is_my_profile;
 
+-(void)setProfile:(anixart::Profile::Ptr)profile;
 -(void)updateActions;
 @end
 
@@ -110,6 +113,8 @@
 @property(nonatomic, retain) UITableView* votes_table_view;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
+
+-(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
 @interface ProfileWatchDynamicsViewCollectionViewCell : UICollectionViewCell
@@ -134,6 +139,8 @@
 @property(nonatomic, retain) UICollectionView* dynamics_collection_view;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
+
+-(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
 @interface ProfileWatchedRecentlyViewTableViewCell : UITableViewCell
@@ -158,6 +165,8 @@
 @property(nonatomic, retain) UITableView* releases_table_view;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
+
+-(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
 @interface ProfileViewController () <ProfileStatsBlockViewDelegate, ProfileActionViewDelegate, ProfileVotesViewDelegate, ProfileWatchedRecentlyViewDelegate> {
@@ -259,12 +268,15 @@
     _comment_count_stat_button = [[ProfileStatsButton alloc] initWithName:NSLocalizedString(@"app.profile.stats_block.comment_count.name", "") count:_profile->comment_count];
     [_comment_count_stat_button addTarget:self action:@selector(onCommentsStatButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _comment_count_stat_button.layer.cornerRadius = 8;
+    
     _video_count_stat_button = [[ProfileStatsButton alloc] initWithName:NSLocalizedString(@"app.profile.stats_block.video_count.name", "") count:_profile->video_count];
     [_video_count_stat_button addTarget:self action:@selector(onVideosStatButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _video_count_stat_button.layer.cornerRadius = 8;
+    
     _collection_count_stat_button = [[ProfileStatsButton alloc] initWithName:NSLocalizedString(@"app.profile.stats_block.collection_count.name", "") count:_profile->collection_count];
     [_collection_count_stat_button addTarget:self action:@selector(onCollectionsStatButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _collection_count_stat_button.layer.cornerRadius = 8;
+    
     _friend_count_stat_button = [[ProfileStatsButton alloc] initWithName:NSLocalizedString(@"app.profile.stats_block.friend_count.name", "") count:_profile->friend_count];
     [_friend_count_stat_button addTarget:self action:@selector(onFriendsStatButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _friend_count_stat_button.layer.cornerRadius = 8;
@@ -284,7 +296,16 @@
     ]];
 }
 -(void)setupLayout {
+
+}
+
+-(void)setProfile:(anixart::Profile::Ptr)profile {
+    _profile = profile;
     
+    [_comment_count_stat_button setCount:_profile->comment_count];
+    [_video_count_stat_button setCount:_profile->video_count];
+    [_collection_count_stat_button setCount:_profile->collection_count];
+    [_friend_count_stat_button setCount:_profile->friend_count];
 }
 
 -(IBAction)onCommentsStatButtonPressed:(UIButton*)sender {
@@ -380,6 +401,10 @@
     return @[];
 }
 
+-(void)setProfile:(anixart::Profile::Ptr)profile {
+    _profile = profile;
+    [self setFriendStatus:_profile->get_friend_status_to([_app_data_controller getMyProfileID])];
+}
 -(void)setFriendStatus:(anixart::Profile::FriendStatus)friend_status {
     // TODO: just update buttons title and action
     _friend_status = friend_status;
@@ -550,6 +575,11 @@
 }
 -(void)setupLayout {
     _me_label.textColor = [AppColorProvider textColor];
+}
+
+-(void)setProfile:(anixart::Profile::Ptr)profile {
+    _profile = profile;
+    [_votes_table_view reloadData];
 }
 
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
@@ -725,6 +755,12 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     }
 }
 
+-(void)setProfile:(anixart::Profile::Ptr)profile {
+    _profile = profile;
+    [self calcMaxDynamicCount];
+    [_dynamics_collection_view reloadData];
+}
+
 -(NSInteger)collectionView:(UICollectionView *)collection_view numberOfItemsInSection:(NSInteger)section {
     return _profile->watch_dynamics.size();
 }
@@ -857,6 +893,11 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _me_label.textColor = [AppColorProvider textColor];
 }
 
+-(void)setProfile:(anixart::Profile::Ptr)profile {
+    _profile = profile;
+    [_releases_table_view reloadData];
+}
+
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
     return _profile->history.size();
 }
@@ -956,6 +997,9 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 -(void)setup {
     _scroll_view = [UIScrollView new];
+    _scroll_view.refreshControl = [UIRefreshControl new];
+    [_scroll_view.refreshControl addTarget:self action:@selector(onRefresh:) forControlEvents:UIControlEventValueChanged];
+    
     _content_stack_view = [UIStackView new];
     _content_stack_view.axis = UILayoutConstraintAxisVertical;
     _content_stack_view.distribution = UIStackViewDistributionEqualSpacing;
@@ -969,8 +1013,10 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     
     _username_label = [UILabel new];
     _username_label.text = TO_NSSTRING(_profile->username);
+    
     _custom_status_label = [UILabel new];
     _custom_status_label.text = TO_NSSTRING(_profile->status);
+    
     _status_label = [UILabel new];
     _status_label.text = _profile->is_online ? NSLocalizedString(@"app.profile.status.online.name", "") : NSLocalizedString(@"app.profile.status.offline.name", "");
     
@@ -1064,6 +1110,17 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _custom_status_label.textColor = [AppColorProvider textColor];
     _status_label.textColor = [AppColorProvider textSecondaryColor];
 }
+-(void)refresh {
+    _username_label.text = TO_NSSTRING(_profile->username);
+    _custom_status_label.text = TO_NSSTRING(_profile->status);
+    _status_label.text = _profile->is_online ? NSLocalizedString(@"app.profile.status.online.name", "") : NSLocalizedString(@"app.profile.status.offline.name", "");
+    [_stats_view setProfile:_profile];
+    [_actions_view setProfile:_profile];
+    [_lists_view setProfile:_profile];
+    [_votes_view setProfile:_profile];
+    [_watch_dynamics_view setProfile:_profile];
+    [_watched_recently_view setProfile:_profile];
+}
 -(void)loadProfile {
     [_loading_view startLoading];
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
@@ -1143,7 +1200,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     }];
 }
 
-- (void)didRemoveFromFriendsPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view { 
+-(void)didRemoveFromFriendsPressedForProfileActionsView:(ProfileActionsView *)profile_actions_view {
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         api->profiles().remove_friend_request(self->_profile->id);
         return YES;
@@ -1159,6 +1216,17 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 
 -(void)profileWatchedRecentlyView:(ProfileWatchedRecentlyView *)profile_watched_recently_view didSelectRelease:(anixart::Release::Ptr)release {
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
+}
+
+-(IBAction)onRefresh:(UIRefreshControl*)refresh_control {
+    // since this not in the main thread, we can call network action directly
+    auto [profile, is_my_profile] = _api_proxy.api->profiles().get_profile(_profile_id);
+    _profile = profile;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self refresh];
+        [refresh_control endRefreshing];
+    });
 }
 
 @end

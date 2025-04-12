@@ -173,6 +173,11 @@ namespace anixart {
 		namespace exporting {
 
 		};
+		namespace favorite {
+			extern ApiGetRequest add(const int64_t release_id, const std::string& token);
+			extern ApiGetRequest remove(const int64_t release_id, const std::string& token);
+			extern ApiGetRequest favorites(const int32_t page, const int32_t sort, int32_t filter_announce, const std::string& token);
+		};
 		namespace filter {
 			extern ApiPostRequest filter(const int32_t page, const FilterRequest& request, const bool extended_mode, const std::string& token);
 		};

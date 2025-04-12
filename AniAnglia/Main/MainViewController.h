@@ -6,7 +6,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SegmentedPageViewController.h"
 
-@interface MainViewController : UIViewController <UISearchBarDelegate>
+@interface MainViewController : UIViewController
 
 @end

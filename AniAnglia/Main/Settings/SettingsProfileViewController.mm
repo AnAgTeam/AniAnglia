@@ -171,7 +171,7 @@
         
         cell.delegate = self;
         [cell disableAutocapitalizationAndCorrection];;
-        [cell setPlaceholder:NSLocalizedString(@"app.settings.custom_status.placeholder", "")];
+        [cell setPlaceholder:NSLocalizedString(@"app.settings.profile.custom_status.placeholder", "")];
         [cell setText:TO_NSSTRING(_profile->status)];
         return cell;
     }

@@ -18,6 +18,9 @@
 @property(nonatomic, retain) UILabel* legend_name_label;
 @property(nonatomic, retain) UILabel* legend_count_label;
 
+-(instancetype)initWithLegendName:(NSString*)name color:(UIColor*)color count:(NSInteger)count;
+
+-(void)setCount:(NSInteger)count;
 @end
 
 @interface ProfileListsView () {
@@ -40,6 +43,7 @@
 @property(nonatomic, retain) ProfileListLegendView* watched_legend_view;
 @property(nonatomic, retain) ProfileListLegendView* holdon_legend_view;
 @property(nonatomic, retain) ProfileListLegendView* dropped_legend_view;
+@property(nonatomic, retain) NSArray<NSLayoutConstraint*>* indicator_constraints;
 
 @end
 
@@ -94,6 +98,10 @@
     _legend_color_view.backgroundColor = _legend_color;
     _legend_name_label.textColor = [AppColorProvider textSecondaryColor];
     _legend_count_label.textColor = [AppColorProvider textColor];
+}
+
+-(void)setCount:(NSInteger)count {
+    _legend_count_label.text = [@(count) stringValue];
 }
 
 @end
@@ -233,13 +241,14 @@
         [_dropped_legend_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
     ]];
     if (total_lists_count != 0) {
-        [NSLayoutConstraint activateConstraints:@[
+        _indicator_constraints = @[
             [_watching_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
             [_plan_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
             [_watched_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
             [_holdon_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
             [_dropped_indicator_view.trailingAnchor constraintEqualToAnchor:_total_indicator_view.trailingAnchor]
-        ]];
+        ];
+        [NSLayoutConstraint activateConstraints:_indicator_constraints];
     }
     [_me_label sizeToFit];
 }
@@ -250,5 +259,46 @@
     _watched_indicator_view.backgroundColor = [UIColor systemGreenColor];
     _holdon_indicator_view.backgroundColor = [UIColor systemPurpleColor];
     _dropped_indicator_view.backgroundColor = [UIColor systemRedColor];
+}
+
+-(void)updateIndicators {
+    double total_lists_count = _watching_count + _plan_count + _watched_count + _holdon_count + _dropped_count;
+    
+    if (_indicator_constraints) {
+        [NSLayoutConstraint deactivateConstraints:_indicator_constraints];
+    }
+    if (total_lists_count != 0) {
+        _indicator_constraints = @[
+            [_watching_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
+            [_plan_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
+            [_watched_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
+            [_holdon_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
+            [_dropped_indicator_view.trailingAnchor constraintEqualToAnchor:_total_indicator_view.trailingAnchor]
+        ];
+        [NSLayoutConstraint activateConstraints:_indicator_constraints];
+    }
+    
+    [_watching_legend_view setCount:_watching_count];
+    [_plan_legend_view setCount:_plan_count];
+    [_watched_legend_view setCount:_watched_count];
+    [_holdon_legend_view setCount:_holdon_count];
+    [_dropped_legend_view setCount:_dropped_count];
+}
+
+-(void)setReleaseInfo:(anixart::Release::Ptr)release {
+    _watching_count = release->watching_count;
+    _plan_count = release->plan_count;
+    _watched_count = release->watched_count;
+    _holdon_count = release->hold_on_count;
+    _dropped_count = release->dropped_count;
+    [self updateIndicators];
+}
+-(void)setProfile:(anixart::Profile::Ptr)profile {
+    _watching_count = profile->watching_count;
+    _plan_count = profile->plan_count;
+    _watched_count = profile->watched_count;
+    _holdon_count = profile->hold_on_count;
+    _dropped_count = profile->dropped_count;
+    [self updateIndicators];
 }
 @end

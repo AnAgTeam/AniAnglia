@@ -127,6 +127,14 @@
 /* PROFILE */
 "app.profile.search_bar.placeholder" = "Найти пользователя...";
 
+"app.bookmarks.history.title" = "История";
+"app.bookmarks.favorites.title" = "Избранное";
+"app.bookmarks.watching.title" = "Смотрю";
+"app.bookmarks.plan.title" = "В планах";
+"app.bookmarks.watched.title" = "Просмотрено";
+"app.bookmarks.holdon.title" = "Отложено";
+"app.bookmarks.dropped.title" = "Брошено";
+
 "app.profile.status.online.name" = "Онлайн";
 "app.profile.status.offline.name" = "Не в сети";
 
@@ -163,6 +171,13 @@
 
 "app.profile.watched_recently.title" = "Просмотрено недавно";
 
+/* PROFILE FRIENDS */
+"app.profile_friends.title" = "Друзья";
+"app.profile_friends.friends_count.end" = "друзей";
+"app.profile_friends.requests_in.header" = "Входящие запросы";
+"app.profile_friends.requests_out.header" = "Исходящие запросы";
+"app.profile_friends.friends.header" = "Друзья";
+
 /* SETTINGS */
 "app.settings.title" = "Настройки";
 "app.settings.profile.name" = "Профиль";
@@ -179,7 +194,7 @@
 "app.settings.help.name" = "Помощь";
 "app.settings.rules.name" = "Правила";
 
-/* SETTINGS APPEARANCE */
+/* APPEARANCE SETTINGS */
 "app.settings.appearance.theme" = "Тема";
 "app.settings.appearance.theme.dark" = "Тёмная";
 "app.settings.appearance.theme.light" = "Светлая";
@@ -188,13 +203,6 @@
 "app.settings.appearance.main_display_style" = "Вид отображения релизов";
 "app.settings.appearance.main_display_style.table" = "Таблица";
 "app.settings.appearance.main_display_style.cards" = "Карточки";
-
-/* PROFILE FRIENDS */
-"app.profile_friends.title" = "Друзья";
-"app.profile_friends.friends_count.end" = "друзей";
-"app.profile_friends.requests_in.header" = "Входищие запросы";
-"app.profile_friends.requests_out.header" = "Исходящие запросы";
-"app.profile_friends.friends.header" = "Друзья";
 
 /* PROFILE SETTINGS */
 "app.settings.profile.save_button.title" = "Сохранить";

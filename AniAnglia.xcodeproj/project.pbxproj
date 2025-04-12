@@ -17,6 +17,7 @@
 		EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568A82DA87AB700086593 /* SettingsAppearanceViewController.mm */; };
 		EF3568AC2DA94D8D00086593 /* SettingsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF3568AB2DA94D8D00086593 /* SettingsTableViewController.m */; };
 		EF3568AF2DA95D0800086593 /* SettingsSecurityViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568AE2DA95D0800086593 /* SettingsSecurityViewController.mm */; };
+		EF3568B22DA98D4400086593 /* SegmentedPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568B12DA98D4400086593 /* SegmentedPageViewController.mm */; };
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
@@ -91,6 +92,8 @@
 		EF3568AB2DA94D8D00086593 /* SettingsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsTableViewController.m; sourceTree = "<group>"; };
 		EF3568AD2DA95CFA00086593 /* SettingsSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsSecurityViewController.h; sourceTree = "<group>"; };
 		EF3568AE2DA95D0800086593 /* SettingsSecurityViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsSecurityViewController.mm; sourceTree = "<group>"; };
+		EF3568B02DA98CD500086593 /* SegmentedPageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SegmentedPageViewController.h; sourceTree = "<group>"; };
+		EF3568B12DA98D4400086593 /* SegmentedPageViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SegmentedPageViewController.mm; sourceTree = "<group>"; };
 		EF4941032C72383500832A6C /* AppColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppColor.h; sourceTree = "<group>"; };
 		EF4941052C7238B700832A6C /* AppColor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppColor.mm; sourceTree = "<group>"; };
 		EF4941122C723F0700832A6C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -3403,6 +3406,8 @@
 				EF7CD28D2DA0400F00F88227 /* DynamicTableView.mm */,
 				EF7CD28F2DA040C900F88227 /* ProfileListsView.h */,
 				EF7CD2902DA040EC00F88227 /* ProfileListsView.mm */,
+				EF3568B02DA98CD500086593 /* SegmentedPageViewController.h */,
+				EF3568B12DA98D4400086593 /* SegmentedPageViewController.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3550,6 +3555,7 @@
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
 				EF65E3492D82297C00114102 /* ReleasesHistoryTableViewController.mm in Sources */,
 				EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */,
+				EF3568B22DA98D4400086593 /* SegmentedPageViewController.mm in Sources */,
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
@@ -3741,7 +3747,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -3771,7 +3777,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;

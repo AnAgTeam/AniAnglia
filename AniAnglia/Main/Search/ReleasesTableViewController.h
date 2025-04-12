@@ -12,5 +12,6 @@
 @interface ReleasesTableViewController : UIViewController
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages trailingActionEnabled:(BOOL)trailing_action_enabled;
 -(void)updatePages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 @end

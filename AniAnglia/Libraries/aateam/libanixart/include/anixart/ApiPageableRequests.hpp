@@ -203,7 +203,7 @@ namespace anixart {
         const std::string& _token;
     };
 
-    class FriendsPages : public Paginator<Profile> {
+    class FriendsPages : public EmptyContentPaginator<Profile> {
     public:
         FriendsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id);
 
@@ -262,6 +262,20 @@ namespace anixart {
         ProfileID _profile_id;
         Profile::ListStatus _tab;
         Profile::ListSort _sort;
+    };
+
+    class ProfileFavoriteReleasesPages : public Paginator<Release> {
+    public:
+        ProfileFavoriteReleasesPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Profile::ListSort sort, const int32_t filter_announce);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ProfileID _profile_id;
+        Profile::ListSort _sort;
+        int32_t _filter_announce; // TODO: check filter_announce
     };
 
     class AllReleaseUnvotedPages : public Paginator<Release> {

@@ -12,7 +12,7 @@ namespace anixart {
 		void delete_release_vote(const ReleaseID release_id) const;
 		Release::Ptr random_release(const ReleaseID release_id) const;
 		Release::Ptr random_collection_release(const ReleaseID release_id) const;
-		Release::Ptr random_favority_release(const ReleaseID release_id) const;
+		Release::Ptr random_favorite_release(const ReleaseID release_id) const;
 		Release::Ptr random_profile_release(const ProfileID profile_id, const Release::Status status) const;
 		Release::Ptr get_release(const ReleaseID release_id) const;
 
@@ -38,7 +38,11 @@ namespace anixart {
 
 		void add_release_to_favorites(const ReleaseID release_id) const;
 		void remove_release_from_favorites(const ReleaseID release_id) const;
-		ProfileReleaseVideoFavoritesPages::UPtr profile_favorites(const ProfileID profile_id, const int32_t start_page) const;
+		ProfileFavoriteReleasesPages::UPtr profile_favorites(const ProfileID profile_id, const Profile::ListSort sort, const int32_t filter_announce, const int32_t start_page) const;
+
+		void add_release_video_to_favorites(const ReleaseVideoID release_video_id) const;
+		void remove_release_video_from_favorites(const ReleaseVideoID release_video_id) const;
+		ProfileReleaseVideoFavoritesPages::UPtr profile_favorite_videos(const ProfileID profile_id, const int32_t start_page) const;
 
 		void add_to_history(const ReleaseID release_id, const EpisodeSourceID source_id, const int32_t position) const;
 		void remove_release_from_history(const ReleaseID release_id) const;
