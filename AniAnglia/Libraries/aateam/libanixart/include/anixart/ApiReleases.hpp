@@ -16,14 +16,14 @@ namespace anixart {
 		Release::Ptr random_profile_release(const ProfileID profile_id, const Release::Status status) const;
 		Release::Ptr get_release(const ReleaseID release_id) const;
 
-		ReleaseComment::Ptr add_release_comment(const ReleaseID release_id, const requests::ReleaseCommentAddRequest& add_request) const;
-		ReleaseComment::Ptr release_comment(const ReleaseID release_id) const;
-		void remove_release_comment(const ReleaseCommentID comment_id) const;
-		ReleaseCommentsPages::UPtr release_comments(const ReleaseID release_id, const int32_t start_page, const ReleaseComment::FilterBy filter_by) const;
-		void process_release_comment(const ReleaseCommentID comment_id, const requests::ReleaseCommentProcessRequest& process_request) const;
-		ReleaseCommentRepliesPages::UPtr get_replies_to_comment(const ReleaseCommentID comment_id, const int32_t start_page, const ReleaseComment::FilterBy filter_by) const;
-		void report_release_comment(const ReleaseCommentID comment_id, const requests::ReleaseCommentReportRequest& report_request) const;
-		void vote_release_comment(const ReleaseCommentID comment_id, const ReleaseComment::Sign sign) const;
+		Comment::Ptr add_release_comment(const ReleaseID release_id, const requests::CommentAddRequest& add_request) const;
+		Comment::Ptr release_comment(const CommentID comment_id) const;
+		void remove_release_comment(const CommentID comment_id) const;
+		ReleaseCommentsPages::UPtr release_comments(const ReleaseID release_id, const int32_t start_page, const Comment::FilterBy filter_by) const;
+		void process_release_comment(const CommentID comment_id, const requests::CommentProcessRequest& process_request) const;
+		ReleaseCommentRepliesPages::UPtr replies_to_comment(const CommentID comment_id, const int32_t start_page, const Comment::Sort sort) const;
+		void report_release_comment(const CommentID comment_id, const requests::CommentReportRequest& report_request) const;
+		void vote_release_comment(const CommentID comment_id, const Comment::Sign sign) const;
 
 		std::vector<ReleaseVideoCategory::Ptr> release_video_categories() const;
 		ReleaseVideoCategoryPages::UPtr release_video_category(const ReleaseID release_id, const ReleaseVideoCategoryID category_id, const int32_t start_page) const;

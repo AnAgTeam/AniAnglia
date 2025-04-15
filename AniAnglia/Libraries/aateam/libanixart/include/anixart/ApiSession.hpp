@@ -6,7 +6,7 @@
 namespace anixart {
 	class ApiSession : public network::UrlSession {
 	public:
-		ApiSession(std::string_view lang, std::string_view application);
+		ApiSession(std::string_view lang, std::string_view application, std::string_view application_version);
 		virtual ~ApiSession() = default;
 
 		void set_verbose(const bool api_verbose, const bool sess_verbose);

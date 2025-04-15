@@ -146,18 +146,18 @@ namespace anixart {
 			std::string status;
 		};
 
-		class ReleaseCommentAddRequest : Serializable {
+		class CommentAddRequest : Serializable {
 		public:
 
 			std::string serialize() const override;
 
 			bool is_spoiler;
 			std::string message;
-			std::optional<ReleaseCommentID> parent_comment_id;
+			std::optional<CommentID> parent_comment_id;
 			std::optional<ProfileID> reply_to_profile_id;
 		};
 
-		class ReleaseCommentEditRequest : Serializable {
+		class CommentEditRequest : Serializable {
 		public:
 
 			std::string serialize() const override;
@@ -166,7 +166,7 @@ namespace anixart {
 			std::string message;
 		};
 
-		class ReleaseCommentProcessRequest : Serializable {
+		class CommentProcessRequest : Serializable {
 		public:
 
 			std::string serialize() const override;
@@ -178,7 +178,7 @@ namespace anixart {
 			TimestampPoint ban_expires;
 		};
 
-		class ReleaseCommentReportRequest : Serializable {
+		class CommentReportRequest : Serializable {
 		public:
 
 			std::string serialize() const override;
@@ -205,35 +205,6 @@ namespace anixart {
 
 			std::string message;
 			int64_t reason; // todo: check
-		};
-
-		class CollectionCommentAddRequest : Serializable {
-		public:
-
-			std::string serialize() const override;
-
-			std::string message;
-			std::optional<CollectionCommentID> parent_comment_id;
-			std::optional<ProfileID> reply_to_profile_id;
-			bool spoiler;
-		};
-
-		class CollectionCommentEditRequest : Serializable {
-		public:
-
-			std::string serialize() const override;
-
-			std::string message;
-			bool spoiler;
-		};
-
-		class CollectionCommentReportRequest : Serializable {
-		public:
-
-			std::string serialize() const override;
-
-			std::string message;
-			int64_t reason;
 		};
 
 		class CreateEditCollectionRequest : Serializable {

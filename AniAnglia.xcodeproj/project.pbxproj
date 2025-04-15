@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
 		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
+		EF2330652DAD91A6008B0A2A /* CommentRepliesViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF2330642DAD91A6008B0A2A /* CommentRepliesViewController.mm */; };
+		EF2330682DAD9293008B0A2A /* TextEnterView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF2330672DAD9293008B0A2A /* TextEnterView.mm */; };
 		EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF3568982DA1C2C000086593 /* MainWindow.mm */; };
 		EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF35689B2DA3124C00086593 /* SettingsViewController.mm */; };
 		EF35689F2DA568E800086593 /* SettingsProfileViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF35689E2DA568E800086593 /* SettingsProfileViewController.mm */; };
@@ -70,11 +72,17 @@
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
 		EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */; };
+		EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */; };
+		EFFA3C482DAD535200DE042A /* ProfileCommentsPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		EF0D7D182D26F0E7000E516A /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = AniAnglia/Libraries/aateam/libanixart/libanixart.xcframework; sourceTree = "<group>"; };
 		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
+		EF2330632DAD9192008B0A2A /* CommentRepliesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommentRepliesViewController.h; sourceTree = "<group>"; };
+		EF2330642DAD91A6008B0A2A /* CommentRepliesViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommentRepliesViewController.mm; sourceTree = "<group>"; };
+		EF2330662DAD9281008B0A2A /* TextEnterView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextEnterView.h; sourceTree = "<group>"; };
+		EF2330672DAD9293008B0A2A /* TextEnterView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TextEnterView.mm; sourceTree = "<group>"; };
 		EF2A9B952CF79AE100AED977 /* AniAnglia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AniAnglia.entitlements; sourceTree = "<group>"; };
 		EF3568972DA1C2B500086593 /* MainWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = "<group>"; };
 		EF3568982DA1C2C000086593 /* MainWindow.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = "<group>"; };
@@ -1337,6 +1345,10 @@
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
 		EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesTableView.h; sourceTree = "<group>"; };
 		EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesTableView.mm; sourceTree = "<group>"; };
+		EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommentsTableViewController.mm; sourceTree = "<group>"; };
+		EFFA3C452DAB151C00DE042A /* CommentsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommentsTableViewController.h; sourceTree = "<group>"; };
+		EFFA3C462DAD534100DE042A /* ProfileCommentsPageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileCommentsPageViewController.h; sourceTree = "<group>"; };
+		EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProfileCommentsPageViewController.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1369,6 +1381,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EF2330622DAD9171008B0A2A /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				EFFA3C452DAB151C00DE042A /* CommentsTableViewController.h */,
+				EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */,
+				EF2330632DAD9192008B0A2A /* CommentRepliesViewController.h */,
+				EF2330642DAD91A6008B0A2A /* CommentRepliesViewController.mm */,
+			);
+			path = Comments;
+			sourceTree = "<group>";
+		};
 		EF3568A32DA84BD000086593 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -3400,6 +3423,7 @@
 		EF7CD28B2DA03FE800F88227 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				EF2330622DAD9171008B0A2A /* Comments */,
 				EF3568A02DA5839A00086593 /* CustomTableViewCells.h */,
 				EF3568A12DA583C800086593 /* CustomTableViewCells.m */,
 				EF7CD28C2DA03FFF00F88227 /* DynamicTableView.h */,
@@ -3408,6 +3432,8 @@
 				EF7CD2902DA040EC00F88227 /* ProfileListsView.mm */,
 				EF3568B02DA98CD500086593 /* SegmentedPageViewController.h */,
 				EF3568B12DA98D4400086593 /* SegmentedPageViewController.mm */,
+				EF2330662DAD9281008B0A2A /* TextEnterView.h */,
+				EF2330672DAD9293008B0A2A /* TextEnterView.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3419,6 +3445,8 @@
 				EF5A3CD12C7FA1BA00B4F637 /* ProfileViewController.mm */,
 				EF7CD2932DA0647A00F88227 /* ProfileFriendsViewController.h */,
 				EF7CD2942DA0648C00F88227 /* ProfileFriendsViewController.mm */,
+				EFFA3C462DAD534100DE042A /* ProfileCommentsPageViewController.h */,
+				EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */,
 			);
 			path = Profiles;
 			sourceTree = "<group>";
@@ -3538,6 +3566,7 @@
 				EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */,
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF3568A22DA583C800086593 /* CustomTableViewCells.m in Sources */,
+				EF2330652DAD91A6008B0A2A /* CommentRepliesViewController.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
 				EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */,
@@ -3564,15 +3593,18 @@
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
 				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,
 				EF5A3CD02C7FA1AB00B4F637 /* BookmarksViewController.mm in Sources */,
+				EF2330682DAD9293008B0A2A /* TextEnterView.mm in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
 				EF3568AC2DA94D8D00086593 /* SettingsTableViewController.m in Sources */,
+				EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */,
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,
 				EF7CD2952DA0648C00F88227 /* ProfileFriendsViewController.mm in Sources */,
 				EF35689F2DA568E800086593 /* SettingsProfileViewController.mm in Sources */,
 				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
+				EFFA3C482DAD535200DE042A /* ProfileCommentsPageViewController.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
 			);

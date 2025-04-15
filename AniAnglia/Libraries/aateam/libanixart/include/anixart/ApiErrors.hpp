@@ -96,11 +96,11 @@ namespace anixart {
 	using FavoriteCollectionAddError = ApiCodeError<codes::collection::FavoriteCollectionAddCode, ApiCollectionRequestError>;
 	using FavoriteCollectionRemoveError = ApiCodeError<codes::collection::FavoriteCollectionRemoveCode, ApiCollectionRequestError>;
 	using ReleaseAddCollectionError = ApiCodeError<codes::collection::ReleaseAddCollectionCode, ApiCollectionRequestError>;
-	using CollectionCommentAddError = ApiCodeError<codes::collection::comment::CollectionCommentAddCode, ApiCollectionRequestError>;
-	using CollectionCommentRemoveError = ApiCodeError<codes::collection::comment::CollectionCommentRemoveCode, ApiCollectionRequestError>;
-	using CollectionCommentEditError = ApiCodeError<codes::collection::comment::CollectionCommentEditCode, ApiCollectionRequestError>;
-	using CollectionCommentReportError = ApiCodeError<codes::collection::comment::CollectionCommentReportCode, ApiCollectionRequestError>;
-	using CollectionCommentVoteError = ApiCodeError<codes::collection::comment::CollectionCommentVoteCode, ApiCollectionRequestError>;
+	using CommentAddError = ApiCodeError<codes::comment::CommentAddCode, ApiCollectionRequestError>;
+	using CommentRemoveError = ApiCodeError<codes::comment::CommentRemoveCode, ApiCollectionRequestError>;
+	using CommentEditError = ApiCodeError<codes::comment::CommentEditCode, ApiCollectionRequestError>;
+	using CommentReportError = ApiCodeError<codes::comment::CommentReportCode, ApiCollectionRequestError>;
+	using CommentVoteError = ApiCodeError<codes::comment::CommentVoteCode, ApiCollectionRequestError>;
 
 	using ChangeEmailConfirmError = ApiCodeError<codes::profile::ChangeEmailConfirmCode, ApiProfileRequestError>;
 	using ChangeEmailError = ApiCodeError<codes::profile::ChangeEmailCode, ApiProfileRequestError>;
@@ -123,11 +123,6 @@ namespace anixart {
 	using ReleaseReportError = ApiCodeError<codes::release::ReleaseReportCode, ApiReleaseRequestError>;
 	using ReleaseError = ApiCodeError<codes::release::ReleaseCode, ApiReleaseRequestError>;
 	using VoteReleaseError = ApiCodeError<codes::release::VoteReleaseCode, ApiReleaseRequestError>;
-	using ReleaseCommentAddError = ApiCodeError<codes::release::comment::ReleaseCommentAddCode, ApiReleaseRequestError>;
-	using ReleaseCommentRemoveError = ApiCodeError<codes::release::comment::ReleaseCommentRemoveCode, ApiReleaseRequestError>;
-	using ReleaseCommentEditError = ApiCodeError<codes::release::comment::ReleaseCommentEditCode, ApiReleaseRequestError>;
-	using ReleaseCommentReportError = ApiCodeError<codes::release::comment::ReleaseCommentReportCode, ApiReleaseRequestError>;
-	using ReleaseCommentVoteError = ApiCodeError<codes::release::comment::ReleaseCommentVoteCode, ApiReleaseRequestError>;
 	using EpisodeError = ApiCodeError<codes::release::episode::EpisodeCode, ApiReleaseRequestError>;
 	using EpisodeTargetError = ApiCodeError<codes::release::episode::EpisodeTargetCode, ApiReleaseRequestError>;
 	using EpisodeUnwatchError = ApiCodeError<codes::release::episode::EpisodeUnwatchCode, ApiReleaseRequestError>;

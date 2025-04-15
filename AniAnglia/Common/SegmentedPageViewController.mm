@@ -63,12 +63,13 @@
     _segmented_control.selectedSegmentIndex = 0;
     [_segmented_control addTarget:self action:@selector(onPagesSegmentChanged:) forControlEvents:UIControlEventValueChanged];
     
-    _page_view_controller = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];;
+    _page_view_controller = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
     _page_view_controller.dataSource = self;
     _page_view_controller.delegate = self;
     if (_page_view_controllers) {
         [_page_view_controller setViewControllers:@[_page_view_controllers[0]] direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
     }
+    [self addChildViewController:_page_view_controller];
     
     [self.view addSubview:_segments_scroll_view];
     [_segments_scroll_view addSubview:_segmented_control];
@@ -86,6 +87,7 @@
         [_segmented_control.topAnchor constraintEqualToAnchor:_segments_scroll_view.topAnchor],
         [_segmented_control.leadingAnchor constraintEqualToAnchor:_segments_scroll_view.leadingAnchor],
         [_segmented_control.trailingAnchor constraintEqualToAnchor:_segments_scroll_view.trailingAnchor],
+        [_segmented_control.trailingAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
         [_segmented_control.heightAnchor constraintEqualToAnchor:_segments_scroll_view.heightAnchor],
         
         [_page_view_controller.view.topAnchor constraintEqualToAnchor:_segments_scroll_view.bottomAnchor constant:8],

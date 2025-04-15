@@ -18,6 +18,9 @@
 #import "ProfileFriendsViewController.h"
 #import "ReleaseViewController.h"
 #import "SharedRunningData.h"
+#import "CommentsTableViewController.h"
+#import "SegmentedPageViewController.h"
+#import "CommentRepliesViewController.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -169,7 +172,7 @@
 -(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
-@interface ProfileViewController () <ProfileStatsBlockViewDelegate, ProfileActionViewDelegate, ProfileVotesViewDelegate, ProfileWatchedRecentlyViewDelegate> {
+@interface ProfileViewController () <ProfileStatsBlockViewDelegate, ProfileActionViewDelegate, ProfileVotesViewDelegate, ProfileWatchedRecentlyViewDelegate, CommentsTableViewControllerDelegate> {
     anixart::ProfileID _profile_id;
     anixart::Profile::Ptr _profile;
     bool _is_my_profile;
@@ -1111,6 +1114,8 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _status_label.textColor = [AppColorProvider textSecondaryColor];
 }
 -(void)refresh {
+    NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_profile->avatar_url)];
+    [_avatar_image_view tryLoadImageWithURL:avatar_url];
     _username_label.text = TO_NSSTRING(_profile->username);
     _custom_status_label.text = TO_NSSTRING(_profile->status);
     _status_label.text = _profile->is_online ? NSLocalizedString(@"app.profile.status.online.name", "") : NSLocalizedString(@"app.profile.status.offline.name", "");
@@ -1140,7 +1145,26 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didCommentsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {
-    // TODO
+    CommentsTableViewController* release_comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->profiles().get_profile_release_comments(_profile->id, 0, anixart::Comment::Sort::Newest)];
+    release_comments_view_controller.enable_origin_reference = YES;
+    release_comments_view_controller.delegate = self;
+    
+    CommentsTableViewController* collection_comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->profiles().get_profile_collection_comments(_profile->id, 0, anixart::Comment::Sort::Newest)];
+    collection_comments_view_controller.enable_origin_reference = YES;
+    collection_comments_view_controller.delegate = self;
+    
+    SegmentedPageViewController* page_view_controller = [SegmentedPageViewController new];
+    [self.navigationController pushViewController:page_view_controller animated:NO];
+    [page_view_controller setPageViewControllers:@[
+        release_comments_view_controller,
+        collection_comments_view_controller
+    ]];
+    [page_view_controller setSegmentTitles:@[
+        NSLocalizedString(@"app.profile.comments.release.segment", ""),
+        NSLocalizedString(@"app.profile.comments.collection.segment", ""),
+    ]];
+    
+
 }
 
 -(void)didFriendsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {
@@ -1227,6 +1251,10 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
         [self refresh];
         [refresh_control endRefreshing];
     });
+}
+
+-(void)didReplyPressedForCommentsTableView:(UITableView *)table_view comment:(anixart::Comment::Ptr)comment {
+    [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithReplyToComment:comment] animated:YES];
 }
 
 @end

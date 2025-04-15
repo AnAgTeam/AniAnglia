@@ -16,6 +16,8 @@
 #import "TimeCvt.h"
 #import "DynamicTableView.h"
 #import "ProfileListsView.h"
+#import "CommentsTableViewController.h"
+#import "CommentRepliesViewController.h"
 
 @class ReleaseRatingView;
 @class ReleaseVideoBlocksView;
@@ -42,11 +44,6 @@
 
 @protocol ReleaseCommentsViewDelegate <NSObject>
 -(void)didShowAllPressedForReleaseCommentsView:(ReleaseCommentsView*)release_comments_view;
--(void)releaseCommentsView:(ReleaseCommentsView*)release_comments_view didShowRepliesPressedForComment:(anixart::ReleaseComment::Ptr)comment;
--(void)releaseCommentsView:(ReleaseCommentsView*)release_comments_view didUpvotePressedForComment:(anixart::ReleaseComment::Ptr)comment;
--(void)releaseCommentsView:(ReleaseCommentsView*)release_comments_view didDownvotePressedForComment:(anixart::ReleaseComment::Ptr)comment;
--(void)releaseCommentsView:(ReleaseCommentsView*)release_comments_view didReplyPressedForComment:(anixart::ReleaseComment::Ptr)comment;
--(void)releaseCommentsView:(ReleaseCommentsView*)release_comments_view didAvatarPressedForComment:(anixart::ReleaseComment::Ptr)comment;
 @end
 
 @interface ReleaseVoteIndicatorView : UIView
@@ -157,55 +154,16 @@
 -(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
 @end
 
-enum class ReleaseCommentsViewTableViewCellAction {
-    None = 0,
-    AvatarPressed = 1,
-    ReplyPressed = 2,
-    ShowRepliesPressed = 3,
-    UpvotePressed = 4,
-    DownvotePressed = 5
-};
-
-@interface ReleaseCommentsViewTableViewCell : UITableViewCell
-@property(nonatomic, retain) LoadableImageView* avatar_image_view;
-@property(nonatomic, retain) UILabel* username_label;
-@property(nonatomic, retain) UILabel* publish_date_label;
-@property(nonatomic, retain) UILabel* content_label;
-@property(nonatomic, retain) UIButton* reply_button;
-@property(nonatomic, retain) UIButton* show_replies_button;
-@property(nonatomic, retain) UIButton* upvote_button;
-@property(nonatomic, retain) UIButton* downvote_button;
-@property(nonatomic, retain) UILabel* vote_count_label;
-@property(nonatomic, retain) NSLayoutConstraint* show_replies_button_height_constraint;
-
-@property(nonatomic, copy) void(^action_handler)(ReleaseCommentsViewTableViewCellAction action);
-
-+(NSString*)getIdentifier;
-
--(void)setAvatarUrl:(NSURL*)url;
--(void)setUsername:(NSString*)username;
--(void)setPublishDate:(NSString*)publish_date;
--(void)setContent:(NSString*)content;
--(void)setRepliesCount:(NSInteger)replies_count;
--(void)setVoteCount:(NSInteger)vote_count;
-
--(void)setActionHandler:(void(^)(ReleaseCommentsViewTableViewCellAction action))handler;
-@end
-
-@interface ReleaseCommentsView : LoadableView <UITableViewDataSource, UITableViewDelegate> {
-    anixart::Release::Ptr _release;
-}
-@property(nonatomic, strong) LibanixartApi* api_proxy;
+@interface ReleaseCommentsView : UIView
 @property(nonatomic, weak) id<ReleaseCommentsViewDelegate> delegate;
 @property(nonatomic, retain) UILabel* me_label;
 @property(nonatomic, retain) UIButton* show_all_button;
-@property(nonatomic, retain) UITableView* comments_table_view;
-@property(nonatomic, retain) NSLayoutConstraint* comments_table_view_height_constraint;
+@property(nonatomic, strong) UIView* view;
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
+-(instancetype)initWithViewController:(UIViewController*)view_controller;
 @end
 
-@interface ReleaseViewController () <ReleaseRatingViewDelegate, ReleaseVideoBlocksViewDelegate, ReleasePreviewViewDelegate, ReleaseRelatedViewDelegate, ReleaseCommentsViewDelegate> {
+@interface ReleaseViewController () <ReleaseRatingViewDelegate, ReleaseVideoBlocksViewDelegate, ReleasePreviewViewDelegate, ReleaseRelatedViewDelegate, ReleaseCommentsViewDelegate, CommentsTableViewControllerDelegate> {
     anixart::Release::Ptr _release;
 }
 @property(nonatomic, retain) LibanixartApi* api_proxy;
@@ -238,6 +196,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
 @property(nonatomic, retain) ReleasePreviewsView* previews_view;
 @property(nonatomic, retain) ReleaseRelatedView* related_view;
 @property(nonatomic, retain) ReleaseCommentsView* comments_view;
+@property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
 
 @end
 
@@ -915,177 +874,12 @@ enum class ReleaseCommentsViewTableViewCellAction {
 }
 @end
 
-@implementation ReleaseCommentsViewTableViewCell
-+(NSString*)getIdentifier {
-    return @"ReleaseCommentsViewTableViewCell";
-}
--(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier {
-    self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
-    
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _avatar_image_view = [LoadableImageView new];
-    _avatar_image_view.clipsToBounds = YES;
-    _avatar_image_view.layer.cornerRadius = 20;
-    
-    _username_label = [UILabel new];
-    _publish_date_label = [UILabel new];
-    
-    _content_label = [UILabel new];
-    _content_label.numberOfLines = 0;
-    _content_label.textAlignment = NSTextAlignmentJustified;
-    
-    _reply_button = [UIButton new];
-    [_reply_button setTitle:NSLocalizedString(@"app.release.comments.reply_button.title", "") forState:UIControlStateNormal];
-    [_reply_button addTarget:self action:@selector(onReplyButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    
-    _show_replies_button = [UIButton new];
-    [_show_replies_button setTitle:NSLocalizedString(@"app.release.comments.show_replies_button.title", "") forState:UIControlStateNormal];
-    [_show_replies_button setImage:[UIImage systemImageNamed:@"chevron.down"] forState:UIControlStateNormal];
-    [_show_replies_button addTarget:self action:@selector(onShowRepliesButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    _show_replies_button.clipsToBounds = YES;
-    
-    _upvote_button = [UIButton new];
-    [_upvote_button setImage:[UIImage systemImageNamed:@"heart"] forState:UIControlStateNormal];
-    [_upvote_button addTarget:self action:@selector(onUpvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    
-    _downvote_button = [UIButton new];
-    [_downvote_button setImage:[UIImage systemImageNamed:@"hand.thumbsdown"] forState:UIControlStateNormal];
-    [_downvote_button addTarget:self action:@selector(onDownvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    _vote_count_label = [UILabel new];
-    
-    [self.contentView addSubview:_avatar_image_view];
-    [self.contentView addSubview:_username_label];
-    [self.contentView addSubview:_publish_date_label];
-    [self.contentView addSubview:_content_label];
-    [self.contentView addSubview:_reply_button];
-    [self.contentView addSubview:_show_replies_button];
-    [self.contentView addSubview:_upvote_button];
-    [self.contentView addSubview:_downvote_button];
-    [self.contentView addSubview:_vote_count_label];
-    
-    _avatar_image_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _username_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _publish_date_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _content_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _reply_button.translatesAutoresizingMaskIntoConstraints = NO;
-    _show_replies_button.translatesAutoresizingMaskIntoConstraints = NO;
-    _upvote_button.translatesAutoresizingMaskIntoConstraints = NO;
-    _downvote_button.translatesAutoresizingMaskIntoConstraints = NO;
-    _vote_count_label.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    _show_replies_button_height_constraint =
-    [_show_replies_button.heightAnchor constraintEqualToConstant:0];
-    [NSLayoutConstraint activateConstraints:@[
-        [_avatar_image_view.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
-        [_avatar_image_view.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
-        [_avatar_image_view.widthAnchor constraintEqualToConstant:40],
-        [_avatar_image_view.heightAnchor constraintEqualToConstant:40],
-        
-        [_username_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
-        [_username_label.leadingAnchor constraintEqualToAnchor:_avatar_image_view.trailingAnchor constant:9],
-        
-        [_publish_date_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
-        [_publish_date_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_username_label.trailingAnchor constant:4],
-        [_publish_date_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
-        [_publish_date_label.bottomAnchor constraintEqualToAnchor:_username_label.bottomAnchor],
-        
-        [_content_label.topAnchor constraintEqualToAnchor:_username_label.bottomAnchor constant:5],
-        [_content_label.leadingAnchor constraintEqualToAnchor:_username_label.leadingAnchor],
-        [_content_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
-        
-        [_reply_button.topAnchor constraintEqualToAnchor:_content_label.bottomAnchor constant:5],
-        [_reply_button.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
-        [_reply_button.heightAnchor constraintEqualToConstant:20],
-        [_reply_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.centerXAnchor],
-        
-        [_upvote_button.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
-//        [_downvote_button.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.centerXAnchor],
-        [_upvote_button.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
-        
-        [_vote_count_label.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
-        [_vote_count_label.leadingAnchor constraintEqualToAnchor:_upvote_button.trailingAnchor constant:5],
-        [_vote_count_label.widthAnchor constraintGreaterThanOrEqualToConstant:40],
-        [_vote_count_label.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
-        
-        [_downvote_button.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
-        [_downvote_button.leadingAnchor constraintEqualToAnchor:_vote_count_label.trailingAnchor constant:5],
-        [_downvote_button.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
-        [_downvote_button.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
-        
-        [_show_replies_button.topAnchor constraintEqualToAnchor:_reply_button.bottomAnchor constant:9],
-        [_show_replies_button.leadingAnchor constraintEqualToAnchor:_reply_button.leadingAnchor],
-        [_show_replies_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
-        _show_replies_button_height_constraint,
-        [_show_replies_button.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor]
-    ]];
-    [_username_label sizeToFit];
-    [_publish_date_label sizeToFit];
-    [_content_label sizeToFit];
-    [_vote_count_label sizeToFit];
-}
--(void)setupLayout {
-    _username_label.textColor = [AppColorProvider textSecondaryColor];
-    _publish_date_label.textColor = [AppColorProvider textShyColor];
-    [_reply_button setTitleColor:[AppColorProvider textSecondaryColor] forState:UIControlStateNormal];
-    [_show_replies_button setTitleColor:[AppColorProvider textSecondaryColor] forState:UIControlStateNormal];
-    _show_replies_button.tintColor = [AppColorProvider textSecondaryColor];
-    _upvote_button.tintColor = [AppColorProvider primaryColor];
-    _vote_count_label.textColor = [AppColorProvider textSecondaryColor];
-    _downvote_button.tintColor = [AppColorProvider primaryColor];
-}
-
--(void)setAvatarUrl:(NSURL*)url {
-    [_avatar_image_view tryLoadImageWithURL:url];
-}
--(void)setUsername:(NSString*)username {
-    _username_label.text = username;
-}
--(void)setPublishDate:(NSString*)publish_date {
-    _publish_date_label.text = publish_date;
-}
--(void)setContent:(NSString*)content {
-    _content_label.text = content;
-}
--(void)setRepliesCount:(NSInteger)replies_count {
-    // enable "show_replies" button if has replies
-    _show_replies_button_height_constraint.constant = replies_count != 0 ? 35 : 0;
-    // TODO: add replies count to button
-}
--(void)setVoteCount:(NSInteger)vote_count {
-    _vote_count_label.text = [@(vote_count) stringValue];
-}
-
--(void)setActionHandler:(void(^)(ReleaseCommentsViewTableViewCellAction action))handler {
-    _action_handler = handler;
-}
-
-// TODO: avatar press action
--(IBAction)onReplyButtonPressed:(UIButton*)sender {
-    _action_handler(ReleaseCommentsViewTableViewCellAction::ReplyPressed);
-}
--(IBAction)onShowRepliesButtonPressed:(UIButton*)sender {
-    _action_handler(ReleaseCommentsViewTableViewCellAction::ShowRepliesPressed);
-}
--(IBAction)onUpvoteButtonPressed:(UIButton*)sender {
-    _action_handler(ReleaseCommentsViewTableViewCellAction::UpvotePressed);
-}
--(IBAction)onDownvoteButtonPressed:(UIButton*)sender {
-    _action_handler(ReleaseCommentsViewTableViewCellAction::DownvotePressed);
-}
-@end
-
 @implementation ReleaseCommentsView
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release {
+-(instancetype)initWithViewController:(UIViewController*)view_controller {
     self = [super init];
     
-    _api_proxy = [LibanixartApi sharedInstance];
-    _release = release;
+    _view = view_controller.view;
     [self setup];
     [self setupLayout];
     
@@ -1095,24 +889,18 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _me_label = [UILabel new];
     _me_label.text = NSLocalizedString(@"app.release.comments.title", "");
     _me_label.font = [UIFont systemFontOfSize:22];
+    
     _show_all_button = [UIButton new];
-    [_show_all_button setTitle:NSLocalizedString(@"app.release.comments.show_all_button.title", "") forState:UIControlStateNormal];
     [_show_all_button addTarget:self action:@selector(onShowAllButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    _comments_table_view = [DynamicTableView new];
-    [_comments_table_view registerClass:ReleaseCommentsViewTableViewCell.class forCellReuseIdentifier:[ReleaseCommentsViewTableViewCell getIdentifier]];
-    _comments_table_view.dataSource = self;
-    _comments_table_view.delegate = self;
-    _comments_table_view.rowHeight = UITableViewAutomaticDimension;
-    _comments_table_view.estimatedRowHeight = 200;
-    _comments_table_view.scrollEnabled = NO;
+    [_show_all_button setTitle:NSLocalizedString(@"app.release.comments.show_all_button.title", "") forState:UIControlStateNormal];
     
     [self addSubview:_me_label];
     [self addSubview:_show_all_button];
-    [self addSubview:_comments_table_view];
+    [self addSubview:_view];
     
     _me_label.translatesAutoresizingMaskIntoConstraints = NO;
     _show_all_button.translatesAutoresizingMaskIntoConstraints = NO;
-    _comments_table_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
@@ -1121,68 +909,21 @@ enum class ReleaseCommentsViewTableViewCellAction {
         [_show_all_button.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_show_all_button.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
         [_show_all_button.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_show_all_button.bottomAnchor constraintEqualToAnchor:_me_label.bottomAnchor],
         
-        [_comments_table_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_comments_table_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_comments_table_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-//        [_comments_table_view.heightAnchor constraintGreaterThanOrEqualToConstant:150],
-        [_comments_table_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
     ]];
-    [_me_label sizeToFit];
 }
 -(void)setupLayout {
+    _me_label.textColor = [AppColorProvider textColor];
     [_show_all_button setTitleColor:[AppColorProvider primaryColor] forState:UIControlStateNormal];
-}
-
--(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
-    return _release->comments.size();
-}
--(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
-    ReleaseCommentsViewTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleaseCommentsViewTableViewCell getIdentifier] forIndexPath:index_path];
-    NSInteger index = [index_path item];
-    anixart::ReleaseComment::Ptr& comment = _release->comments[index];
-    
-    [cell setAvatarUrl:[NSURL URLWithString:TO_NSSTRING(comment->author->avatar_url)]];
-    [cell setUsername:TO_NSSTRING(comment->author->username)];
-    [cell setPublishDate:to_utc_yy_mm_dd_string_from_gmt(comment->date)];
-    [cell setContent:TO_NSSTRING(comment->message)];
-    [cell setRepliesCount:comment->reply_count];
-    [cell setVoteCount:comment->vote_count];
-    [cell setActionHandler:^(ReleaseCommentsViewTableViewCellAction action) {
-        [self handleCellAction:action atIndex:index];
-    }];
-    
-    return cell;
-}
-
--(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
-    [table_view deselectRowAtIndexPath:index_path animated:YES];
-//    NSInteger index = [index_path item];
-    
 }
 
 -(IBAction)onShowAllButtonPressed:(UIButton*)sender {
     [_delegate didShowAllPressedForReleaseCommentsView:self];
-}
-
--(void)handleCellAction:(ReleaseCommentsViewTableViewCellAction)action atIndex:(NSInteger)index {
-    anixart::ReleaseComment::Ptr& comment = _release->comments[index];
-    switch (action) {
-        case ReleaseCommentsViewTableViewCellAction::ReplyPressed:
-            [_delegate releaseCommentsView:self didReplyPressedForComment:comment];
-            break;
-        case ReleaseCommentsViewTableViewCellAction::ShowRepliesPressed:
-            [_delegate releaseCommentsView:self didShowRepliesPressedForComment:comment];
-            break;
-        case ReleaseCommentsViewTableViewCellAction::UpvotePressed:
-            [_delegate releaseCommentsView:self didUpvotePressedForComment:comment];
-            break;
-        case ReleaseCommentsViewTableViewCellAction::DownvotePressed:
-            [_delegate releaseCommentsView:self didDownvotePressedForComment:comment];
-            break;
-        default:
-            break;
-    }
 }
 @end
 
@@ -1315,7 +1056,7 @@ enum class ReleaseCommentsViewTableViewCellAction {
     _info_stack_view.alignment = UIStackViewAlignmentFill;
     
     NSString* prod_info_content = [NSString stringWithFormat:@"%@, %@ %@ %@", TO_NSSTRING(_release->country), [self getSeasonNameFor:_release->season], TO_NSSTRING(_release->year), NSLocalizedString(@"app.release.general.year.end", "")];
-    NSString* ep_info_content = [NSString stringWithFormat:@"%d %@ %ld %@", _release->episodes_total, NSLocalizedString(@"app.release.general.ep_info.separator", ""), _release->duration.count(), NSLocalizedString(@"app.release.general.ep_info.end", "")];
+    NSString* ep_info_content = [NSString stringWithFormat:@"%d/%d %@ %ld %@", _release->episodes_released, _release->episodes_total, NSLocalizedString(@"app.release.general.ep_info.separator", ""), _release->duration.count(), NSLocalizedString(@"app.release.general.ep_info.end", "")];
     NSString* status_info_content = [NSString stringWithFormat:@"%@, %@", [self getCategoryNameFor:_release->category], [self getStatusNameFor:_release->status]];
     NSString* author_info_content = [NSString stringWithFormat:@"%@ %@, %@ %@, %@ %@", NSLocalizedString(@"app.release.general.author_info.studio", ""), TO_NSSTRING(_release->studio), NSLocalizedString(@"app.release.general.author_info.author", ""), TO_NSSTRING(_release->author), NSLocalizedString(@"app.release.general.author_info.director", ""), TO_NSSTRING(_release->director)];
     
@@ -1351,7 +1092,11 @@ enum class ReleaseCommentsViewTableViewCellAction {
         _related_view.delegate = self;
     }
     
-    _comments_view = [[ReleaseCommentsView alloc] initWithReleaseInfo:_release];
+    _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] comments:_release->comments];
+    [self addChildViewController:_comments_view_controller];
+    _comments_view_controller.delegate = self;
+    
+    _comments_view = [[ReleaseCommentsView alloc] initWithViewController:_comments_view_controller];
     _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     _comments_view.delegate = self;
     
@@ -1597,40 +1342,14 @@ enum class ReleaseCommentsViewTableViewCellAction {
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithRelease:release] animated:YES];
 }
 
+-(void)didReplyPressedForCommentsTableView:(UITableView *)table_view comment:(anixart::Comment::Ptr)comment {
+    [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithReplyToComment:comment] animated:YES];
+}
+
 -(void)didShowAllPressedForReleaseCommentsView:(ReleaseCommentsView *)release_comments_view {
-    // TODO
+    CommentsTableViewController* comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::FilterBy::All)];
+    comments_view_controller.delegate = self;
+    [self.navigationController pushViewController:comments_view_controller animated:YES];
 }
-
--(void)releaseCommentsView:(ReleaseCommentsView *)release_comments_view didAvatarPressedForComment:(anixart::ReleaseComment::Ptr)comment {
-    // TODO
-}
-
--(void)releaseCommentsView:(ReleaseCommentsView *)release_comments_view didDownvotePressedForComment:(anixart::ReleaseComment::Ptr)comment {
-    // TODO: add UI response
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        api->releases().vote_release_comment(comment->id, anixart::ReleaseComment::Sign::Negative);
-        return YES;
-    } withUICompletion:^{
-        
-    }];
-}
--(void)releaseCommentsView:(ReleaseCommentsView *)release_comments_view didUpvotePressedForComment:(anixart::ReleaseComment::Ptr)comment {
-    // TODO: add UI response
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        api->releases().vote_release_comment(comment->id, anixart::ReleaseComment::Sign::Positive);
-        return YES;
-    } withUICompletion:^{
-        
-    }];
-}
-
--(void)releaseCommentsView:(ReleaseCommentsView *)release_comments_view didReplyPressedForComment:(anixart::ReleaseComment::Ptr)comment {
-    // TODO
-}
-
--(void)releaseCommentsView:(ReleaseCommentsView *)release_comments_view didShowRepliesPressedForComment:(anixart::ReleaseComment::Ptr)comment {
-    // TODO
-}
-
 
 @end

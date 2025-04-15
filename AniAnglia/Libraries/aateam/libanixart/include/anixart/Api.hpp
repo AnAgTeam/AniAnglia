@@ -9,7 +9,7 @@
 namespace anixart {
 	class Api {
 	public:
-		Api(std::string_view lang, std::string_view application);
+		Api(std::string_view lang, std::string_view application, std::string_view application_version);
 		~Api() = default;
 
 		const std::string& get_token() const;

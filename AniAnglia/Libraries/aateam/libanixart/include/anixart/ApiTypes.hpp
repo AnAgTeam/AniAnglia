@@ -14,10 +14,9 @@ namespace anixart {
 		struct EpisodeTypeIDTag {};
 		struct CollectionIDTag {};
 		struct InterestingIDTag {};
-		struct ReleaseCommentIDTag {};
+		struct CommentIDTag {};
 		struct ReleaseVideoIDTag {};
 		struct LoginChangeIDTag {};
-		struct CollectionCommentIDTag {};
 		struct ReleaseStreamingPlatformIDTag {};
 		struct ReleaseVideoCategoryIDTag {};
 		struct ReleaseVideoHostingIDTag {};
@@ -35,10 +34,9 @@ namespace anixart {
 	using EpisodeTypeID = aux::StrongTypedef<int64_t, aux::EpisodeTypeIDTag>;
 	using CollectionID = aux::StrongTypedef<int64_t, aux::CollectionIDTag>;
 	using InterestingID = aux::StrongTypedef<int64_t, aux::InterestingIDTag>;
-	using ReleaseCommentID = aux::StrongTypedef<int64_t, aux::ReleaseCommentIDTag>;
+	using CommentID = aux::StrongTypedef<int64_t, aux::CommentIDTag>;
 	using ReleaseVideoID = aux::StrongTypedef<int64_t, aux::ReleaseVideoIDTag>;
 	using LoginChangeID = aux::StrongTypedef<int64_t, aux::LoginChangeIDTag>;
-	using CollectionCommentID = aux::StrongTypedef<int64_t, aux::CollectionCommentIDTag>;
 	using ReleaseStreamingPlatformID = aux::StrongTypedef<int64_t, aux::ReleaseStreamingPlatformIDTag>;
 	using ReleaseVideoCategoryID = aux::StrongTypedef<int64_t, aux::ReleaseVideoCategoryIDTag>;
 	using ReleaseVideoHostingID = aux::StrongTypedef<int64_t, aux::ReleaseVideoHostingIDTag>;
@@ -93,6 +91,7 @@ namespace anixart {
 	};
 
 	class Release;
+	class Collection;
 
 	class Profile {
 	public:
@@ -181,7 +180,7 @@ namespace anixart {
 
 		PrivilegeLevel privilege_level;
 		std::chrono::minutes watched_time;
-		int32_t watched_count; // renamed "completed_count"
+		int32_t watched_count;
 		int32_t dropped_count;
 		int32_t watching_count;
 		int32_t plan_count;
@@ -320,10 +319,12 @@ namespace anixart {
 		bool is_new;
 	};
 
-	class ReleaseComment {
+	class Comment {
 	public:
-		using Ptr = std::shared_ptr<ReleaseComment>;
-		ReleaseComment(json::CachingJsonObject& object);
+		using Ptr = std::shared_ptr<Comment>;
+		Comment(json::CachingJsonObject& object);
+
+		static constexpr CommentID INVALID_ID = CommentID(0);
 
 		enum class FilterBy {
 			All = 1,
@@ -341,15 +342,16 @@ namespace anixart {
 			Positive = 2
 		};
 
-		ReleaseCommentID id;
-		ReleaseCommentID parent_comment_id;
+		CommentID id; // not sure if release CommentID and collection CommentID intersect
+		CommentID parent_comment_id;
 		std::string message;
 		int32_t vote;
 		int32_t vote_count;
 		int64_t reply_count;
 		TimestampPoint date;
-		Profile::Ptr author; // renamed from "profile"
-		std::shared_ptr<Release> release; // TODO: remove recursive definition
+		Profile::Ptr author;
+		std::shared_ptr<Release> release; // If it's from release, this setted. TODO: remove recursive definition
+		std::shared_ptr<Collection> collection; // If it's from collection, this setted. TODO: remove recursive definition
 
 		bool is_deleted;
 		bool is_edited;
@@ -425,7 +427,7 @@ namespace anixart {
 		std::vector<Release::Ptr> related_releases;
 		ReleaseRelated::Ptr related;
 		std::vector<ReleaseVideoBanner::Ptr> video_banners;
-		std::vector<ReleaseComment::Ptr> comments;
+		std::vector<Comment::Ptr> comments;
 
 		AgeRating age_rating;
 		std::chrono::minutes duration;
@@ -447,7 +449,7 @@ namespace anixart {
 		int32_t favorite_count;
 		int64_t comment_count;
 		int32_t comment_per_day_count;
-		int32_t watched_count; // renamed from "completed_count"
+		int32_t watched_count;
 		int32_t dropped_count;
 		int32_t hold_on_count;
 		int32_t plan_count;
@@ -585,35 +587,6 @@ namespace anixart {
 		bool is_private;
 	};
 
-	class CollectionComment {
-	public:
-		using Ptr = std::shared_ptr<CollectionComment>;
-		CollectionComment(json::CachingJsonObject& object);
-
-		enum class Sign {
-			Neutral = 0,
-			Negative = 1,
-			Positive = 2
-		};
-
-		enum Sort {
-			Newest = 1,
-			Oldest = 2,
-			Popular = 3
-		};
-
-		CollectionCommentID id;
-		std::string message;
-		int64_t parent_comment_id;
-		TimestampPoint date;
-		int32_t vote;
-		int32_t vote_count;
-		int64_t reply_count;
-		bool is_deleted;
-		bool is_edited;
-		bool is_spoiler;
-	};
-
 	class Category {
 	public:
 		using Ptr = std::shared_ptr<Category>;
@@ -685,7 +658,7 @@ namespace anixart {
 		bool is_google_bound;
 		bool is_vk_bound;
 		bool is_login_changed;
-		Profile::ActivityPermission privacy_activity; // renamed privacy_stats
+		Profile::ActivityPermission privacy_activity;
 		Profile::FriendRequestPermission privacy_friend_requests;
 		Profile::SocialPermission privacy_social;
 		Profile::StatsPermission privacy_stats;

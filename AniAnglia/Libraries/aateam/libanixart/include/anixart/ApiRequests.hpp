@@ -60,15 +60,15 @@ namespace anixart {
 			extern ApiPostRequest report(const int64_t collection_id, const CollectionReportRequest& request, const std::string& token);
 		};
 		namespace collection::comment {
-			extern ApiPostRequest add(const int64_t collection_id, const CollectionCommentAddRequest& request, const std::string& token);
-			extern ApiGetRequest comment(const int64_t collection_id, const std::string& token);
+			extern ApiPostRequest add(const int64_t collection_id, const CommentAddRequest& request, const std::string& token);
+			extern ApiGetRequest comment(const int64_t comment_id, const std::string& token);
 			extern ApiGetRequest comments(const int64_t collection_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiGetRequest remove(const int64_t comment_id, const std::string& token);
-			extern ApiPostRequest edit(const int64_t comment_id, const CollectionCommentEditRequest& request, const std::string& token);
-			extern ApiPostRequest process(const int64_t comment_id, const ReleaseCommentProcessRequest& request, const std::string& token);
-			extern ApiGetRequest profile_comment(const int64_t profile_id, const int32_t page, const int32_t sort, const std::string& token);
+			extern ApiPostRequest edit(const int64_t comment_id, const CommentEditRequest& request, const std::string& token);
+			extern ApiPostRequest process(const int64_t comment_id, const CommentProcessRequest& request, const std::string& token);
+			extern ApiGetRequest profile_comments(const int64_t profile_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiPostRequest replies(const int64_t comment_id, const int32_t page, const int32_t sort, const std::string& token);
-			extern ApiPostRequest report(const int64_t comment_id, const CollectionCommentReportRequest& request, const std::string& token);
+			extern ApiPostRequest report(const int64_t comment_id, const CommentReportRequest& request, const std::string& token);
 			extern ApiGetRequest vote(const int64_t comment_id, const int32_t vote, const std::string& token);
 		};
 		namespace collection::favorite {
@@ -198,15 +198,15 @@ namespace anixart {
 			extern ApiGetRequest vote(const int64_t release_id, const int32_t vote, const std::string& token);
 		};
 		namespace release::comment {
-			extern ApiPostRequest add(const int64_t release_id, const ReleaseCommentAddRequest& request, const std::string& token);
-			extern ApiGetRequest comment(const int64_t release_id, const std::string& token);
+			extern ApiPostRequest add(const int64_t release_id, const CommentAddRequest& request, const std::string& token);
+			extern ApiGetRequest comment(const int64_t comment_id, const std::string& token);
 			extern ApiGetRequest comments(const int64_t release_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiGetRequest remove(const int64_t comment_id, const std::string& token);
-			extern ApiPostRequest edit(const int64_t comment_id, const ReleaseCommentEditRequest& request, const std::string& token);
-			extern ApiPostRequest process(const int64_t comment_id, const ReleaseCommentProcessRequest& request, const std::string& token);
+			extern ApiPostRequest edit(const int64_t comment_id, const CommentEditRequest& request, const std::string& token);
+			extern ApiPostRequest process(const int64_t comment_id, const CommentProcessRequest& request, const std::string& token);
 			extern ApiGetRequest profile_comments(const int64_t profile_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiPostRequest replies(const int64_t comment_id, const int32_t page, const int32_t sort, const std::string& token);
-			extern ApiPostRequest report(const int64_t comment_id, const ReleaseCommentReportRequest& request, const std::string& token);
+			extern ApiPostRequest report(const int64_t comment_id, const CommentReportRequest& request, const std::string& token);
 			extern ApiGetRequest vote(const int64_t comment_id, const int32_t vote, const std::string& token);
 		};
 		namespace release::streamingPlatform {

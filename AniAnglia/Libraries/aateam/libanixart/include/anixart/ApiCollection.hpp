@@ -15,16 +15,15 @@ namespace anixart {
 		CollectionReleasesPages::UPtr collection_releases(const CollectionID collection_id, const int32_t start_page);
 		void report_collection(const CollectionID collection_id, const requests::CollectionReportRequest& request);
 
-		void add_collection_comment(const CollectionID collection_id, const requests::CollectionCommentAddRequest& request);
-		CollectionComment::Ptr get_collection_comment(const CollectionID collection_id); // wtf?
-		CollectionCommentsPages::UPtr collection_comments(const CollectionID collection_id, const CollectionComment::Sign sort, const int32_t start_page);
-		void remove_comment(const CollectionCommentID comment_id);
-		void edit_comment(const CollectionCommentID comment_id, const requests::CollectionCommentEditRequest& request);
-		void process_comment(const CollectionCommentID comment_id, const requests::ReleaseCommentProcessRequest& request);
-		ProfileCollectionCommentsPages::UPtr profile_collection_comments(const ProfileID profile_id, const CollectionComment::Sort sort, const int32_t start_page);
-		CollectionCommentRepliesPages::UPtr collection_comment_replies(const CollectionCommentID comment_id, const CollectionComment::Sign sort, const int32_t start_page);
-		void report_collection_comment(const CollectionCommentID comment_id, const requests::CollectionCommentReportRequest& request);
-		void vote_collection_comment(const CollectionCommentID comment_id, const CollectionComment::Sign vote);
+		void add_collection_comment(const CollectionID collection_id, const requests::CommentAddRequest& request);
+		Comment::Ptr collection_comment(const CommentID comment_id); // wtf?
+		CollectionCommentsPages::UPtr collection_comments(const CollectionID collection_id, const Comment::Sign sort, const int32_t start_page);
+		void remove_comment(const CommentID comment_id);
+		void edit_comment(const CommentID comment_id, const requests::CommentEditRequest& request);
+		void process_comment(const CommentID comment_id, const requests::CommentProcessRequest& request);
+		CollectionCommentRepliesPages::UPtr collection_comment_replies(const CommentID comment_id, const Comment::Sign sort, const int32_t start_page);
+		void report_collection_comment(const CommentID comment_id, const requests::CommentReportRequest& request);
+		void vote_collection_comment(const CommentID comment_id, const Comment::Sign vote);
 
 		void add_collection_to_favorites(const CollectionID collection_id);
 		void remove_collection_from_favorites(const CollectionID collection_id);

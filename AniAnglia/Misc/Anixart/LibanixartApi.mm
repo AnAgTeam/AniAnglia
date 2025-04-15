@@ -19,8 +19,11 @@
 -(instancetype)init {
     self = [super init];
     
+    NSDictionary* info_dict = [[NSBundle mainBundle] infoDictionary];
+    NSString* app_version = [NSString stringWithFormat:@"%@-%@", info_dict[@"CFBundleShortVersionString"], info_dict[@"CFBundleVersion"]];
+    
     _app_data_controller = [AppDataController sharedInstance];
-    _api = new anixart::Api("ru_RU", "AniAnglia");
+    _api = new anixart::Api("ru_RU", "AniAnglia", TO_STDSTRING(app_version));
     _api->set_verbose(false, false);
     _api->set_token(TO_STDSTRING([_app_data_controller getToken]));
     _api->get_session().switch_base_url([[_app_data_controller getSettingsController] getAlternativeConnection]);

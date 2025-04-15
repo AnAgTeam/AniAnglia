@@ -13,7 +13,8 @@ namespace anixart {
 		FriendsPages::UPtr get_friends(const ProfileID profile_id, const int32_t start_page) const;
 		LoginChangeHistoryPages::UPtr get_profile_login_history(const ProfileID profile_id, const int32_t start_page) const;
 		ProfileSocial::Ptr get_profile_social(const ProfileID profile_id) const;
-		ProfileCommentsPages::UPtr get_profile_comments(const ProfileID profile_id, const int32_t start_page, const ReleaseComment::Sort sort) const;
+		ProfileReleaseCommentsPages::UPtr get_profile_release_comments(const ProfileID profile_id, const int32_t start_page, const Comment::Sort sort) const;
+		ProfileReleaseCommentsPages::UPtr get_profile_collection_comments(const ProfileID profile_id, const int32_t start_page, const Comment::Sort sort) const;
 
 		BlockListPages::UPtr block_list(const int32_t start_page) const;
 		void remove_from_block_list(const ProfileID profile_id) const;

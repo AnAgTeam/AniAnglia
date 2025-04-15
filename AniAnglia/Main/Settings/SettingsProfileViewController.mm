@@ -152,7 +152,16 @@
     if (section == 2) {
         return NSLocalizedString(@"app.settings.profile.socials.footer", "");
     }
+    if (section == 3) {
+        return @" ";
+    }
     return nil;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (section == 3) {
+        return 140;
+    }
+    return UITableViewAutomaticDimension;
 }
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
     NSInteger section = index_path.section;

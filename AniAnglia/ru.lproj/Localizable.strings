@@ -109,11 +109,15 @@
 
 "app.release.comments.title" = "Комментарии";
 "app.release.comments.show_all_button.title" = "Показать все";
-"app.release.comments.reply_button.title" = "Ответить";
-"app.release.comments.show_replies_button.title" = "Показать ответы";
+
+/* COMMENTS */
+"app.comments.reply_button.title" = "Ответить";
+"app.comments.show_replies_button.title" = "Показать ответы";
+"app.comments.origin.collection" = "к коллекции";
+"app.comments.origin.release" = "к релизу";
+"app.comments.text_enter.placeholder" = "Комментарий";
 
 /* TO PLAY SELECT */
-
 "app.type_select.nav_item.title" = "Озвучка";
 "app.type_select.cell.ep_count.name" = "эп.";
 "app.source_select.nav_item.title" = "Источник";
@@ -170,6 +174,9 @@
 "app.profile.watch_dynamics.title" = "Динамика просмотра";
 
 "app.profile.watched_recently.title" = "Просмотрено недавно";
+
+"app.profile.comments.release.segment" = "К релизам";
+"app.profile.comments.collection.segment" = "К коллекциям";
 
 /* PROFILE FRIENDS */
 "app.profile_friends.title" = "Друзья";

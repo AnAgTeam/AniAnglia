@@ -1,0 +1,473 @@
+//
+//  CommentsTableView.m
+//  AniAnglia
+//
+//  Created by Toilettrauma on 12.04.2025.
+//
+
+#import <Foundation/Foundation.h>
+#import "CommentsTableViewController.h"
+#import "LoadableView.h"
+#import "AppColor.h"
+#import "LibanixartApi.h"
+#import "ProfileViewController.h"
+#import "StringCvt.h"
+#import "TimeCvt.h"
+#import "ReleaseViewController.h"
+#import "CommentRepliesViewController.h"
+
+@interface CommentsTableViewCell ()
+@property(nonatomic, retain) UIButton* avatar_button;
+@property(nonatomic, retain) LoadableImageView* avatar_image_view;
+@property(nonatomic, retain) UILabel* username_label;
+@property(nonatomic, retain) UILabel* origin_label;
+@property(nonatomic, retain) UILabel* publish_date_label;
+@property(nonatomic, retain) UILabel* origin_name_label;
+@property(nonatomic, retain) UILabel* content_label;
+@property(nonatomic, retain) UIButton* reply_button;
+@property(nonatomic, retain) UIButton* show_replies_button;
+@property(nonatomic, retain) UIButton* upvote_button;
+@property(nonatomic, retain) UIButton* downvote_button;
+@property(nonatomic, retain) UILabel* vote_count_label;
+@property(nonatomic, retain) NSLayoutConstraint* show_replies_button_height_constraint;
+
+@end
+
+@interface CommentsTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching, CommentsTableViewCellDelegate> {
+    anixart::Pageable<anixart::Comment>::UPtr _pages;
+    std::vector<anixart::Comment::Ptr> _comments;
+}
+@property(nonatomic) LibanixartApi* api_proxy;
+@property(nonatomic, retain) NSLock* lock;
+@property(nonatomic, retain) UITableView* table_view;
+@property(nonatomic, retain) LoadableView* loadable_view;
+
+-(void)setHeaderView:(UIView*)header_view;
+@end
+
+@implementation CommentsTableViewCell
+
++(NSString*)getIdentifier {
+    return @"CommentsTableViewCell";
+}
+
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier {
+    self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
+    
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+
+-(void)setup {
+    _avatar_button = [UIButton new];
+    [_avatar_button addTarget:self action:@selector(onAvatarPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
+    _avatar_image_view = [LoadableImageView new];
+    _avatar_image_view.clipsToBounds = YES;
+    _avatar_image_view.layer.cornerRadius = 20;
+    
+    _username_label = [UILabel new];
+    _origin_label = [UILabel new];
+    _publish_date_label = [UILabel new];
+    _origin_name_label = [UILabel new];
+    
+    _content_label = [UILabel new];
+    _content_label.numberOfLines = 0;
+    _content_label.textAlignment = NSTextAlignmentJustified;
+    
+    _reply_button = [UIButton new];
+    [_reply_button setTitle:NSLocalizedString(@"app.comments.reply_button.title", "") forState:UIControlStateNormal];
+    [_reply_button addTarget:self action:@selector(onReplyButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
+    _show_replies_button = [UIButton new];
+    [_show_replies_button setTitle:NSLocalizedString(@"app.comments.show_replies_button.title", "") forState:UIControlStateNormal];
+    [_show_replies_button setImage:[UIImage systemImageNamed:@"chevron.down"] forState:UIControlStateNormal];
+    [_show_replies_button addTarget:self action:@selector(onShowRepliesButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    _show_replies_button.clipsToBounds = YES;
+    
+    _upvote_button = [UIButton new];
+    [_upvote_button setImage:[UIImage systemImageNamed:@"heart"] forState:UIControlStateNormal];
+    [_upvote_button addTarget:self action:@selector(onUpvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
+    _downvote_button = [UIButton new];
+    [_downvote_button setImage:[UIImage systemImageNamed:@"hand.thumbsdown"] forState:UIControlStateNormal];
+    [_downvote_button addTarget:self action:@selector(onDownvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    _vote_count_label = [UILabel new];
+    
+    [self.contentView addSubview:_avatar_button];
+    [_avatar_button addSubview:_avatar_image_view];
+    [self.contentView addSubview:_username_label];
+    [self.contentView addSubview:_origin_label];
+    [self.contentView addSubview:_publish_date_label];
+    [self.contentView addSubview:_origin_name_label];
+    [self.contentView addSubview:_content_label];
+    [self.contentView addSubview:_reply_button];
+    [self.contentView addSubview:_show_replies_button];
+    [self.contentView addSubview:_upvote_button];
+    [self.contentView addSubview:_downvote_button];
+    [self.contentView addSubview:_vote_count_label];
+    
+    _avatar_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _avatar_image_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _username_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _origin_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _publish_date_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _origin_name_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _content_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _reply_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _show_replies_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _upvote_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _downvote_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _vote_count_label.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    _show_replies_button_height_constraint =
+    [_show_replies_button.heightAnchor constraintEqualToConstant:0];
+    [NSLayoutConstraint activateConstraints:@[
+        [_avatar_button.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [_avatar_button.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
+        [_avatar_button.widthAnchor constraintEqualToConstant:40],
+        [_avatar_button.heightAnchor constraintEqualToConstant:40],
+        
+        [_avatar_image_view.topAnchor constraintEqualToAnchor:_avatar_button.topAnchor],
+        [_avatar_image_view.leadingAnchor constraintEqualToAnchor:_avatar_button.leadingAnchor],
+        [_avatar_image_view.trailingAnchor constraintEqualToAnchor:_avatar_button.trailingAnchor],
+        [_avatar_image_view.bottomAnchor constraintEqualToAnchor:_avatar_button.bottomAnchor],
+        
+        [_username_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [_username_label.leadingAnchor constraintEqualToAnchor:_avatar_image_view.trailingAnchor constant:9],
+        
+        [_origin_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [_origin_label.leadingAnchor constraintEqualToAnchor:_username_label.trailingAnchor constant:4],
+        [_origin_label.bottomAnchor constraintEqualToAnchor:_username_label.bottomAnchor],
+        
+        [_publish_date_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [_publish_date_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_origin_label.trailingAnchor constant:4],
+        [_publish_date_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        [_publish_date_label.bottomAnchor constraintEqualToAnchor:_username_label.bottomAnchor],
+        
+        [_origin_name_label.topAnchor constraintEqualToAnchor:_username_label.bottomAnchor constant:5],
+        [_origin_name_label.leadingAnchor constraintEqualToAnchor:_username_label.leadingAnchor],
+        [_origin_name_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        
+        [_content_label.topAnchor constraintEqualToAnchor:_origin_name_label.bottomAnchor constant:5],
+        [_content_label.leadingAnchor constraintEqualToAnchor:_origin_name_label.leadingAnchor],
+        [_content_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        
+        [_reply_button.topAnchor constraintEqualToAnchor:_content_label.bottomAnchor constant:5],
+        [_reply_button.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
+        [_reply_button.heightAnchor constraintEqualToConstant:20],
+        [_reply_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.centerXAnchor],
+        
+        [_upvote_button.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
+//        [_downvote_button.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.centerXAnchor],
+        [_upvote_button.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
+        
+        [_vote_count_label.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
+        [_vote_count_label.leadingAnchor constraintEqualToAnchor:_upvote_button.trailingAnchor constant:5],
+        [_vote_count_label.widthAnchor constraintGreaterThanOrEqualToConstant:40],
+        [_vote_count_label.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
+        
+        [_downvote_button.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
+        [_downvote_button.leadingAnchor constraintEqualToAnchor:_vote_count_label.trailingAnchor constant:5],
+        [_downvote_button.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        [_downvote_button.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
+        
+        [_show_replies_button.topAnchor constraintEqualToAnchor:_reply_button.bottomAnchor constant:9],
+        [_show_replies_button.leadingAnchor constraintEqualToAnchor:_reply_button.leadingAnchor],
+        [_show_replies_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        _show_replies_button_height_constraint,
+        [_show_replies_button.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
+-(void)setupLayout {
+    _username_label.textColor = [AppColorProvider textSecondaryColor];
+    _origin_label.textColor = [AppColorProvider textShyColor];
+    _publish_date_label.textColor = [AppColorProvider textShyColor];
+    _origin_name_label.textColor = [AppColorProvider textShyColor];
+    [_reply_button setTitleColor:[AppColorProvider textSecondaryColor] forState:UIControlStateNormal];
+    [_show_replies_button setTitleColor:[AppColorProvider textSecondaryColor] forState:UIControlStateNormal];
+    _show_replies_button.tintColor = [AppColorProvider textSecondaryColor];
+    _upvote_button.tintColor = [AppColorProvider primaryColor];
+    _vote_count_label.textColor = [AppColorProvider textSecondaryColor];
+    _downvote_button.tintColor = [AppColorProvider primaryColor];
+}
+
+-(void)setAvatarUrl:(NSURL*)url {
+    [_avatar_image_view tryLoadImageWithURL:url];
+}
+-(void)setUsername:(NSString*)username {
+    _username_label.text = username;
+    [_username_label sizeToFit];
+}
+-(void)setPublishDate:(NSString*)publish_date {
+    _publish_date_label.text = publish_date;
+    [_publish_date_label sizeToFit];
+}
+-(void)setContent:(NSString*)content {
+    _content_label.text = content;
+    [_content_label sizeToFit];
+}
+-(void)setVoteCount:(NSInteger)vote_count {
+    _vote_count_label.text = [@(vote_count) stringValue];
+    [_vote_count_label sizeToFit];
+}
+
+-(void)setOrigin:(NSString*)origin name:(NSString*)name {
+    _origin_label.text = origin;
+    _origin_name_label.text = name;
+    [_origin_label sizeToFit];
+    [_origin_name_label sizeToFit];
+}
+-(void)setRepliesCount:(NSInteger)replies_count {
+    // enable "show_replies" button if has replies
+    _show_replies_button_height_constraint.constant = replies_count != 0 ? 35 : 0;
+    // TODO: add replies count to button
+}
+
+-(IBAction)onAvatarPressed:(UIButton*)sender {
+    [_delegate didAvatarPressedCommentForTableViewCell:self];
+}
+-(IBAction)onReplyButtonPressed:(UIButton*)sender {
+    [_delegate didReplyPressedCommentForTableViewCell:self];
+}
+-(IBAction)onShowRepliesButtonPressed:(UIButton*)sender {
+    [_delegate didShowRepliesPressedForCommentTableViewCell:self];
+}
+-(IBAction)onUpvoteButtonPressed:(UIButton*)sender {
+    [_delegate didUpvotePressedForCommentTableViewCell:self];
+}
+-(IBAction)onDownvoteButtonPressed:(UIButton*)sender {
+    [_delegate didDownvotePressedForCommentTableViewCell:self];
+}
+
+
+@end
+
+@implementation CommentsTableViewController
+
+-(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
+    self = [super init];
+    
+    _api_proxy = [LibanixartApi sharedInstance];
+    _lock = [NSLock new];
+    _table_view = table_view;
+    _pages = std::move(pages);
+    _enable_origin_reference = NO;
+    
+    return self;
+}
+
+-(instancetype)initWithTableView:(UITableView*)table_view comments:(std::vector<anixart::Comment::Ptr>)comments {
+    self = [super init];
+    
+    _api_proxy = [LibanixartApi sharedInstance];
+    _lock = [NSLock new];
+    _table_view = table_view;
+    _comments = comments;
+    _enable_origin_reference = NO;
+    
+    return self;
+}
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setup];
+    [self setupLayout];
+    if (_pages) {
+        [self loadFirstPage];
+    }
+}
+
+-(void)setup {
+    [_table_view registerClass:CommentsTableViewCell.class forCellReuseIdentifier:[CommentsTableViewCell getIdentifier]];
+    _table_view.rowHeight = UITableViewAutomaticDimension;
+    _table_view.dataSource = self;
+    _table_view.delegate = self;
+    _table_view.prefetchDataSource = self;
+    
+    _loadable_view = [LoadableView new];
+    
+    [self.view addSubview:_table_view];
+    [self.view addSubview:_loadable_view];
+    
+    _table_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_table_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        
+        [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
+        [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor]
+    ]];
+}
+
+-(void)setupLayout {
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+}
+
+-(void)appendItemsFromBlock:(std::vector<anixart::Comment::Ptr>(^)())block {
+    if (!_pages) {
+        return;
+    }
+    
+    [_loadable_view startLoading];
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
+        /* todo: change to thread-safe */
+        auto new_items = block();
+        [self->_lock lock];
+        self->_comments.insert(self->_comments.end(), new_items.begin(), new_items.end());
+        [self->_lock unlock];
+        return YES;
+    } withUICompletion:^{
+        [self->_loadable_view endLoading];
+        [self->_table_view reloadData];
+    }];
+}
+
+-(void)loadFirstPage {
+    [self appendItemsFromBlock:^{
+        return self->_pages->get();
+    }];
+}
+
+-(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
+    _pages = std::move(pages);
+    [self reset];
+    [self loadFirstPage];
+}
+-(void)reset {
+    /* todo: load cancel */
+    _comments.clear();
+    [_table_view reloadData];
+}
+
+-(void)setHeaderView:(UIView*)header_view {
+    _table_view.tableHeaderView = header_view;
+}
+-(CGPoint)getContentOffset {
+    return _table_view.contentOffset;
+}
+-(void)setContentOffset:(CGPoint)point {
+    [_table_view setContentOffset:point animated:YES];
+}
+-(void)setKeyboardDismissMode:(UIScrollViewKeyboardDismissMode)dismiss_mode {
+    _table_view.keyboardDismissMode = dismiss_mode;
+}
+
+-(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
+    return _comments.size();
+}
+-(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
+    CommentsTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[CommentsTableViewCell getIdentifier] forIndexPath:index_path];
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr& comment = _comments[index];
+    NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(comment->author->avatar_url)];
+    
+    cell.selectionStyle = _enable_origin_reference ? UITableViewCellSelectionStyleDefault : UITableViewCellSelectionStyleNone;
+    cell.delegate = self;
+    [cell setAvatarUrl:avatar_url];
+    [cell setUsername:TO_NSSTRING(comment->author->username)];
+    [cell setPublishDate:to_utc_yy_mm_dd_string_from_gmt(comment->date)];
+    [cell setContent:TO_NSSTRING(comment->message)];
+    [cell setRepliesCount:comment->reply_count];
+    [cell setVoteCount:comment->vote_count];
+    if (_enable_origin_reference) {
+        if (comment->collection) {
+            [cell setOrigin:NSLocalizedString(@"app.comments.origin.collection", "") name:TO_NSSTRING(comment->collection->title)];
+        }
+        else if (comment->release) {
+            [cell setOrigin:NSLocalizedString(@"app.comments.origin.release", "") name:TO_NSSTRING(comment->release->title_ru)];
+        }
+        else {
+            [cell setOrigin:nil name:nil];
+        }
+    }
+    
+    return cell;
+}
+
+-(void)tableView:(UITableView*)table_view
+prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
+    if (!_pages || _pages->is_end()) {
+        return;
+    }
+    NSUInteger item_count = [_table_view numberOfRowsInSection:0];
+    for (NSIndexPath* index_path in index_paths) {
+        if ([index_path row] >= item_count - 1) {
+            [self appendItemsFromBlock:^{
+                return self->_pages->next();
+            }];
+            return;
+        }
+    }
+}
+
+-(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
+    [table_view deselectRowAtIndexPath:index_path animated:YES];
+    
+    if (_enable_origin_reference) {
+        NSInteger index = index_path.row;
+        anixart::Comment::Ptr& comment = _comments[index];
+        if (comment->collection) {
+            // TODO
+        }
+        else if (comment->release) {
+            [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:comment->release->id] animated:YES];
+        }
+    }
+}
+
+-(void)didShowRepliesPressedForCommentTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
+    NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr comment = _comments[index];
+    
+    [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithComment:comment] animated:YES];
+}
+-(void)didUpvotePressedForCommentTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
+    NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr comment = _comments[index];
+    
+    // TODO: add UI response
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->releases().vote_release_comment(comment->id, anixart::Comment::Sign::Positive);
+        return YES;
+    } withUICompletion:^{
+        
+    }];
+}
+-(void)didDownvotePressedForCommentTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
+    NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr comment = _comments[index];
+    
+    // TODO: add UI response
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->releases().vote_release_comment(comment->id, anixart::Comment::Sign::Negative);
+        return YES;
+    } withUICompletion:^{
+        
+    }];
+}
+-(void)didReplyPressedCommentForTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
+    NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr comment = _comments[index];
+    
+    [_delegate didReplyPressedForCommentsTableView:_table_view comment:comment];
+}
+-(void)didAvatarPressedCommentForTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
+    NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr comment = _comments[index];
+    
+    [self.navigationController pushViewController:[[ProfileViewController alloc] initWithProfileID:comment->author->id] animated:YES];
+}
+
+@end

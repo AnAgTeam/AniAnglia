@@ -25,12 +25,12 @@
     [self invalidateIntrinsicContentSize];
 }
 -(CGSize)contentSize {
-    [self layoutIfNeeded];
+//    [self layoutIfNeeded];
     return [super contentSize];
 }
 -(void)reloadData {
     [super reloadData];
-    [self invalidateIntrinsicContentSize];
+//    [self invalidateIntrinsicContentSize];
 }
 
 @end

@@ -169,8 +169,8 @@ namespace anixart::codes {
 			ReleaseLimitReached = 7
 		};
 	};
-	namespace collection::comment {
-		enum class CollectionCommentAddCode {
+	namespace comment {
+		enum class CommentAddCode {
 			GENERIC_CODES,
 			EmbeddableNotFound = 2,
 			CommentNotFound = 3,
@@ -180,22 +180,22 @@ namespace anixart::codes {
 			CommentLimitReached = 7,
 			InBlockList = 8
 		};
-		enum class CollectionCommentRemoveCode {
+		enum class CommentRemoveCode {
 			GENERIC_CODES,
 			CommentNotFound = 2,
 			CommentNotOwned = 3,
 		};
-		enum class CollectionCommentEditCode {
+		enum class CommentEditCode {
 			GENERIC_CODES,
 			CommentNotFound = 2,
 			CommentIsTooShort = 3,
 			CommentIsTooLong = 4,
 			CommentNotOwned = 5
 		};
-		enum class CollectionCommentReportCode {
+		enum class CommentReportCode {
 			GENERIC_CODES,
 		};
-		enum class CollectionCommentVoteCode {
+		enum class CommentVoteCode {
 			GENERIC_CODES,
 			NegativeVoteLimitReached = 2
 		};
@@ -291,37 +291,6 @@ namespace anixart::codes {
 		};
 		enum class VoteReleaseCode {
 			GENERIC_CODES,
-		};
-	};
-	namespace release::comment {
-		enum class ReleaseCommentAddCode {
-			GENERIC_CODES,
-			EmbeddableNotFound = 2,
-			CommentNotFound = 3,
-			ProfileNotFound = 4,
-			CommentIsTooShort = 5,
-			CommentIsTooLong = 6,
-			CommentLimitReached = 7,
-			InBlockList = 8
-		};
-		enum class ReleaseCommentRemoveCode {
-			GENERIC_CODES,
-			CommentNotFound = 2,
-			CommentNotOwned = 3
-		};
-		enum class ReleaseCommentEditCode {
-			GENERIC_CODES,
-			CommentNotFound = 2,
-			CommentIsTooShort = 3,
-			CommentIsTooLong = 4,
-			CommentNotOwned = 5
-		};
-		enum class ReleaseCommentReportCode {
-			GENERIC_CODES,
-		};
-		enum class ReleaseCommentVoteCode {
-			GENERIC_CODES,
-			NegativeVoteLimitReached = 2,
 		};
 	};
 	namespace release::episode {

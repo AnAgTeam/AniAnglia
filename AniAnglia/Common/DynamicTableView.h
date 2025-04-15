@@ -11,6 +11,7 @@
 #import <UIKit/UIKit.h>
 
 @interface DynamicTableView : UITableView
+
 @end
 
 #endif /* DynamicTableView_h */

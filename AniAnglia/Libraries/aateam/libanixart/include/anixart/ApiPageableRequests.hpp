@@ -31,7 +31,7 @@ namespace anixart {
     };
 
 
-    class CommentsWeekPages : public Paginator<ReleaseComment> {
+    class CommentsWeekPages : public Paginator<Comment> {
     public:
         CommentsWeekPages(const ApiSession& session);
 
@@ -302,9 +302,9 @@ namespace anixart {
         Release::ByVoteSort _sort;
     };
 
-    class ReleaseCommentsPages : public Paginator<ReleaseComment> {
+    class ReleaseCommentsPages : public Paginator<Comment> {
     public:
-        ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseID release_id, const ReleaseComment::FilterBy filter_by);
+        ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseID release_id, const Comment::FilterBy filter_by);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -312,12 +312,12 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         ReleaseID _release_id;
-        ReleaseComment::FilterBy _sort;
+        Comment::FilterBy _sort;
     };
 
-    class ProfileCommentsPages : public Paginator<ReleaseComment> {
+    class ProfileReleaseCommentsPages : public Paginator<Comment> {
     public:
-        ProfileCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const ReleaseComment::Sort sort);
+        ProfileReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Comment::Sort sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -325,20 +325,20 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         ProfileID _profile_id;
-        ReleaseComment::Sort _sort;
+        Comment::Sort _sort;
     };
 
-    class ReleaseCommentRepliesPages : public Paginator<ReleaseComment> {
+    class ReleaseCommentRepliesPages : public Paginator<Comment> {
     public:
-        ReleaseCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseCommentID comment_id, const ReleaseComment::FilterBy filter_by);
+        ReleaseCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Comment::Sort sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
-        ReleaseCommentID _comment_id;
-        ReleaseComment::FilterBy _sort;
+        CommentID _comment_id;
+        Comment::Sort _sort;
     };
 
     class ReleaseVideoCategoryPages : public Paginator<ReleaseVideoCategory> {
@@ -460,9 +460,9 @@ namespace anixart {
         CollectionID _collection_id;
     };
 
-    class CollectionCommentsPages : public Paginator<CollectionComment> {
+    class CollectionCommentsPages : public Paginator<Comment> {
     public:
-        CollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id, const CollectionComment::Sign sort);
+        CollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id, const Comment::Sign sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -470,12 +470,12 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         CollectionID _collection_id;
-        CollectionComment::Sign _sort;
+        Comment::Sign _sort;
     };
 
-    class ProfileCollectionCommentsPages : public Paginator<CollectionComment> {
+    class ProfileCollectionCommentsPages : public Paginator<Comment> {
     public:
-        ProfileCollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const CollectionComment::Sort sort);
+        ProfileCollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Comment::Sort sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -483,20 +483,20 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         ProfileID _profile_id;
-        CollectionComment::Sort _sort;
+        Comment::Sort _sort;
     };
 
-    class CollectionCommentRepliesPages : public Paginator<CollectionComment> {
+    class CollectionCommentRepliesPages : public Paginator<Comment> {
     public:
-        CollectionCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionCommentID comment_id, const CollectionComment::Sign sort);
+        CollectionCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Comment::Sign sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
-        CollectionCommentID _comment_id;
-        CollectionComment::Sign _sort;
+        CommentID _comment_id;
+        Comment::Sign _sort;
     };
 
     class FavoriteCollectionsPages : public Paginator<Collection> {

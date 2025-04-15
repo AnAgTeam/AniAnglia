@@ -23,6 +23,8 @@ namespace anixart {
 
 		virtual int32_t get_current_page() const = 0;
 		virtual bool is_end() const = 0;
+		virtual int64_t get_total_count() const = 0;
+
 	protected:
 		virtual std::vector<ValueType> parse_request() = 0;
 	};
@@ -82,6 +84,10 @@ namespace anixart {
 		}
 		bool is_end() const override {
 			return _current_page >= _total_page_count;
+		}
+
+		int64_t get_total_count() const override {
+			return _total_count;
 		}
 
 	protected:
@@ -156,13 +162,18 @@ namespace anixart {
 			return _is_end;
 		}
 
+		int64_t get_total_count() const override {
+			return _total_count;
+		}
 
 	protected:
 		virtual json::CachingJsonObject do_request(const int32_t page) const = 0;
 
-		std::vector<ValueType> parse_request() {
+		std::vector<ValueType> parse_request() override {
 			json::CachingJsonObject resp = do_request(_current_page);
 			assert_status_code<PageableError>(resp);
+			_total_count = resp.get<int64_t>("total_count");
+
 			std::vector<ValueType> out = resp.get<json::CachingJsonArray>("content").to_vector<ValueType>();
 			_is_end = out.empty();
 			return out;
@@ -170,6 +181,7 @@ namespace anixart {
 
 		int32_t _previous_page;
 		int32_t _current_page;
+		int64_t _total_count;
 		bool _is_end;
 	};
 };
