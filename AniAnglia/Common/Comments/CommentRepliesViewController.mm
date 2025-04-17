@@ -46,8 +46,7 @@
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
-    // TODO: change to some constant
-    if (comment->parent_comment_id != anixart::CommentID(0)) {
+    if (comment->parent_comment_id != anixart::Comment::INVALID_ID) {
         _comment_id = comment->parent_comment_id;
         _reply_to_profile_id = comment->author->id;
     } else {
@@ -77,7 +76,7 @@
     if (_last_text_enter_origin_y >= 0) {
         // this needed to update content offset Y if TextEnterView go up or down, because of keyboard
         CGPoint content_offset = [_comments_table_view_controller getContentOffset];
-        content_offset.y = MAX(content_offset.y - _text_enter_view.frame.origin.y - _last_text_enter_origin_y, 0);
+        content_offset.y = MAX(content_offset.y - (_text_enter_view.frame.origin.y - _last_text_enter_origin_y), 0);
         [_comments_table_view_controller setContentOffset:content_offset];
     }
     _last_text_enter_origin_y = _text_enter_view.frame.origin.y;

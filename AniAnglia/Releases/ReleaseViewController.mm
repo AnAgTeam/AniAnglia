@@ -154,13 +154,17 @@
 -(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
 @end
 
+@interface ReleaseEmbedCommentsViewController : CommentsTableViewController
+
+@end
+
 @interface ReleaseCommentsView : UIView
 @property(nonatomic, weak) id<ReleaseCommentsViewDelegate> delegate;
 @property(nonatomic, retain) UILabel* me_label;
 @property(nonatomic, retain) UIButton* show_all_button;
-@property(nonatomic, strong) UIView* view;
+@property(nonatomic, retain) UIView* view;
 
--(instancetype)initWithViewController:(UIViewController*)view_controller;
+-(instancetype)initWithView:(UIView*)view;
 @end
 
 @interface ReleaseViewController () <ReleaseRatingViewDelegate, ReleaseVideoBlocksViewDelegate, ReleasePreviewViewDelegate, ReleaseRelatedViewDelegate, ReleaseCommentsViewDelegate, CommentsTableViewControllerDelegate> {
@@ -323,6 +327,7 @@
     
     _image_view = [LoadableImageView new];
     _image_view.contentMode = UIViewContentModeScaleAspectFill;
+    
     _title_label = [UILabel new];
     _title_label.font = [UIFont systemFontOfSize:36];
     _title_label.textAlignment = NSTextAlignmentCenter;
@@ -716,8 +721,10 @@
     _image_view = [LoadableImageView new];
     _image_view.clipsToBounds = YES;
     _image_view.layer.cornerRadius = 2;
+    
     _title_label = [UILabel new];
     _title_label.numberOfLines = 2;
+    
     _year_label = [UILabel new];
     _rating_label = [UILabel new];
     _category_label = [UILabel new];
@@ -876,10 +883,10 @@
 
 @implementation ReleaseCommentsView
 
--(instancetype)initWithViewController:(UIViewController*)view_controller {
+-(instancetype)initWithView:(UIView*)view {
     self = [super init];
     
-    _view = view_controller.view;
+    _view = view;
     [self setup];
     [self setupLayout];
     
@@ -905,6 +912,7 @@
         [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
         [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
+        [_me_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
         
         [_show_all_button.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_show_all_button.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
@@ -1095,8 +1103,10 @@
     _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] comments:_release->comments];
     [self addChildViewController:_comments_view_controller];
     _comments_view_controller.delegate = self;
+    _comments_view_controller.is_container_view_controller = YES;
+//    _comments_view_controller.view.preservesSuperviewLayoutMargins = YES;
     
-    _comments_view = [[ReleaseCommentsView alloc] initWithViewController:_comments_view_controller];
+    _comments_view = [[ReleaseCommentsView alloc] initWithView:_comments_view_controller.view];
     _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     _comments_view.delegate = self;
     
@@ -1194,9 +1204,6 @@
     [_note_label sizeToFit];
     
     [_release_image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_release->image_url)]];
-    
-    [self.view setNeedsUpdateConstraints];
-    [self.view updateConstraintsIfNeeded];
 }
 
 -(void)preSetupLayout {
@@ -1213,7 +1220,6 @@
     _play_button.backgroundColor = [AppColorProvider primaryColor];
     [_play_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _note_label.textColor = [AppColorProvider textSecondaryColor];
-//    _note_label.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
 -(NSString*)getSeasonNameFor:(anixart::Release::Season)season {

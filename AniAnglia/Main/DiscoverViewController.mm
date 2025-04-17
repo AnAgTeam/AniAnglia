@@ -13,291 +13,665 @@
 #import "AppColor.h"
 #import "LoadableView.h"
 #import "FilterViewController.h"
+#import "CollectionsViewController.h"
+#import "ReleasesCollectionViewController.h"
+#import "CommentsTableViewController.h"
+#import "DynamicTableView.h"
+#import "CommentRepliesViewController.h"
+#import "ReleasesTableViewController.h"
 
-@interface InterestingViewCell : UICollectionViewCell
-@property(nonatomic, retain) UILabel* title;
-@property(nonatomic, retain) UILabel* desc;
+@class DiscoverInterestingView;
+@class DiscoverOptionsView;
+
+@protocol DiscoverInterestingViewDelegate <NSObject>
+-(void)discoverInterestingView:(DiscoverInterestingView*)interesting_view didSelectInteresting:(anixart::Interesting::Ptr)interesting;
+@end
+
+@protocol DiscoverOptionsViewDelegate
+-(void)didPopularPressedForDiscoverOptionsView:(DiscoverOptionsView*)discover_options_view;
+-(void)didSchedulePressedForDiscoverOptionsView:(DiscoverOptionsView*)discover_options_view;
+-(void)didCollectionsPressedForDiscoverOptionsView:(DiscoverOptionsView*)discover_options_view;
+-(void)didRandomPressedForDiscoverOptionsView:(DiscoverOptionsView*)discover_options_view;
+@end
+
+@interface DiscoverInterestingViewCell : UICollectionViewCell
+@property(nonatomic, retain) UILabel* title_label;
+@property(nonatomic, retain) UILabel* description_label;
 @property(nonatomic, retain) LoadableImageView* image_view;
+@property(nonatomic, retain) CAGradientLayer* gradient_layer;
 
-+(NSString*)getIndentifier;
++(NSString*)getIdentifier;
 -(instancetype)initWithFrame:(CGRect)frame;
+
+-(void)setImageUrl:(NSURL*)image_url;
+-(void)setTitle:(NSString*)title;
+-(void)setDescription:(NSString*)description;
 @end
 
-@interface InterestingView : UIView <UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
-@property(nonatomic, retain) UIActivityIndicatorView* activity_ind;
+@interface DiscoverInterestingView : UIView <UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout> {
+    std::vector<anixart::Interesting::Ptr> _interesting_arr;
+}
+@property(nonatomic, weak) id<DiscoverInterestingViewDelegate> delegate;
+@property(nonatomic, strong) LibanixartApi* api_proxy;
+@property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UICollectionView* collection_view;
-@property(nonatomic) std::vector<anixart::Interesting::Ptr> interest_arr;
 @property(nonatomic, retain) NSCache<NSNumber*, UIImage*>* image_cache;
-@property(nonatomic, retain) DiscoverViewController* delegate;
 
--(instancetype)initWithDelegate:(DiscoverViewController*)delegate;
--(void)tryLoad;
--(CGFloat)getTotalHeight;
+-(instancetype)init;
 @end
 
-@interface DiscoverOptionsTableViewCell : UITableViewCell
-@property(nonatomic, retain) NSString* name;
-@property(nonatomic, retain) UIImage* image;
+@interface DiscoverOptionsCollectionViewCell : UICollectionViewCell
 @property(nonatomic, retain) UILabel* name_label;
 @property(nonatomic, retain) UIImageView* image_view;
-@property(nonatomic) SEL callback_sel;
 
-+(instancetype)cellWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback;
--(instancetype)initWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback;
++(NSString*)getIdentifier;
+
+-(void)setName:(NSString*)name;
+-(void)setImage:(UIImage *)image;
 @end
 
-@protocol DiscoverOptionsTableViewDelegate
--(void)popularButtonPressed;
--(void)scheduleButtonPressed;
--(void)collectionsButtonPressed;
--(void)filterButtonPressed;
--(void)randomButtonPressed;
+@interface DiscoverOptionsView : UIView <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
+@property(nonatomic, weak) id<DiscoverOptionsViewDelegate> delegate;
+@property(nonatomic, retain) UICollectionView* options_collection_view;
+@property(nonatomic, retain) NSLayoutConstraint* height_constraint;
+
+-(instancetype)init;
 @end
 
-@interface DiscoverOptionsTableView : UITableView <UITableViewDataSource, UITableViewDelegate>
-@property(nonatomic, retain) NSObject<DiscoverOptionsTableViewDelegate>* opt_delegate;
-@property(nonatomic, retain) NSArray<DiscoverOptionsTableViewCell*>* option_cells;
+@interface DiscoverRecomendedView : UIView
+@property(nonatomic, retain) UILabel* me_label;
+@property(nonatomic, retain) UITableView* table_view;
 
--(instancetype)initWithDelegate:(id<DiscoverOptionsTableViewDelegate>)delegate;
--(CGFloat)getTotalHeight;
 @end
 
-@interface DiscoverViewController () <DiscoverOptionsTableViewDelegate>
+@interface DiscoverDiscussingView : UIView
+@property(nonatomic, retain) UILabel* me_label;
+@property(nonatomic, retain) UIView* view;
+
+-(instancetype)initWithView:(UIView*)view;
+@end
+
+@interface DiscoverWatchingView : UIView
+@property(nonatomic, retain) UILabel* me_label;
+@property(nonatomic, retain) UIView* view;
+
+-(instancetype)initWithView:(UIView*)view;
+@end
+
+@interface DiscoverWeekCollectionsView : UIView
+@property(nonatomic, retain) UILabel* me_label;
+@property(nonatomic, retain) UIView* view;
+
+-(instancetype)initWithView:(UIView*)view;
+@end
+
+@interface DiscoverWeekCommentsView : UIView
+@property(nonatomic, retain) UILabel* me_label;
+@property(nonatomic, retain) UIView* view;
+
+-(instancetype)initWithView:(UIView*)view;
+@end
+
+@interface DiscoverViewController () <DiscoverInterestingViewDelegate, DiscoverOptionsViewDelegate, CommentsTableViewControllerDelegate>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
-@property(nonatomic, retain) UIView* content_view;
-@property(nonatomic, retain) InterestingView* interesting_view;
-@property(nonatomic, retain) DiscoverOptionsTableView* options_view;
-@property(nonatomic, retain) UIBarButtonItem* filter_bar_button;
+@property(nonatomic, retain) UIStackView* content_stack_view;
+@property(nonatomic, retain) DiscoverInterestingView* interesting_view;
+@property(nonatomic, retain) DiscoverOptionsView* options_view;
+@property(nonatomic, retain) DiscoverRecomendedView* recomended_view;
+@property(nonatomic, retain) ReleasesTableViewController* discussing_table_view_controller;
+@property(nonatomic, retain) DiscoverDiscussingView* discussing_view;
+@property(nonatomic, retain) ReleasesCollectionViewController* watching_view_controller;
+@property(nonatomic, retain) DiscoverWatchingView* watching_view;
+@property(nonatomic, retain) CollectionsViewController* collections_view_controller;
+@property(nonatomic, retain) DiscoverWeekCollectionsView* collections_view;
+@property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
+@property(nonatomic, retain) DiscoverWeekCommentsView* comments_view;
 
--(void)didSelectInterestingCell:(anixart::Interesting::Ptr)interesting;
 @end
 
-@implementation InterestingViewCell
+@implementation DiscoverInterestingViewCell
 
-+(NSString*)getIndentifier {
-    return @"InterestingViewCell";
++(NSString*)getIdentifier {
+    return @"DiscoverInterestingViewCell";
 }
 
 -(instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
-    self.layer.cornerRadius = 12.0;
-    self.layer.masksToBounds = YES;
-    _image_view = [LoadableImageView new];
-    [self setBackgroundView:_image_view];
-    _desc = [UILabel new];
-    [self addSubview:_desc];
-    [_desc.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
-    [_desc.heightAnchor constraintLessThanOrEqualToConstant:50.0].active = YES;
-    [_desc.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
-    [_desc.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-5.0].active = YES;
-    _desc.translatesAutoresizingMaskIntoConstraints = NO;
-    _desc.numberOfLines = 2;
-    _title = [UILabel new];
-    [self addSubview:_title];
-    _title.translatesAutoresizingMaskIntoConstraints = NO;
-    [_title.widthAnchor constraintEqualToAnchor:self.widthAnchor constant:-15.0].active = YES;
-    [_title.heightAnchor constraintEqualToConstant:15.0].active = YES;
-    [_title.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:10.0].active = YES;
-    [_title.bottomAnchor constraintEqualToAnchor:_desc.topAnchor constant:-2.0].active = YES;
-    [_title setFont:[UIFont boldSystemFontOfSize:_title.font.pointSize]];
-    
+
+    [self setup];
     [self setupLayout];
     
     return self;
 }
 
+-(void)setup {
+    self.layer.cornerRadius = 12.0;
+    self.layer.masksToBounds = YES;
+    
+    _gradient_layer = [CAGradientLayer layer];
+    _gradient_layer.startPoint = CGPointMake(0, 0.3);
+    _gradient_layer.endPoint = CGPointMake(0, 1);
+    
+    _image_view = [LoadableImageView new];
+
+    _title_label = [UILabel new];
+    [_title_label setFont:[UIFont boldSystemFontOfSize:_title_label.font.pointSize]];
+    
+    _description_label = [UILabel new];
+    _description_label.numberOfLines = 2;
+    
+    [self.layer addSublayer:_gradient_layer];
+    [self setBackgroundView:_image_view];
+    [self addSubview:_title_label];
+    [self addSubview:_description_label];
+    
+    _title_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_title_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_title_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_title_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+
+        [_description_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
+        [_description_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_description_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_description_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
 -(void)setupLayout {
-    /*
-      MAYBE CHANGE TO STATIC COLORS
-     */
+    _gradient_layer.colors = @[(id)[UIColor clearColor].CGColor, (id)[AppColorProvider backgroundColor].CGColor];
     _image_view.backgroundColor = [UIColor clearColor];
-    _title.textColor = [AppColorProvider textColor];
-    _title.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
-    _desc.textColor = [AppColorProvider textSecondaryColor];
-    _desc.backgroundColor = [[AppColorProvider backgroundColor] colorWithAlphaComponent:0.6];
+    _title_label.textColor = [AppColorProvider textColor];
+    _description_label.textColor = [AppColorProvider textSecondaryColor];
+}
+-(void)layoutSubviews {
+    [super layoutSubviews];
+    _gradient_layer.frame = self.bounds;
+}
+
+-(void)traitCollectionDidChange:(UITraitCollection *)previous_trait_collection {
+    [super traitCollectionDidChange:previous_trait_collection];
+    [self setupLayout];
+}
+
+-(void)setImageUrl:(NSURL*)image_url {
+    [_image_view tryLoadImageWithURL:image_url];
+}
+-(void)setTitle:(NSString*)title {
+    _title_label.text = title;
+    [_title_label sizeToFit];
+}
+-(void)setDescription:(NSString*)description {
+    _description_label.text = description;
+    [_description_label sizeToFit];
 }
 
 @end
 
-@implementation InterestingView
-static CGFloat INTERESTING_VIEW_SIZE = 220;
-static CGFloat INTERESTING_VIEW_HOFFSET = 10;
+@implementation DiscoverInterestingView
 
--(instancetype)initWithDelegate:(DiscoverViewController*)delegate {
+-(instancetype)init {
     self = [super init];
     
-    _delegate = delegate;
+    _api_proxy = [LibanixartApi sharedInstance];
     _image_cache = [NSCache new];
-    _activity_ind = [UIActivityIndicatorView new];
+    [self preSetup];
+    [self preSetupLayout];
+    [self tryLoad];
     
     return self;
 }
 
--(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collection_view {
-    return 1;
-}
--(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _interest_arr.size();
-}
--(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
-    InterestingViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[InterestingViewCell getIndentifier] forIndexPath:index_path];
-    NSInteger index = [index_path item];
-    cell.title.text = TO_NSSTRING(_interest_arr[index]->title);
-    cell.desc.text = TO_NSSTRING(_interest_arr[index]->description);
-    [cell.desc sizeToFit];
-    [cell.image_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(_interest_arr[index]->image_url)]];
-    return cell;
-}
-
--(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
-    return CGSizeMake(collection_view.frame.size.height * 1.66, collection_view.frame.size.height);
-}
-
--(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
-    NSInteger index = [index_path item];
-    [_delegate didSelectInterestingCell:_interest_arr[index]];
-}
-
--(void)tryLoad {
-    LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
-    _activity_ind.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:_activity_ind];
+-(void)preSetup {
+    _loadable_view = [LoadableView new];
     
-    [_activity_ind.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
-    [_activity_ind.widthAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
-    [_activity_ind.centerXAnchor constraintEqualToAnchor:self.centerXAnchor].active = YES;
-    [_activity_ind.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
-    _activity_ind.transform = CGAffineTransformMakeScale(2.5, 2.5);
-    [_activity_ind startAnimating];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        try {
-            self->_interest_arr = api_proxy.api->search().interesting()->get();
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self setupCollectionView];
-            });
-        } catch(const anixart::ApiError& e) {
-                // error
-        }
-    });
+    [self addSubview:_loadable_view];
+    
+    _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_loadable_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_loadable_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_loadable_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_loadable_view.heightAnchor constraintEqualToConstant:200],
+        [_loadable_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
 }
-
--(void)setupCollectionView {
-    [_activity_ind stopAnimating];
+-(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
     _collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
-    _collection_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:_collection_view];
-    [_collection_view.heightAnchor constraintEqualToAnchor:self.heightAnchor constant:-(INTERESTING_VIEW_HOFFSET * 2)].active = YES;
-    [_collection_view.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-    [_collection_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor].active = YES;
-    [_collection_view.topAnchor constraintEqualToAnchor:self.topAnchor constant:INTERESTING_VIEW_HOFFSET].active = YES;
-    [_collection_view registerClass:InterestingViewCell.class forCellWithReuseIdentifier:[InterestingViewCell getIndentifier]];
-    [_collection_view setDelegate:self];
-    [_collection_view setDataSource:self];
+    [_collection_view registerClass:DiscoverInterestingViewCell.class forCellWithReuseIdentifier:[DiscoverInterestingViewCell getIdentifier]];
+    _collection_view.dataSource = self;
+    _collection_view.delegate = self;
     _collection_view.showsHorizontalScrollIndicator = NO;
-    
-    [self setupLayout];
-}
 
+    [self addSubview:_collection_view];
+    
+    _collection_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_collection_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_collection_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
+-(void)preSetupLayout {
+    self.backgroundColor = [AppColorProvider backgroundColor];
+}
 -(void)setupLayout {
     _collection_view.backgroundColor = [UIColor clearColor];
 }
 
--(CGFloat)getTotalHeight {
-    return INTERESTING_VIEW_SIZE;
+-(void)tryLoad {
+    [_loadable_view startLoading];
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        self->_interesting_arr = api->search().interesting()->get();
+        return YES;
+    } withUICompletion:^{
+        [self->_loadable_view endLoading];
+        [self setup];
+        [self setupLayout];
+    }];
+}
+
+-(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return _interesting_arr.size();
+}
+-(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
+    DiscoverInterestingViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[DiscoverInterestingViewCell getIdentifier] forIndexPath:index_path];
+    NSInteger index = [index_path item];
+    anixart::Interesting::Ptr& interesting = _interesting_arr[index];
+    NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(interesting->image_url)];
+    
+    [cell setImageUrl:image_url];
+    [cell setTitle:TO_NSSTRING(interesting->title)];
+    [cell setDescription:TO_NSSTRING(interesting->description)];
+    return cell;
+}
+
+-(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
+    return CGSizeMake(collection_view.frame.size.height * (16. / 9), collection_view.frame.size.height);
+}
+
+-(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
+    NSInteger index = index_path.row;
+    anixart::Interesting::Ptr& interesting = _interesting_arr[index];
+    
+    [_delegate discoverInterestingView:self didSelectInteresting:interesting];
 }
 
 @end
 
-@implementation DiscoverOptionsTableViewCell
+@implementation DiscoverOptionsCollectionViewCell
 
-+(instancetype)cellWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback {
-    return [[DiscoverOptionsTableViewCell alloc] initWithName:name image:image callback:callback];
++(NSString*)getIdentifier {
+    return @"DiscoverOptionsCollectionViewCell";
 }
 
--(instancetype)initWithName:(NSString*)name image:(UIImage*)image callback:(SEL)callback_sel {
-    self = [super init];
+-(instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
     
-    _name = name;
-    _image = image;
-    _callback_sel = callback_sel;
-    
-    [self setupView];
+    [self setup];
+    [self setupLayout];
     
     return self;
 }
 
--(void)setupView {
+-(void)setup {
+    self.layer.cornerRadius = 8;
+    self.clipsToBounds = YES;
+    
     _image_view = [UIImageView new];
-    [self addSubview:_image_view];
-    _image_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _image_view.image = _image;
-    [_image_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:5].active = YES;
-    [_image_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor].active = YES;
-    [_image_view.widthAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.6].active = YES;
-    [_image_view.heightAnchor constraintEqualToAnchor:_image_view.widthAnchor].active = YES;
     
     _name_label = [UILabel new];
-    [self addSubview:_name_label];
-    _name_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _name_label.text = _name;
-    [_name_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:5].active = YES;
-    [_name_label.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
-    [_name_label.widthAnchor constraintEqualToAnchor:self.widthAnchor].active = YES;
-    [_name_label.heightAnchor constraintEqualToAnchor:self.heightAnchor].active = YES;
     
-    [self setupLayout];
+    [self addSubview:_image_view];
+    [self addSubview:_name_label];
+    
+    _image_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _name_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_image_view.topAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_image_view.heightAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:0.8],
+        [_image_view.widthAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:0.8],
+        [_image_view.centerYAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
+        [_image_view.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+        
+        [_name_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_name_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:5],
+        [_name_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_name_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
 }
 
 -(void)setupLayout {
-    self.backgroundColor = [UIColor clearColor];
+    self.backgroundColor = [AppColorProvider primaryColor];
     _image_view.tintColor = [AppColorProvider textColor];
     _name_label.textColor = [AppColorProvider textColor];
 }
 
+-(void)setName:(NSString *)name {
+    _name_label.text = name;
+    [_name_label sizeToFit];
+}
+
+-(void)setImage:(UIImage*)image {
+    _image_view.image = image;
+}
+
 @end
 
-@implementation DiscoverOptionsTableView
-static CGFloat OPTIONS_CELL_HEIGHT = 65;
+@implementation DiscoverOptionsView
 
--(instancetype)initWithDelegate:(NSObject<DiscoverOptionsTableViewDelegate>*)delegate {
-    self = [self init];
+-(instancetype)init {
+    self = [super init];
     
-    _opt_delegate = delegate;
-    self.delegate = self;
-    self.dataSource = self;
-    _option_cells = @[
-        [DiscoverOptionsTableViewCell cellWithName:NSLocalizedString(@"app.discover.option.popular.name", "") image:[UIImage systemImageNamed:@"flame"] callback:@selector(popularButtonPressed)],
-        [DiscoverOptionsTableViewCell cellWithName:NSLocalizedString(@"app.discover.option.schedule.name", "") image:[UIImage systemImageNamed:@"calendar"] callback:@selector(scheduleButtonPressed)],
-        [DiscoverOptionsTableViewCell cellWithName:NSLocalizedString(@"app.discover.option.collections.name", "") image:[UIImage systemImageNamed:@"rectangle.stack"] callback:@selector(collectionsButtonPressed)],
-        [DiscoverOptionsTableViewCell cellWithName:NSLocalizedString(@"app.discover.option.filter.name", "") image:[UIImage systemImageNamed:@"slider.horizontal.3"] callback:@selector(filterButtonPressed)],
-        [DiscoverOptionsTableViewCell cellWithName:NSLocalizedString(@"app.discover.option.random.name", "") image:[UIImage systemImageNamed:@"shuffle"] callback:@selector(randomButtonPressed)]
-    ];
+    [self setup];
+    [self setupLayout];
     
     return self;
 }
 
--(CGFloat)getTotalHeight {
-    return OPTIONS_CELL_HEIGHT * [_option_cells count];
+-(void)setup {
+    UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
+    layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    layout.sectionInset = UIEdgeInsetsMake(10, 12, 5, 12);
+    layout.minimumLineSpacing = 18;
+    _options_collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];;
+    [_options_collection_view registerClass:DiscoverOptionsCollectionViewCell.class forCellWithReuseIdentifier:[DiscoverOptionsCollectionViewCell getIdentifier]];;
+    _options_collection_view.dataSource = self;
+    _options_collection_view.delegate = self;
+    
+    [self addSubview:_options_collection_view];
+    
+    _options_collection_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _height_constraint = [_options_collection_view.heightAnchor constraintEqualToConstant:120];
+    [NSLayoutConstraint activateConstraints:@[
+        [_options_collection_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_options_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_options_collection_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        _height_constraint,
+        [_options_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
+-(void)setupLayout {
+    self.backgroundColor = [UIColor clearColor];
+    _options_collection_view.backgroundColor = [UIColor clearColor];
 }
 
--(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
-    return  [_option_cells count];
-}
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return OPTIONS_CELL_HEIGHT;
-}
--(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
-    NSInteger index = [index_path item];
-    return _option_cells[index];
+-(void)layoutSubviews {
+    [super layoutSubviews];
+    _height_constraint.constant = _options_collection_view.contentSize.height;
 }
 
--(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
-    NSInteger index = [index_path item];
-    [table_view deselectRowAtIndexPath:index_path animated:YES];
-    [_opt_delegate methodForSelector:_option_cells[index].callback_sel]();
+-(NSInteger)collectionView:(UICollectionView *)collection_view numberOfItemsInSection:(NSInteger)section {
+    return 4;
+}
+
+-(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
+    return CGSizeMake(collection_view.frame.size.width / 2 - 30, 50);
+}
+
+-(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
+    NSInteger index = index_path.row;
+    DiscoverOptionsCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[DiscoverOptionsCollectionViewCell getIdentifier] forIndexPath:index_path];
+    
+    switch (index) {
+        case 0:
+            [cell setName:NSLocalizedString(@"app.discover.option.popular.name", "")];
+            [cell setImage:[UIImage systemImageNamed:@"flame"]];
+            break;
+        case 1:
+            [cell setName:NSLocalizedString(@"app.discover.option.schedule.name", "")];
+            [cell setImage:[UIImage systemImageNamed:@"calendar"]];
+            break;
+        case 2:
+            [cell setName:NSLocalizedString(@"app.discover.option.collections.name", "")];
+            [cell setImage:[UIImage systemImageNamed:@"rectangle.stack"]];
+            break;
+        case 3:
+            [cell setName:NSLocalizedString(@"app.discover.option.random.name", "")];
+            [cell setImage:[UIImage systemImageNamed:@"shuffle"]];
+            break;
+        default:
+            [cell setName:nil];
+            [cell setImage:nil];
+    }
+
+    return cell;
+}
+
+-(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
+    NSInteger index = index_path.row;
+    
+    switch (index) {
+        case 0:
+            [self onPopularCellSelected];
+            break;
+        case 1:
+            [self onScheduleCellSelected];
+            break;
+        case 2:
+            [self onCollectionsCellSelected];
+            break;
+        case 3:
+            [self onRandomCellSelected];
+            break;
+    }
+}
+
+-(void)onPopularCellSelected {
+    [_delegate didPopularPressedForDiscoverOptionsView:self];
+}
+-(void)onScheduleCellSelected {
+    [_delegate didSchedulePressedForDiscoverOptionsView:self];
+}
+-(void)onCollectionsCellSelected {
+    [_delegate didCollectionsPressedForDiscoverOptionsView:self];
+}
+-(void)onRandomCellSelected {
+    [_delegate didRandomPressedForDiscoverOptionsView:self];
+}
+
+@end
+
+@implementation DiscoverRecomendedView
+
+-(instancetype)init {
+    self = [super init];
+    
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    _me_label = [UILabel new];
+    _me_label.font = [UIFont systemFontOfSize:22];
+    _me_label.text = NSLocalizedString(@"app.discover.recomended.title", "");
+    
+    // TODO
+    UILabel* _placeholder_label = [UILabel new];
+    _placeholder_label.text = @"Птички летят, бомбить поросят";
+    
+    [self addSubview:_me_label];
+    [self addSubview:_placeholder_label];
+    
+    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _placeholder_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_me_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+        
+        [_placeholder_label.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_placeholder_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_placeholder_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_placeholder_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
+-(void)setupLayout {
+    _me_label.textColor = [AppColorProvider textColor];
+}
+
+@end
+
+@implementation DiscoverDiscussingView
+
+-(instancetype)initWithView:(UIView*)view {
+    self = [super init];
+    
+    _view = view;
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    _me_label = [UILabel new];
+    _me_label.font = [UIFont systemFontOfSize:22];
+    _me_label.text = NSLocalizedString(@"app.discover.discussing.title", "");
+    
+    [self addSubview:_me_label];
+    [self addSubview:_view];
+    
+    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_me_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+        
+        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+    ]];
+    [_me_label sizeToFit];
+}
+-(void)setupLayout {
+    _me_label.textColor = [AppColorProvider textColor];
+}
+
+
+@end
+
+@implementation DiscoverWatchingView
+
+-(instancetype)initWithView:(UIView*)view {
+    self = [super init];
+    
+    _view = view;
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    _me_label = [UILabel new];
+    _me_label.font = [UIFont systemFontOfSize:22];
+    _me_label.text = NSLocalizedString(@"app.discover.watching.title", "");
+    
+    [self addSubview:_me_label];
+    [self addSubview:_view];
+    
+    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        
+        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_view.heightAnchor constraintEqualToConstant:250],
+        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+    ]];
+}
+-(void)setupLayout {
+    _me_label.textColor = [AppColorProvider textColor];
+}
+
+@end
+
+@implementation DiscoverWeekCollectionsView
+
+-(instancetype)initWithView:(UIView*)view {
+    self = [super init];
+    
+    _view = view;
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    _me_label = [UILabel new];
+    _me_label.font = [UIFont systemFontOfSize:22];
+    _me_label.text = NSLocalizedString(@"app.discover.week_collections.title", "");
+    
+    [self addSubview:_me_label];
+    [self addSubview:_view];
+    
+    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        
+        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_view.heightAnchor constraintEqualToConstant:200],
+        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+    ]];
+}
+-(void)setupLayout {
+    _me_label.textColor = [AppColorProvider textColor];
+}
+
+@end
+
+@implementation DiscoverWeekCommentsView
+
+-(instancetype)initWithView:(UIView*)view {
+    self = [super init];
+    
+    _view = view;
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    _me_label = [UILabel new];
+    _me_label.font = [UIFont systemFontOfSize:22];
+    _me_label.text = NSLocalizedString(@"app.discover.weak_comments.title", "");
+    
+    [self addSubview:_me_label];
+    [self addSubview:_view];
+    
+    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        
+        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
+-(void)setupLayout {
+    _me_label.textColor = [AppColorProvider textColor];
 }
 
 @end
@@ -315,63 +689,117 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
 
 -(void)setup {
     _scroll_view = [UIScrollView new];
-    _content_view = [UIView new];
-    _interesting_view = [[InterestingView alloc] initWithDelegate:self];
-    _options_view = [[DiscoverOptionsTableView alloc] initWithDelegate:self];
-    _options_view.scrollEnabled = NO;
-    _options_view.layer.cornerRadius = 8.0;
-    _options_view.clipsToBounds = YES;
     
-    _filter_bar_button = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"slider.horizontal.3"] style:UIBarButtonItemStylePlain target:self action:@selector(onFilterBarButtonPressed:)];
+    _content_stack_view = [UIStackView new];
+    _content_stack_view.axis = UILayoutConstraintAxisVertical;
+    _content_stack_view.distribution = UIStackViewDistributionEqualSpacing;
+    _content_stack_view.alignment = UIStackViewAlignmentCenter;
+    _content_stack_view.spacing = 7;
+    _content_stack_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(0, 10, 0, 10);
+//    _content_stack_view.layoutMargins = UIEdgeInsetsMake(0, 0, 0, 0);
+    
+    _interesting_view = [DiscoverInterestingView new];
+    _interesting_view.delegate = self;
+    
+    _options_view = [DiscoverOptionsView new];
+    _options_view.delegate = self;
+    
+    _recomended_view = [DiscoverRecomendedView new];
+    _recomended_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    
+    _discussing_table_view_controller = [[ReleasesTableViewController alloc] initWithTableView:[DynamicTableView new] pages:_api_proxy.api->search().discussing()];
+    _discussing_table_view_controller.is_container_view_controller = YES;
+    [self addChildViewController:_discussing_table_view_controller];
+    
+    _discussing_view = [[DiscoverDiscussingView alloc] initWithView:_discussing_table_view_controller.view];
+    _discussing_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    
+    _watching_view_controller = [[ReleasesCollectionViewController alloc] initWithPages:_api_proxy.api->search().currently_watching(0) axis:UICollectionViewScrollDirectionHorizontal];
+    _watching_view_controller.is_container_view_controller = YES;
+    [self addChildViewController:_watching_view_controller];
+    
+    _watching_view = [[DiscoverWatchingView alloc] initWithView:_watching_view_controller.view];
+    _watching_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    
+    _collections_view_controller = [[CollectionsViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::WeekPopular, 2, 0) axis:UICollectionViewScrollDirectionHorizontal];
+    _collections_view_controller.is_container_view_controller = YES;
+    [self addChildViewController:_collections_view_controller];
+    
+    _collections_view = [[DiscoverWeekCollectionsView alloc] initWithView:_collections_view_controller.view];
+    _collections_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    
+    _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] pages:_api_proxy.api->search().comments_week()];
+    _comments_view_controller.enable_origin_reference = YES;
+    _comments_view_controller.is_container_view_controller = YES;
+    _comments_view_controller.delegate = self;
+    [self addChildViewController:_comments_view_controller];
+    
+    _comments_view = [[DiscoverWeekCommentsView alloc] initWithView:_comments_view_controller.view];
+    _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
 
     [self.view addSubview:_scroll_view];
-    [_scroll_view addSubview:_content_view];
-    [_content_view addSubview:_interesting_view];
-    [_content_view addSubview:_options_view];
+    [_scroll_view addSubview:_content_stack_view];
+    [_content_stack_view addArrangedSubview:_interesting_view];
+    [_content_stack_view addArrangedSubview:_options_view];
+    [_content_stack_view addArrangedSubview:_recomended_view];
+    [_content_stack_view addArrangedSubview:_discussing_view];
+    [_content_stack_view addArrangedSubview:_watching_view];
+    [_content_stack_view addArrangedSubview:_collections_view];
+    [_content_stack_view addArrangedSubview:_comments_view];
     
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _content_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _content_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
     _interesting_view.translatesAutoresizingMaskIntoConstraints = NO;
     _options_view.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    NSLayoutConstraint* height_constraint = [_content_view.heightAnchor constraintEqualToAnchor:_scroll_view.heightAnchor];
-    height_constraint.active = YES;
-    height_constraint.priority = UILayoutPriority(50);
+    _recomended_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _discussing_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _watching_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _collections_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _comments_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [_scroll_view.leftAnchor constraintEqualToAnchor:self.view.leftAnchor],
-        [_scroll_view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor],
-        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
         
-        [_content_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor],
-        [_content_view.leftAnchor constraintEqualToAnchor:_scroll_view.leftAnchor],
-        [_content_view.rightAnchor constraintEqualToAnchor:_scroll_view.rightAnchor],
-        [_content_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
-        height_constraint,
+        [_content_stack_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor],
+        [_content_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
+        [_content_stack_view.trailingAnchor constraintEqualToAnchor:_scroll_view.trailingAnchor],
+        [_content_stack_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
+        [_content_stack_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor],
         
-        [_interesting_view.topAnchor constraintEqualToAnchor:_content_view.topAnchor],
-        [_interesting_view.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor],
-        [_interesting_view.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor],
-        [_interesting_view.heightAnchor constraintEqualToConstant:[_interesting_view getTotalHeight]],
-        
-        [_options_view.topAnchor constraintEqualToAnchor:_interesting_view.bottomAnchor constant:20],
-        [_options_view.leadingAnchor constraintEqualToAnchor:_content_view.leadingAnchor constant:5],
-        [_options_view.widthAnchor constraintEqualToAnchor:_content_view.widthAnchor constant:-10],
-        [_options_view.heightAnchor constraintEqualToConstant:[_options_view getTotalHeight]],
-
-        [_content_view.bottomAnchor constraintEqualToAnchor:_options_view.bottomAnchor]
+        [_interesting_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_options_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_recomended_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_discussing_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_watching_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_collections_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_comments_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor]
     ]];
-    
-    [_interesting_view tryLoad];
 }
 
 -(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
-    _interesting_view.backgroundColor = [AppColorProvider foregroundColor1];
-    _options_view.backgroundColor = [AppColorProvider foregroundColor1];
 }
 
--(void)didSelectInterestingCell:(anixart::Interesting::Ptr)interesting {
+-(IBAction)onFilterBarButtonPressed:(UIBarButtonItem*)sender {
+    [self.navigationController pushViewController:[FilterViewController new] animated:YES];
+}
+
+-(void)didPopularPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
+    NSLog(@"popularButtonPressed");
+}
+-(void)didSchedulePressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
+    NSLog(@"scheduleButtonPressed");
+}
+-(void)didCollectionsPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
+    NSLog(@"collectionsButtonPressed");
+}
+-(void)didRandomPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
+    NSLog(@"randomButtonPressed");
+}
+
+-(void)discoverInterestingView:(DiscoverInterestingView *)interesting_view didSelectInteresting:(anixart::Interesting::Ptr)interesting { 
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.hidesBarsOnSwipe = NO;
     if (interesting->type == anixart::Interesting::Type::OpenRelease) {
@@ -381,24 +809,8 @@ static CGFloat OPTIONS_CELL_HEIGHT = 65;
     }
 }
 
--(IBAction)onFilterBarButtonPressed:(UIBarButtonItem*)sender {
-    [self.navigationController pushViewController:[FilterViewController new] animated:YES];
-}
-
--(void)popularButtonPressed {
-    NSLog(@"popularButtonPressed");
-}
--(void)scheduleButtonPressed {
-    NSLog(@"scheduleButtonPressed");
-}
--(void)collectionsButtonPressed {
-    NSLog(@"collectionsButtonPressed");
-}
--(void)filterButtonPressed {
-    NSLog(@"filterButtonPressed");
-}
--(void)randomButtonPressed {
-    NSLog(@"randomButtonPressed");
+-(void)didReplyPressedForCommentsTableView:(UITableView *)table_view comment:(anixart::Comment::Ptr)comment {
+    [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithReplyToComment:comment] animated:YES];
 }
 
 @end

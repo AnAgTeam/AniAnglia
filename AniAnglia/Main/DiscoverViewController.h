@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 #import "ReleasesHistoryTableViewController.h"
 
-@interface DiscoverViewController : UIViewController <ReleasesHistoryTableViewControllerDelegate, UISearchBarDelegate>
+@interface DiscoverViewController : UIViewController
 
 @end
 

@@ -43,9 +43,11 @@
 @interface CommentsTableViewController : UIViewController
 @property(nonatomic, weak) id<CommentsTableViewControllerDelegate> delegate;
 @property(nonatomic) BOOL enable_origin_reference;
+@property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
 -(instancetype)initWithTableView:(UITableView*)table_view comments:(std::vector<anixart::Comment::Ptr>)comments;
+
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
 -(void)reset;
 

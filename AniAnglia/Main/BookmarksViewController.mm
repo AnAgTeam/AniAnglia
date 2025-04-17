@@ -43,12 +43,12 @@ anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Pr
     _page_view_controller = [SegmentedPageViewController new];
     [_page_view_controller setPageViewControllers:@[
         [self makeHistoryViewController],
-        [[ReleasesTableViewController alloc] initWithPages:_api_proxy.api->releases().profile_favorites(_my_profile_id, anixart::Profile::ListSort::Ascending, 0, 0) trailingActionEnabled:NO],
-        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Watching) trailingActionEnabled:NO],
-        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Plan) trailingActionEnabled:NO],
-        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Watched) trailingActionEnabled:NO],
-        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::HoldOn) trailingActionEnabled:NO],
-        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Dropped) trailingActionEnabled:NO]
+        [[ReleasesTableViewController alloc] initWithPages:_api_proxy.api->releases().profile_favorites(_my_profile_id, anixart::Profile::ListSort::Ascending, 0, 0) trailingActionDisabled:YES],
+        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Watching) trailingActionDisabled:YES],
+        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Plan) trailingActionDisabled:YES],
+        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Watched) trailingActionDisabled:YES],
+        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::HoldOn) trailingActionDisabled:YES],
+        [[ReleasesTableViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Dropped) trailingActionDisabled:YES]
     ]];
     [_page_view_controller setSegmentTitles:@[
         NSLocalizedString(@"app.bookmarks.history.title", ""),
@@ -76,7 +76,7 @@ anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Pr
 }
 
 -(UIViewController*)makeHistoryViewController {
-    return [[ReleasesTableViewController alloc] initWithPages:_api_proxy.api->releases().get_history(0) trailingActionEnabled:NO];
+    return [[ReleasesTableViewController alloc] initWithPages:_api_proxy.api->releases().get_history(0) trailingActionDisabled:YES];
 }
 
 @end

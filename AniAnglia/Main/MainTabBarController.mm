@@ -64,15 +64,17 @@
     request.query = TO_STDSTRING(query);
     anixart::ReleaseSearchPages::UPtr pages = _api_proxy.api->search().release_search(request, 0);
         
-    [_view_controller updatePages:std::move(pages)];
+    [_view_controller setPages:std::move(pages)];
 }
 -(void)releasesHistoryTableViewController:(ReleasesHistoryTableViewController*)history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
     [_search_view_controller setSearchText:item_name];
     [_search_view_controller endSearching];
+    
     anixart::requests::SearchRequest request;
     request.query = TO_STDSTRING(item_name);
     anixart::ReleaseSearchPages::UPtr pages = _api_proxy.api->search().release_search(request, 0);
-    [_view_controller updatePages:std::move(pages)];
+    
+    [_view_controller setPages:std::move(pages)];
 }
 
 @end

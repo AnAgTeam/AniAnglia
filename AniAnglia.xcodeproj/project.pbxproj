@@ -69,9 +69,11 @@
 		EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD72CCE956700EA11BB /* boost_system.xcframework */; };
 		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
 		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
+		EFD7F7B02DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD7F7AF2DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm */; };
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
-		EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */; };
+		EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */; };
+		EFFA21DD2DB0220E007D8AD4 /* CollectionsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21DC2DB0220E007D8AD4 /* CollectionsViewController.mm */; };
 		EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */; };
 		EFFA3C482DAD535200DE042A /* ProfileCommentsPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */; };
 /* End PBXBuildFile section */
@@ -1340,11 +1342,15 @@
 		EFD505E02CAC401700E87BF1 /* StringCvt.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StringCvt.mm; sourceTree = "<group>"; };
 		EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
+		EFD7F7AE2DAFBF5100D0FBC0 /* ReleaseTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseTableViewCell.h; sourceTree = "<group>"; };
+		EFD7F7AF2DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseTableViewCell.mm; sourceTree = "<group>"; };
 		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
-		EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesTableView.h; sourceTree = "<group>"; };
-		EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesTableView.mm; sourceTree = "<group>"; };
+		EFFA21D72DB01A31007D8AD4 /* ReleasesCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesCollectionViewController.h; sourceTree = "<group>"; };
+		EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesCollectionViewController.mm; sourceTree = "<group>"; };
+		EFFA21DB2DB021FD007D8AD4 /* CollectionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionsViewController.h; sourceTree = "<group>"; };
+		EFFA21DC2DB0220E007D8AD4 /* CollectionsViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionsViewController.mm; sourceTree = "<group>"; };
 		EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommentsTableViewController.mm; sourceTree = "<group>"; };
 		EFFA3C452DAB151C00DE042A /* CommentsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommentsTableViewController.h; sourceTree = "<group>"; };
 		EFFA3C462DAD534100DE042A /* ProfileCommentsPageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileCommentsPageViewController.h; sourceTree = "<group>"; };
@@ -1439,8 +1445,6 @@
 				EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */,
 				EFA1F93E2CB4922200555A26 /* PlayerViewController.h */,
 				EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */,
-				EFF2ECC72D077E7E0064AF29 /* ReleasesTableView.h */,
-				EFF2ECC82D077EE50064AF29 /* ReleasesTableView.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";
@@ -3410,8 +3414,6 @@
 			children = (
 				EF8097C32D0CC6C1006F18DF /* FilterViewController.h */,
 				EF8097C42D0CC6F2006F18DF /* FilterViewController.mm */,
-				EF65E3442D82058B00114102 /* ReleasesTableViewController.h */,
-				EF65E3452D82059D00114102 /* ReleasesTableViewController.mm */,
 				EF65E3472D82296C00114102 /* ReleasesHistoryTableViewController.h */,
 				EF65E3482D82297C00114102 /* ReleasesHistoryTableViewController.mm */,
 				EF65E34C2D8393CD00114102 /* SearchViewController.h */,
@@ -3423,6 +3425,7 @@
 		EF7CD28B2DA03FE800F88227 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				EFFA21DA2DB021C3007D8AD4 /* Releases */,
 				EF2330622DAD9171008B0A2A /* Comments */,
 				EF3568A02DA5839A00086593 /* CustomTableViewCells.h */,
 				EF3568A12DA583C800086593 /* CustomTableViewCells.m */,
@@ -3434,6 +3437,8 @@
 				EF3568B12DA98D4400086593 /* SegmentedPageViewController.mm */,
 				EF2330662DAD9281008B0A2A /* TextEnterView.h */,
 				EF2330672DAD9293008B0A2A /* TextEnterView.mm */,
+				EFFA21DB2DB021FD007D8AD4 /* CollectionsViewController.h */,
+				EFFA21DC2DB0220E007D8AD4 /* CollectionsViewController.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3489,6 +3494,19 @@
 				EFCBC3A62D54F6E900080866 /* TorrentAVAsset.h */,
 			);
 			path = Torrent;
+			sourceTree = "<group>";
+		};
+		EFFA21DA2DB021C3007D8AD4 /* Releases */ = {
+			isa = PBXGroup;
+			children = (
+				EFD7F7AE2DAFBF5100D0FBC0 /* ReleaseTableViewCell.h */,
+				EFD7F7AF2DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm */,
+				EF65E3442D82058B00114102 /* ReleasesTableViewController.h */,
+				EF65E3452D82059D00114102 /* ReleasesTableViewController.mm */,
+				EFFA21D72DB01A31007D8AD4 /* ReleasesCollectionViewController.h */,
+				EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */,
+			);
+			path = Releases;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3570,11 +3588,12 @@
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
 				EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */,
+				EFFA21DD2DB0220E007D8AD4 /* CollectionsViewController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
-				EFF2ECC92D077EE50064AF29 /* ReleasesTableView.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EF7CD2912DA040EC00F88227 /* ProfileListsView.mm in Sources */,
+				EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */,
 				EFC6077B2C76169500BA8B44 /* TextErrorField.mm in Sources */,
 				EF65E34B2D8393BE00114102 /* SearchViewController.m in Sources */,
 				EF3568AF2DA95D0800086593 /* SettingsSecurityViewController.mm in Sources */,
@@ -3588,6 +3607,7 @@
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
 				EF60AC742C6FB2FE00CD33A8 /* AppDelegate.mm in Sources */,
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
+				EFD7F7B02DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm in Sources */,
 				EF3568A52DA84F1D00086593 /* SharedRunningData.mm in Sources */,
 				EF7CD28E2DA0400F00F88227 /* DynamicTableView.mm in Sources */,
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,

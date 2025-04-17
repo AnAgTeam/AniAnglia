@@ -68,6 +68,12 @@
 "app.discover.option.random.name" = "Случайное";
 "app.release_search.ep_count.text" = "Кол-во эп";
 
+"app.discover.recomended.title" = "Рекомендовано";
+"app.discover.discussing.title" = "Обсуждаемое";
+"app.discover.watching.title" = "Смотрят";
+"app.discover.week_collections.title" = "Коллекции недели";
+"app.discover.weak_comments.title" = "Комментарии недели";
+
 /* RELEASES */
 "app.releases.search_bar.placeholder" = "Найти релиз...";
 "app.release.play_button.title" = "Смотреть";
@@ -110,6 +116,7 @@
 "app.release.comments.title" = "Комментарии";
 "app.release.comments.show_all_button.title" = "Показать все";
 
+"app.release.episode_count.end" = "эп.";
 /* COMMENTS */
 "app.comments.reply_button.title" = "Ответить";
 "app.comments.show_replies_button.title" = "Показать ответы";

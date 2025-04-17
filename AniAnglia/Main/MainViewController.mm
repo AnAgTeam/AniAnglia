@@ -11,7 +11,6 @@
 #import "LibanixartApi.h"
 #import "ReleaseViewController.h"
 #import "StringCvt.h"
-#import "ReleasesTableView.h"
 #import "ReleasesTableViewController.h"
 
 anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, const std::optional<anixart::Release::Status> status, const std::optional<anixart::Release::Category> category) {
@@ -41,12 +40,12 @@ anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, con
 -(void)setup {
     _page_view_controler = [SegmentedPageViewController new];
     [_page_view_controler setPageViewControllers:@[
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, std::nullopt) trailingActionEnabled:NO],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Ongoing, std::nullopt) trailingActionEnabled:NO],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Upcoming, std::nullopt) trailingActionEnabled:NO],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Finished, std::nullopt) trailingActionEnabled:NO],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Movies) trailingActionEnabled:NO],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Ova) trailingActionEnabled:NO]
+       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, std::nullopt) trailingActionDisabled:YES],
+       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Ongoing, std::nullopt) trailingActionDisabled:YES],
+       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Upcoming, std::nullopt) trailingActionDisabled:YES],
+       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Finished, std::nullopt) trailingActionDisabled:YES],
+       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Movies) trailingActionDisabled:YES],
+       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Ova) trailingActionDisabled:YES]
    ]];
     [_page_view_controler setSegmentTitles:@[
         NSLocalizedString(@"app.main.pages_segment_control.actual.name", ""),

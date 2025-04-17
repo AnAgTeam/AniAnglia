@@ -1,0 +1,28 @@
+//
+//  ReleaseTableViewCell.h
+//  AniAnglia
+//
+//  Created by Toilettrauma on 16.04.2025.
+//
+
+#ifndef ReleaseTableViewCell_h
+#define ReleaseTableViewCell_h
+
+#import <UIKit/UIKit.h>
+
+@interface ReleaseTableViewCell : UITableViewCell
+
++(NSString*)getIdentifier;
+
++(UIColor*)getBadgeColor:(double)rating;
+
+-(void)setImageUrl:(NSURL*)image_url;
+-(void)setTitle:(NSString*)title;
+-(void)setDescription:(NSString*)description;
+-(void)setAccesibilityView:(UIView*)accesibility_view;
+-(void)setRating:(double)rating;
+-(void)setEpCount:(NSUInteger)ep_count;
+@end
+
+
+#endif /* ReleaseTableViewCell_h */

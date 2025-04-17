@@ -1243,14 +1243,14 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(IBAction)onRefresh:(UIRefreshControl*)refresh_control {
-    // since this not in the main thread, we can call network action directly
-    auto [profile, is_my_profile] = _api_proxy.api->profiles().get_profile(_profile_id);
-    _profile = profile;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        auto [profile, is_my_profile] = api->profiles().get_profile(self->_profile_id);
+        self->_profile = profile;
+        return YES;
+    } withUICompletion:^{
         [self refresh];
         [refresh_control endRefreshing];
-    });
+    }];
 }
 
 -(void)didReplyPressedForCommentsTableView:(UITableView *)table_view comment:(anixart::Comment::Ptr)comment {

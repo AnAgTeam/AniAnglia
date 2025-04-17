@@ -178,10 +178,11 @@
         [_show_replies_button.leadingAnchor constraintEqualToAnchor:_reply_button.leadingAnchor],
         [_show_replies_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
         _show_replies_button_height_constraint,
-        [_show_replies_button.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor]
+        [_show_replies_button.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor],
     ]];
 }
 -(void)setupLayout {
+    _avatar_image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _username_label.textColor = [AppColorProvider textSecondaryColor];
     _origin_label.textColor = [AppColorProvider textShyColor];
     _publish_date_label.textColor = [AppColorProvider textShyColor];
@@ -271,6 +272,16 @@
     return self;
 }
 
+-(void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+}
+
+-(void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+//    _table_view.scrollEnabled = NO;
+}
+
 -(void)viewDidLoad {
     [super viewDidLoad];
     
@@ -278,6 +289,9 @@
     [self setupLayout];
     if (_pages) {
         [self loadFirstPage];
+    }
+    else if (!_comments.empty()) {
+        [_table_view reloadData];
     }
 }
 
@@ -295,15 +309,30 @@
     
     _table_view.translatesAutoresizingMaskIntoConstraints = NO;
     _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_table_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        
-        [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
-        [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor]
-    ]];
+    if (_is_container_view_controller) {
+        [NSLayoutConstraint activateConstraints:@[
+            [_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+            [_table_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [_table_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+            [_table_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+            [_table_view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
+            [_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+            
+            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor]
+        ]];
+    }
+    else {
+        [NSLayoutConstraint activateConstraints:@[
+            [_table_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+            [_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+            [_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+            [_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+            
+            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
+            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor]
+        ]];
+    }
 }
 
 -(void)setupLayout {
@@ -334,6 +363,11 @@
         return self->_pages->get();
     }];
 }
+-(void)loadNextPage {
+    [self appendItemsFromBlock:^{
+        return self->_pages->next();
+    }];
+}
 
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
     _pages = std::move(pages);
@@ -362,6 +396,7 @@
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
     return _comments.size();
 }
+
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     CommentsTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[CommentsTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = index_path.row;
@@ -399,9 +434,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     NSUInteger item_count = [_table_view numberOfRowsInSection:0];
     for (NSIndexPath* index_path in index_paths) {
         if ([index_path row] >= item_count - 1) {
-            [self appendItemsFromBlock:^{
-                return self->_pages->next();
-            }];
+            [self loadNextPage];
             return;
         }
     }
