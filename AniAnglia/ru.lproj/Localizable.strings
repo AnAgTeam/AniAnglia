@@ -101,6 +101,7 @@
 "app.release.general.author_info.studio" = "Студия";
 "app.release.general.author_info.author" = "автор";
 "app.release.general.author_info.director" = "режиссёр";
+"app.release.description.show_all.title" = "Показать всё";
 
 "app.release.lists.title" = "В списках";
 "app.release.rating.title" = "Рейтинг";

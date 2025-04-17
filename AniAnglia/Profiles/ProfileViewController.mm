@@ -21,6 +21,7 @@
 #import "CommentsTableViewController.h"
 #import "SegmentedPageViewController.h"
 #import "CommentRepliesViewController.h"
+#import "CollectionsViewController.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -1141,7 +1142,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didCollectionsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {
-    // TODO
+    [self.navigationController pushViewController:[[CollectionsViewController alloc] initWithPages:_api_proxy.api->collections().profile_collections(_profile->id, 0) axis:UICollectionViewScrollDirectionVertical] animated:YES];
 }
 
 -(void)didCommentsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {

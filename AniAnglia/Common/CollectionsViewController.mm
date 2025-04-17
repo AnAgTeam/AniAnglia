@@ -177,6 +177,7 @@
     
 }
 -(void)setupLayout {
+    self.backgroundColor = [AppColorProvider foregroundColor1];
     _gradient_layer.colors = @[(id)[UIColor clearColor].CGColor, (id)[AppColorProvider backgroundColor].CGColor];
     _title_label.textColor = [AppColorProvider textColor];
 }
@@ -226,6 +227,8 @@
 -(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
     layout.scrollDirection = _axis;
+    layout.minimumLineSpacing = 20;
+    layout.sectionInset = UIEdgeInsetsMake(10, 8, 10, 8);
     _collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
     [_collection_view registerClass:CollectionCollectionViewCell.class forCellWithReuseIdentifier:[CollectionCollectionViewCell getIdentifier]];
     _collection_view.dataSource = self;
@@ -347,8 +350,9 @@
     return cell;
 }
 
--(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
-    return CGSizeMake(collection_view.frame.size.height * (16. / 9), collection_view.frame.size.height);
+-(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewFlowLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
+    CGFloat width_inset = collection_view_layout.sectionInset.left + collection_view_layout.sectionInset.right;
+    return _axis == UICollectionViewScrollDirectionHorizontal ? CGSizeMake(collection_view.frame.size.height * (16. / 9), collection_view.frame.size.height) : CGSizeMake(collection_view.frame.size.width - width_inset, (collection_view.frame.size.width - width_inset) * (9. / 16));
 }
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {

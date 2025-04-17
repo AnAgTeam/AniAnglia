@@ -19,6 +19,7 @@
 #import "DynamicTableView.h"
 #import "CommentRepliesViewController.h"
 #import "ReleasesTableViewController.h"
+#import "SegmentedPageViewController.h"
 
 @class DiscoverInterestingView;
 @class DiscoverOptionsView;
@@ -787,16 +788,21 @@
 }
 
 -(void)didPopularPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
-    NSLog(@"popularButtonPressed");
+//    anixart::requests::FilterRequest fr;
+//    fr.sort = anixart::requests::FilterRequest::Sort::DateUpdate;
+//    SegmentedPageViewController* page_view_controller = [SegmentedPageViewController new];
+//    [page_view_controller setPageViewControllers:@[
+//        [ReleasesTableViewController alloc] initWithPages:],
+//    ]];
 }
 -(void)didSchedulePressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
-    NSLog(@"scheduleButtonPressed");
+    // TODO
 }
 -(void)didCollectionsPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
-    NSLog(@"collectionsButtonPressed");
+    [self.navigationController pushViewController:[[CollectionsViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::RecentlyAdded, 1, 0) axis:UICollectionViewScrollDirectionVertical] animated:YES];
 }
 -(void)didRandomPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
-    NSLog(@"randomButtonPressed");
+    [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithRandomRelease] animated:YES];
 }
 
 -(void)discoverInterestingView:(DiscoverInterestingView *)interesting_view didSelectInteresting:(anixart::Interesting::Ptr)interesting { 

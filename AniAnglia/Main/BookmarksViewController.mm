@@ -59,6 +59,7 @@ anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Pr
         NSLocalizedString(@"app.bookmarks.holdon.title", ""),
         NSLocalizedString(@"app.bookmarks.dropped.title", ""),
     ]];
+    [self addChildViewController:_page_view_controller];
     
     [self.view addSubview:_page_view_controller.view];
     

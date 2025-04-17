@@ -10,7 +10,7 @@ namespace anixart {
 
 		void release_vote(const ReleaseID release_id, const int32_t vote) const;
 		void delete_release_vote(const ReleaseID release_id) const;
-		Release::Ptr random_release(const ReleaseID release_id) const;
+		Release::Ptr random_release(const bool extended_mode) const;
 		Release::Ptr random_collection_release(const ReleaseID release_id) const;
 		Release::Ptr random_favorite_release(const ReleaseID release_id) const;
 		Release::Ptr random_profile_release(const ProfileID profile_id, const Release::Status status) const;
