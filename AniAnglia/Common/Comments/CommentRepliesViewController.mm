@@ -21,6 +21,7 @@
     anixart::Comment::Ptr _reply_to_comment;
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
+@property(nonatomic) BOOL is_release_comment;
 @property(nonatomic, retain) CommentsTableViewCell* replied_comment_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_table_view_controller;
 @property(nonatomic, retain) TextEnterView* text_enter_view;
@@ -36,7 +37,8 @@
     _api_proxy = [LibanixartApi sharedInstance];
     _comment_id = comment->id;
     _comment = comment;
-    _reply_to_profile_id = _comment->author->id;
+    _reply_to_profile_id = comment->author->id;
+    _is_release_comment = comment->release ? YES : NO;
     _last_text_enter_origin_y = -1;
     _reply_to_comment = nullptr;
     
@@ -48,12 +50,12 @@
     _api_proxy = [LibanixartApi sharedInstance];
     if (comment->parent_comment_id != anixart::Comment::INVALID_ID) {
         _comment_id = comment->parent_comment_id;
-        _reply_to_profile_id = comment->author->id;
     } else {
         _comment_id = comment->id;
         _comment = comment;
-        _reply_to_profile_id = _comment->author->id;
     }
+    _is_release_comment = comment->release ? YES : NO;
+    _reply_to_profile_id = comment->author->id;
     _last_text_enter_origin_y = -1;
     _reply_to_comment = comment;
     
@@ -87,7 +89,11 @@
     _replied_comment_view.selectionStyle = UITableViewCellSelectionStyleNone;
     _replied_comment_view.delegate = self;
     
-    _comments_table_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().replies_to_comment(_comment_id, 0, anixart::Comment::Sort::Oldest)];
+    if (_is_release_comment) {
+        _comments_table_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().replies_to_comment(_comment_id, 0, anixart::Comment::Sort::Oldest)];
+    } else {
+        _comments_table_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->collections().replies_to_comment(_comment_id, anixart::Comment::Sort::Oldest, 0)];
+    }
     [_comments_table_view_controller setHeaderView:_replied_comment_view];
     [self addChildViewController:_comments_table_view_controller];
     [_comments_table_view_controller setKeyboardDismissMode:UIScrollViewKeyboardDismissModeOnDrag];
@@ -114,7 +120,6 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onKeyboardHide:) name:UIKeyboardWillHideNotification object:nil];
     }
     [NSLayoutConstraint activateConstraints:@[
-//        [_replied_comment_view.widthAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor],
         [_replied_comment_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [_replied_comment_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
         
@@ -160,7 +165,11 @@
         }
     } else {
         [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-            self->_comment = api->releases().release_comment(self->_comment_id);
+            if (self->_is_release_comment) {
+                self->_comment = api->releases().release_comment(self->_comment_id);
+            } else {
+                self->_comment = api->collections().collection_comment(self->_comment_id);
+            }
             return YES;
         } withUICompletion:^{
             [self initParentComment];
@@ -172,12 +181,11 @@
 }
 
 -(void)refresh {
-    if (_comment->release) {
+    if (_is_release_comment) {
         [_comments_table_view_controller setPages: self->_api_proxy.api->releases().replies_to_comment(_comment->id, 0, anixart::Comment::Sort::Oldest)];
     }
-    else if (_comment->collection) {
-        // TODO: recheck api
-        [_comments_table_view_controller setPages: self->_api_proxy.api->collections().collection_comment_replies(_comment->id, anixart::Comment::Sign::Negative, 0)];
+    else {
+        [_comments_table_view_controller setPages: self->_api_proxy.api->collections().replies_to_comment(_comment->id, anixart::Comment::Sort::Oldest, 0)];
     }
 }
 -(void)replyToComment:(anixart::Comment::Ptr)comment {
@@ -191,18 +199,26 @@
     [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithComment:_comment] animated:YES];
 }
 -(void)didUpvotePressedForCommentTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
-    // TODO: add UI response. Edit API
+    // TODO: add UI response
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        api->releases().vote_release_comment(self->_comment->id, anixart::Comment::Sign::Positive);
+        if (self->_is_release_comment) {
+            api->releases().vote_release_comment(self->_comment->id, anixart::Comment::Sign::Positive);
+        } else {
+            api->collections().vote_collection_comment(self->_comment->id, anixart::Comment::Sign::Positive);
+        }
         return YES;
     } withUICompletion:^{
         
     }];
 }
 -(void)didDownvotePressedForCommentTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
-    // TODO: add UI response. Edit API
+    // TODO: add UI response
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        api->releases().vote_release_comment(self->_comment->id, anixart::Comment::Sign::Negative);
+        if (self->_is_release_comment) {
+            api->releases().vote_release_comment(self->_comment->id, anixart::Comment::Sign::Negative);
+        } else {
+            api->collections().vote_collection_comment(self->_comment->id, anixart::Comment::Sign::Negative);
+        }
         return YES;
     } withUICompletion:^{
         
@@ -225,10 +241,11 @@
         request.reply_to_profile_id = self->_reply_to_profile_id;
         request.is_spoiler = is_spoiler;
         
-        if (self->_comment->release) {
+        // maybe check collection too
+        if (self->_is_release_comment) {
             api->releases().add_release_comment(self->_comment->release->id, request);
         }
-        else if (self->_comment->collection) {
+        else {
             api->collections().add_collection_comment(self->_comment->collection->id, request);
         }
         return YES;
@@ -244,15 +261,10 @@
 -(void)onKeyboardShow:(NSNotification*)notification {
     CGRect keyboard_rect = [notification.userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
     CGRect keyboard_rect_cvt = [self.view convertRect:keyboard_rect fromView:nil];
-//    _text_enter_view_bottom_constraint.constant = -(_text_enter_view.frame.origin.y - keyboard_rect_cvt.origin.y);
     _text_enter_view_bottom_constraint.constant = -(keyboard_rect.size.height - (keyboard_rect.origin.y - keyboard_rect_cvt.origin.y) + 5);
-//    NSLog(@"Show kb size (cvt): {{%f, %f}, {%f, %f}", keyboard_rect_cvt.origin.x, keyboard_rect_cvt.origin.y, keyboard_rect_cvt.size.width, keyboard_rect_cvt.size.height);
-//    NSLog(@"text_enter_view: {{%f, %f}, {%f, %f}", _text_enter_view.frame.origin.x, _text_enter_view.frame.origin.y, _text_enter_view.frame.size.width, _text_enter_view.frame.size.height);
-//    NSLog(@"Show kb size: {{%f, %f}, {%f, %f}", keyboard_rect.origin.x, keyboard_rect.origin.y, keyboard_rect.size.width, keyboard_rect.size.height);
 }
 -(void)onKeyboardHide:(NSNotification*)notification {
     _text_enter_view_bottom_constraint.constant = 0;
-//    NSLog(@"Hide kb size: {%f, %f}", keyboard_size.width, keyboard_size.height);
 }
 
 @end

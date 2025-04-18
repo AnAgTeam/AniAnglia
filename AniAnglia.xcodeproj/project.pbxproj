@@ -51,6 +51,8 @@
 		EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8B01B12C7015A200423ECD /* SceneDelegate.mm */; };
 		EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8B01B22C7015A200423ECD /* AuthViewController.mm */; };
 		EF8B01B62C7015A300423ECD /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8B01B32C7015A300423ECD /* main.mm */; };
+		EF8C37532DB2B28900ADDBD7 /* CollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */; };
+		EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */; };
 		EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */; };
 		EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */; };
 		EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F93F2CB497D500555A26 /* AVKit.framework */; };
@@ -73,7 +75,7 @@
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
 		EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */; };
-		EFFA21DD2DB0220E007D8AD4 /* CollectionsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21DC2DB0220E007D8AD4 /* CollectionsViewController.mm */; };
+		EFFA21DD2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21DC2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm */; };
 		EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */; };
 		EFFA3C482DAD535200DE042A /* ProfileCommentsPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */; };
 /* End PBXBuildFile section */
@@ -1323,6 +1325,10 @@
 		EF8B01B22C7015A200423ECD /* AuthViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthViewController.mm; sourceTree = "<group>"; };
 		EF8B01B32C7015A300423ECD /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		EF8BFF7E2C70060600423ECD /* curl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = curl.xcframework; path = /Users/toilettrauma/AniAnglia/../Desktop/myAppFrameworks/curl.xcframework; sourceTree = "<absolute>"; };
+		EF8C37512DB2B27B00ADDBD7 /* CollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionViewController.h; sourceTree = "<group>"; };
+		EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionViewController.mm; sourceTree = "<group>"; };
+		EF8C37542DB2C6B000ADDBD7 /* ExpandableLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExpandableLabel.h; sourceTree = "<group>"; };
+		EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ExpandableLabel.mm; sourceTree = "<group>"; };
 		EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EpisodeSelectViewController.mm; sourceTree = "<group>"; };
 		EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EpisodeSelectViewController.h; sourceTree = "<group>"; };
 		EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlayerViewController.mm; sourceTree = "<group>"; };
@@ -1349,8 +1355,8 @@
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
 		EFFA21D72DB01A31007D8AD4 /* ReleasesCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesCollectionViewController.h; sourceTree = "<group>"; };
 		EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesCollectionViewController.mm; sourceTree = "<group>"; };
-		EFFA21DB2DB021FD007D8AD4 /* CollectionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionsViewController.h; sourceTree = "<group>"; };
-		EFFA21DC2DB0220E007D8AD4 /* CollectionsViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionsViewController.mm; sourceTree = "<group>"; };
+		EFFA21DB2DB021FD007D8AD4 /* CollectionsCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionsCollectionViewController.h; sourceTree = "<group>"; };
+		EFFA21DC2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionsCollectionViewController.mm; sourceTree = "<group>"; };
 		EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommentsTableViewController.mm; sourceTree = "<group>"; };
 		EFFA3C452DAB151C00DE042A /* CommentsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommentsTableViewController.h; sourceTree = "<group>"; };
 		EFFA3C462DAD534100DE042A /* ProfileCommentsPageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileCommentsPageViewController.h; sourceTree = "<group>"; };
@@ -1476,8 +1482,6 @@
 				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
 				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
 				EFD505E02CAC401700E87BF1 /* StringCvt.mm */,
-				EFED8F552CE2985300C53C1C /* LoadableView.h */,
-				EFED8F562CE2986300C53C1C /* LoadableView.mm */,
 				EF7CD28A2DA03C3F00F88227 /* TimeCvt.h */,
 				EF3568A62DA84F2A00086593 /* SharedRunningData.h */,
 				EF3568A42DA84F1D00086593 /* SharedRunningData.mm */,
@@ -3425,8 +3429,11 @@
 		EF7CD28B2DA03FE800F88227 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				EF8C37502DB2B23E00ADDBD7 /* Collections */,
 				EFFA21DA2DB021C3007D8AD4 /* Releases */,
 				EF2330622DAD9171008B0A2A /* Comments */,
+				EFED8F552CE2985300C53C1C /* LoadableView.h */,
+				EFED8F562CE2986300C53C1C /* LoadableView.mm */,
 				EF3568A02DA5839A00086593 /* CustomTableViewCells.h */,
 				EF3568A12DA583C800086593 /* CustomTableViewCells.m */,
 				EF7CD28C2DA03FFF00F88227 /* DynamicTableView.h */,
@@ -3437,8 +3444,8 @@
 				EF3568B12DA98D4400086593 /* SegmentedPageViewController.mm */,
 				EF2330662DAD9281008B0A2A /* TextEnterView.h */,
 				EF2330672DAD9293008B0A2A /* TextEnterView.mm */,
-				EFFA21DB2DB021FD007D8AD4 /* CollectionsViewController.h */,
-				EFFA21DC2DB0220E007D8AD4 /* CollectionsViewController.mm */,
+				EF8C37542DB2C6B000ADDBD7 /* ExpandableLabel.h */,
+				EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3454,6 +3461,17 @@
 				EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */,
 			);
 			path = Profiles;
+			sourceTree = "<group>";
+		};
+		EF8C37502DB2B23E00ADDBD7 /* Collections */ = {
+			isa = PBXGroup;
+			children = (
+				EFFA21DB2DB021FD007D8AD4 /* CollectionsCollectionViewController.h */,
+				EFFA21DC2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm */,
+				EF8C37512DB2B27B00ADDBD7 /* CollectionViewController.h */,
+				EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */,
+			);
+			path = Collections;
 			sourceTree = "<group>";
 		};
 		EFAB992D2C6FF833008208E2 /* Frameworks */ = {
@@ -3588,9 +3606,10 @@
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
 				EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */,
-				EFFA21DD2DB0220E007D8AD4 /* CollectionsViewController.mm in Sources */,
+				EFFA21DD2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
+				EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EF7CD2912DA040EC00F88227 /* ProfileListsView.mm in Sources */,
 				EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */,
@@ -3601,6 +3620,7 @@
 				EF5A3CCC2C7FA18A00B4F637 /* MainViewController.mm in Sources */,
 				EF5A3CD22C7FA1BA00B4F637 /* ProfileViewController.mm in Sources */,
 				EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */,
+				EF8C37532DB2B28900ADDBD7 /* CollectionViewController.mm in Sources */,
 				EF65E3492D82297C00114102 /* ReleasesHistoryTableViewController.mm in Sources */,
 				EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */,
 				EF3568B22DA98D4400086593 /* SegmentedPageViewController.mm in Sources */,

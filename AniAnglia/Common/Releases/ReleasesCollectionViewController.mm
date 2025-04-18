@@ -190,7 +190,6 @@
         return;
     }
     
-    [_loadable_view startLoading];
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         /* todo: change to thread-safe */
         auto new_items = block();
@@ -205,6 +204,7 @@
 }
 
 -(void)loadFirstPage {
+    [_loadable_view startLoading];
     [self appendItemsFromBlock:^{
         return self->_pages->get();
     }];

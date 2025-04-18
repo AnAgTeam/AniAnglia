@@ -101,7 +101,6 @@
 "app.release.general.author_info.studio" = "Студия";
 "app.release.general.author_info.author" = "автор";
 "app.release.general.author_info.director" = "режиссёр";
-"app.release.description.show_all.title" = "Показать всё";
 
 "app.release.lists.title" = "В списках";
 "app.release.rating.title" = "Рейтинг";
@@ -118,6 +117,15 @@
 "app.release.comments.show_all_button.title" = "Показать все";
 
 "app.release.episode_count.end" = "эп.";
+
+/* COLLECTION */
+"app.collection.created.start" = "Создано";
+"app.collection.updated.start" = "Обновлено";
+
+"app.collection.random.title" = "Случайное";
+
+"app.collection.lists.name" = "В моих списках";
+
 /* COMMENTS */
 "app.comments.reply_button.title" = "Ответить";
 "app.comments.show_replies_button.title" = "Показать ответы";
@@ -148,7 +156,7 @@
 "app.bookmarks.dropped.title" = "Брошено";
 
 "app.profile.status.online.name" = "Онлайн";
-"app.profile.status.offline.name" = "Не в сети";
+"app.profile.status.offline.start" = "Был(а) в сети";
 
 "app.profile.stats_block.comment_count.name" = "Комментариев";
 "app.profile.stats_block.video_count.name" = "Видео";
@@ -326,3 +334,6 @@
 "app.filter.sort_select_button.menu.year.text" = "По году";
 
 "app.filter.search_button.title" = "Поиск";
+
+/* COMMON */
+"app.common.expandable_label.show_all.title" = "Показать всё";

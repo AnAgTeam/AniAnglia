@@ -13,5 +13,6 @@
 -(instancetype)initWithRelease:(anixart::Release::Ptr)release;
 -(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id;
 -(instancetype)initWithRandomRelease;
+-(instancetype)initWithRandomCollectionRelease:(anixart::CollectionID)collection_id;
 
 @end

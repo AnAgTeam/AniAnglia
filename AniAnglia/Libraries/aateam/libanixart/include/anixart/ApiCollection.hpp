@@ -16,12 +16,12 @@ namespace anixart {
 		void report_collection(const CollectionID collection_id, const requests::CollectionReportRequest& request);
 
 		void add_collection_comment(const CollectionID collection_id, const requests::CommentAddRequest& request);
-		Comment::Ptr collection_comment(const CommentID comment_id); // wtf?
-		CollectionCommentsPages::UPtr collection_comments(const CollectionID collection_id, const Comment::Sign sort, const int32_t start_page);
+		Comment::Ptr collection_comment(const CommentID comment_id);
+		CollectionCommentsPages::UPtr collection_comments(const CollectionID collection_id, const Comment::Sort sort, const int32_t start_page);
 		void remove_comment(const CommentID comment_id);
 		void edit_comment(const CommentID comment_id, const requests::CommentEditRequest& request);
 		void process_comment(const CommentID comment_id, const requests::CommentProcessRequest& request);
-		CollectionCommentRepliesPages::UPtr collection_comment_replies(const CommentID comment_id, const Comment::Sign sort, const int32_t start_page);
+		CollectionCommentRepliesPages::UPtr replies_to_comment(const CommentID comment_id, const Comment::Sort sort, const int32_t start_page);
 		void report_collection_comment(const CommentID comment_id, const requests::CommentReportRequest& request);
 		void vote_collection_comment(const CommentID comment_id, const Comment::Sign vote);
 

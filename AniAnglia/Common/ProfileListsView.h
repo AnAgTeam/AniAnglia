@@ -20,6 +20,7 @@
 
 -(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release name:(NSString*)name;
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile name:(NSString*)name;
+-(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info name:(NSString*)name;
 
 -(void)setReleaseInfo:(anixart::Release::Ptr)release;
 -(void)setProfile:(anixart::Profile::Ptr)profile;

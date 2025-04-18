@@ -25,6 +25,7 @@
 @property(nonatomic, retain) UITableView* table_view;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UILabel* empty_label;
+@property(nonatomic, retain) UIView* header_view;
 
 @end
 
@@ -74,6 +75,7 @@
     _table_view.dataSource = self;
     _table_view.delegate = self;
     _table_view.prefetchDataSource = self;
+    _table_view.tableHeaderView = _header_view;
     
     _loadable_view = [LoadableView new];
     
@@ -132,7 +134,10 @@
 }
 
 -(void)appendItemsFromBlock:(std::vector<anixart::Release::Ptr>(^)())block {
-    [_loadable_view startLoading];
+    if (!_pages) {
+        return;
+    }
+    
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         /* todo: change to thread-safe */
         auto new_items = block();
@@ -147,6 +152,7 @@
     }];
 }
 -(void)loadFirstPage {
+    [_loadable_view startLoading];
     [self appendItemsFromBlock:^{
         return self->_pages->get();
     }];
@@ -171,6 +177,13 @@
     _releases.clear();
     _empty_label.hidden = YES;
     [_table_view reloadData];
+}
+
+-(void)setHeaderView:(UIView*)header_view {
+    _header_view = header_view;
+    if (_table_view) {
+        _table_view.tableHeaderView = header_view;
+    }
 }
 
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {

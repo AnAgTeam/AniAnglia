@@ -21,7 +21,7 @@
 #import "CommentsTableViewController.h"
 #import "SegmentedPageViewController.h"
 #import "CommentRepliesViewController.h"
-#import "CollectionsViewController.h"
+#import "CollectionsCollectionViewController.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -1020,9 +1020,15 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     
     _custom_status_label = [UILabel new];
     _custom_status_label.text = TO_NSSTRING(_profile->status);
+    _custom_status_label.numberOfLines = 0;
+    _custom_status_label.textAlignment = NSTextAlignmentCenter;
     
     _status_label = [UILabel new];
-    _status_label.text = _profile->is_online ? NSLocalizedString(@"app.profile.status.online.name", "") : NSLocalizedString(@"app.profile.status.offline.name", "");
+    if (_profile->is_online) {
+        _status_label.text = NSLocalizedString(@"app.profile.status.online.name", "");
+    } else {
+        _status_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.profile.status.offline.start", ""), to_gmt_yy_mm_dd_string_from_gmt(_profile->last_activity_time)];
+    }
     
     NSMutableArray<NSLayoutConstraint*>* optional_constraints = [NSMutableArray arrayWithCapacity:2];
     
@@ -1142,7 +1148,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)didCollectionsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {
-    [self.navigationController pushViewController:[[CollectionsViewController alloc] initWithPages:_api_proxy.api->collections().profile_collections(_profile->id, 0) axis:UICollectionViewScrollDirectionVertical] animated:YES];
+    [self.navigationController pushViewController:[[CollectionsCollectionViewController alloc] initWithPages:_api_proxy.api->collections().profile_collections(_profile->id, 0) axis:UICollectionViewScrollDirectionVertical] animated:YES];
 }
 
 -(void)didCommentsPressedForProfileStatsBlockView:(ProfileStatsBlockView *)profile_stats_block_view {

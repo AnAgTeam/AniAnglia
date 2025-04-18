@@ -13,7 +13,7 @@
 #import "AppColor.h"
 #import "LoadableView.h"
 #import "FilterViewController.h"
-#import "CollectionsViewController.h"
+#import "CollectionsCollectionViewController.h"
 #import "ReleasesCollectionViewController.h"
 #import "CommentsTableViewController.h"
 #import "DynamicTableView.h"
@@ -124,7 +124,7 @@
 @property(nonatomic, retain) DiscoverDiscussingView* discussing_view;
 @property(nonatomic, retain) ReleasesCollectionViewController* watching_view_controller;
 @property(nonatomic, retain) DiscoverWatchingView* watching_view;
-@property(nonatomic, retain) CollectionsViewController* collections_view_controller;
+@property(nonatomic, retain) CollectionsCollectionViewController* collections_view_controller;
 @property(nonatomic, retain) DiscoverWeekCollectionsView* collections_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
 @property(nonatomic, retain) DiscoverWeekCommentsView* comments_view;
@@ -181,6 +181,7 @@
     ]];
 }
 -(void)setupLayout {
+    self.backgroundColor = [AppColorProvider foregroundColor1];
     _gradient_layer.colors = @[(id)[UIColor clearColor].CGColor, (id)[AppColorProvider backgroundColor].CGColor];
     _image_view.backgroundColor = [UIColor clearColor];
     _title_label.textColor = [AppColorProvider textColor];
@@ -722,7 +723,7 @@
     _watching_view = [[DiscoverWatchingView alloc] initWithView:_watching_view_controller.view];
     _watching_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     
-    _collections_view_controller = [[CollectionsViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::WeekPopular, 2, 0) axis:UICollectionViewScrollDirectionHorizontal];
+    _collections_view_controller = [[CollectionsCollectionViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::WeekPopular, 2, 0) axis:UICollectionViewScrollDirectionHorizontal];
     _collections_view_controller.is_container_view_controller = YES;
     [self addChildViewController:_collections_view_controller];
     
@@ -799,7 +800,7 @@
     // TODO
 }
 -(void)didCollectionsPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
-    [self.navigationController pushViewController:[[CollectionsViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::RecentlyAdded, 1, 0) axis:UICollectionViewScrollDirectionVertical] animated:YES];
+    [self.navigationController pushViewController:[[CollectionsCollectionViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::YearPopular, 1, 0) axis:UICollectionViewScrollDirectionVertical] animated:YES];
 }
 -(void)didRandomPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithRandomRelease] animated:YES];

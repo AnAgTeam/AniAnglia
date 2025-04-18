@@ -462,7 +462,7 @@ namespace anixart {
 
     class CollectionCommentsPages : public Paginator<Comment> {
     public:
-        CollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id, const Comment::Sign sort);
+        CollectionCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id, const Comment::Sort sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -470,7 +470,7 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         CollectionID _collection_id;
-        Comment::Sign _sort;
+        Comment::Sort _sort;
     };
 
     class ProfileCollectionCommentsPages : public Paginator<Comment> {
@@ -488,7 +488,7 @@ namespace anixart {
 
     class CollectionCommentRepliesPages : public Paginator<Comment> {
     public:
-        CollectionCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Comment::Sign sort);
+        CollectionCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Comment::Sort sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -496,7 +496,7 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         CommentID _comment_id;
-        Comment::Sign _sort;
+        Comment::Sort _sort;
     };
 
     class FavoriteCollectionsPages : public Paginator<Collection> {

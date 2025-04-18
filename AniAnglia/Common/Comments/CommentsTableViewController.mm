@@ -15,6 +15,7 @@
 #import "TimeCvt.h"
 #import "ReleaseViewController.h"
 #import "CommentRepliesViewController.h"
+#import "CollectionViewController.h"
 
 @interface CommentsTableViewCell ()
 @property(nonatomic, retain) UIButton* avatar_button;
@@ -344,7 +345,6 @@
         return;
     }
     
-    [_loadable_view startLoading];
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         /* todo: change to thread-safe */
         auto new_items = block();
@@ -359,6 +359,7 @@
 }
 
 -(void)loadFirstPage {
+    [_loadable_view startLoading];
     [self appendItemsFromBlock:^{
         return self->_pages->get();
     }];
@@ -447,7 +448,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
         NSInteger index = index_path.row;
         anixart::Comment::Ptr& comment = _comments[index];
         if (comment->collection) {
-            // TODO
+            [self.navigationController pushViewController:[[CollectionViewController alloc] initWithCollectionID:comment->collection->id] animated:YES];
         }
         else if (comment->release) {
             [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:comment->release->id] animated:YES];
@@ -466,10 +467,15 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
     NSInteger index = index_path.row;
     anixart::Comment::Ptr comment = _comments[index];
+    BOOL is_release_comment = comment->release ? YES : NO;
     
     // TODO: add UI response
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        api->releases().vote_release_comment(comment->id, anixart::Comment::Sign::Positive);
+        if (is_release_comment) {
+            api->releases().vote_release_comment(comment->id, anixart::Comment::Sign::Positive);
+        } else {
+            api->collections().vote_collection_comment(comment->id, anixart::Comment::Sign::Positive);
+        }
         return YES;
     } withUICompletion:^{
         
@@ -479,10 +485,15 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     NSIndexPath* index_path = [_table_view indexPathForCell:comment_table_view_cell];
     NSInteger index = index_path.row;
     anixart::Comment::Ptr comment = _comments[index];
+    BOOL is_release_comment = comment->release ? YES : NO;
     
     // TODO: add UI response
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        api->releases().vote_release_comment(comment->id, anixart::Comment::Sign::Negative);
+        if (is_release_comment) {
+            api->releases().vote_release_comment(comment->id, anixart::Comment::Sign::Negative);
+        } else {
+            api->collections().vote_collection_comment(comment->id, anixart::Comment::Sign::Negative);
+        }
         return YES;
     } withUICompletion:^{
         

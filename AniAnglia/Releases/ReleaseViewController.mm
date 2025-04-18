@@ -18,6 +18,7 @@
 #import "ProfileListsView.h"
 #import "CommentsTableViewController.h"
 #import "CommentRepliesViewController.h"
+#import "ExpandableLabel.h"
 
 @class ReleaseRatingView;
 @class ReleaseVideoBlocksView;
@@ -67,17 +68,6 @@
 @property(nonatomic, retain) UILabel* content_label;
 
 -(instancetype)initWithImage:(UIImage*)image content:(NSString*)content;
-@end
-
-@interface ReleaseDescriptionView : UIView {
-    anixart::Release::Ptr _release;
-}
-@property(nonatomic, retain) UILabel* description_label;
-@property(nonatomic, retain) UIButton* show_all_button;
-@property(nonatomic, retain) NSArray<NSLayoutConstraint*>* show_all_button_constraints;
-@property(nonatomic) BOOL show_all_button_pressed;
-
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
 @end
 
 @interface ReleaseVideoBlocksCollectionViewCell : UICollectionViewCell
@@ -178,12 +168,14 @@
 -(instancetype)initWithView:(UIView*)view;
 @end
 
-@interface ReleaseViewController () <ReleaseRatingViewDelegate, ReleaseVideoBlocksViewDelegate, ReleasePreviewViewDelegate, ReleaseRelatedViewDelegate, ReleaseCommentsViewDelegate, CommentsTableViewControllerDelegate> {
+@interface ReleaseViewController () <ReleaseRatingViewDelegate, ReleaseVideoBlocksViewDelegate, ReleasePreviewViewDelegate, ReleaseRelatedViewDelegate, ReleaseCommentsViewDelegate, CommentsTableViewControllerDelegate, UIContextMenuInteractionDelegate> {
     anixart::Release::Ptr _release;
 }
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic) anixart::ReleaseID release_id;
 @property(nonatomic) BOOL is_random_release;
+
+@property(nonatomic, copy) anixart::Release::Ptr(^release_getter)(anixart::Api* api);
 
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) LoadableView* loading_view;
@@ -204,7 +196,7 @@
 @property(nonatomic, retain) ReleaseNamedImageView* status_info_view;
 @property(nonatomic, retain) ReleaseNamedImageView* author_info_view;
 @property(nonatomic, retain) UILabel* tags_label;
-@property(nonatomic, retain) ReleaseDescriptionView* description_view;
+@property(nonatomic, retain) ExpandableLabel* description_label;
 
 @property(nonatomic, retain) ReleaseRatingView* rating_view;
 @property(nonatomic, retain) ProfileListsView* lists_view;
@@ -213,6 +205,8 @@
 @property(nonatomic, retain) ReleaseRelatedView* related_view;
 @property(nonatomic, retain) ReleaseCommentsView* comments_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
+
+@property(nonatomic, retain) UIContextMenuInteraction* context_menu;
 
 @end
 
@@ -319,80 +313,6 @@
     _image_view.tintColor = [AppColorProvider textSecondaryColor];
     _content_label.textColor = [AppColorProvider textColor];
 }
-@end
-
-@implementation ReleaseDescriptionView : UIView
-
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release {
-    self = [super init];
-    
-    _release = release;
-    _show_all_button_pressed = NO;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _description_label = [UILabel new];
-    _description_label.text = TO_NSSTRING(_release->description);
-    _description_label.numberOfLines = 5;
-    
-    _show_all_button = [UIButton new];
-    [_show_all_button setTitle:NSLocalizedString(@"app.release.description.show_all.title", "") forState:UIControlStateNormal];
-    [_show_all_button addTarget:self action:@selector(onShowAllButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self addSubview:_description_label];
-    
-    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_description_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_description_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_description_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_description_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
-    ]];
-    [_description_label sizeToFit];
-}
--(void)setupLayout {
-    _description_label.textColor = [AppColorProvider textColor];
-    [_show_all_button setTitleColor:[AppColorProvider primaryColor] forState:UIControlStateNormal];
-}
-
--(void)layoutSubviews {
-    [super layoutSubviews];
-    [self addShowAllButtonIfNeeded];
-}
-
--(void)addShowAllButtonIfNeeded {
-    if (_show_all_button_pressed) {
-        return;
-    }
-    
-    CGSize text_size = [_description_label.text boundingRectWithSize:CGSizeMake(_description_label.bounds.size.width, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: _description_label.font} context:nil].size;
-    
-    if (text_size.height != _description_label.bounds.size.height) {
-        [self addSubview:_show_all_button];
-        
-        _show_all_button.translatesAutoresizingMaskIntoConstraints = NO;
-        _show_all_button_constraints = @[
-            [_show_all_button.topAnchor constraintEqualToAnchor:_description_label.bottomAnchor constant:5],
-            [_show_all_button.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-            [_show_all_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-            [_show_all_button.centerXAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
-            [_show_all_button.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
-        ];
-        [NSLayoutConstraint activateConstraints:_show_all_button_constraints];
-    }
-}
-
--(IBAction)onShowAllButtonPressed:(UIButton*)sender {
-    _show_all_button_pressed = YES;
-    _description_label.numberOfLines = 0;
-    [_description_label sizeToFit];
-    [NSLayoutConstraint deactivateConstraints:_show_all_button_constraints];
-    [_show_all_button removeFromSuperview];
-}
-
 @end
 
 @implementation ReleaseVideoBlocksCollectionViewCell
@@ -1047,6 +967,21 @@
     
     _api_proxy = [LibanixartApi sharedInstance];
     _is_random_release = YES;
+    _release_getter = ^(anixart::Api* api){
+        return api->releases().random_release(false);
+    };
+    
+    return self;
+}
+
+-(instancetype)initWithRandomCollectionRelease:(anixart::CollectionID)collection_id {
+    self = [super init];
+    
+    _api_proxy = [LibanixartApi sharedInstance];
+    _is_random_release = YES;
+    _release_getter = ^(anixart::Api* api){
+        return api->releases().random_collection_release(collection_id, false);
+    };
     
     return self;
 }
@@ -1062,10 +997,10 @@
         [self setupLayout];
     }];
 }
--(void)loadRandomReleaseInfo {
+-(void)loadWithReleaseGetter {
     [_loading_view startLoading];
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        self->_release = self->_api_proxy.api->releases().random_release(false);
+        self->_release = self->_release_getter(api);
         return YES;
     } withUICompletion:^{
         [self->_loading_view endLoading];
@@ -1084,8 +1019,8 @@
         [self setup];
         [self setupLayout];
     }
-    else if (_is_random_release) {
-        [self loadRandomReleaseInfo];
+    else if (_release_getter) {
+        [self loadWithReleaseGetter];
     } else {
         [self loadReleaseInfo];
     }
@@ -1125,6 +1060,10 @@
     _release_image_view = [LoadableImageView new];
     _release_image_view.layer.cornerRadius = 8.0;
     _release_image_view.layer.masksToBounds = YES;
+    //_release_image_view.userInteractionEnabled = YES;
+    
+    _context_menu = [[UIContextMenuInteraction alloc] initWithDelegate:self];
+    [_release_image_view addInteraction:_context_menu];
 
     _title_label = [UILabel new];
     _title_label.textAlignment = NSTextAlignmentJustified;
@@ -1182,7 +1121,8 @@
     _status_info_view = [[ReleaseNamedImageView alloc] initWithImage:[UIImage systemImageNamed:@"calendar"] content:status_info_content];
     _author_info_view = [[ReleaseNamedImageView alloc] initWithImage:[UIImage systemImageNamed:@"person.3"] content:author_info_content];
     _tags_label = [UILabel new];
-    _description_view = [[ReleaseDescriptionView alloc] initWithReleaseInfo:_release];
+    _description_label = [ExpandableLabel new];
+    [_description_label setText:TO_NSSTRING(_release->description)];
     
     _rating_view = [[ReleaseRatingView alloc] initWithReleaseInfo:_release];
     _rating_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
@@ -1230,7 +1170,7 @@
     [_content_stack_view addArrangedSubview:_status_info_view];
     [_content_stack_view addArrangedSubview:_author_info_view];
     [_content_stack_view addArrangedSubview:_tags_label];
-    [_content_stack_view addArrangedSubview:_description_view];
+    [_content_stack_view addArrangedSubview:_description_label];
     
     [_actions_stack_view addArrangedSubview:[UIView new]];
     [_actions_stack_view addArrangedSubview:_add_list_button];
@@ -1263,7 +1203,7 @@
     _status_info_view.translatesAutoresizingMaskIntoConstraints = NO;
     _author_info_view.translatesAutoresizingMaskIntoConstraints = NO;
     _tags_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _description_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _description_label.translatesAutoresizingMaskIntoConstraints = NO;
     _rating_view.translatesAutoresizingMaskIntoConstraints = NO;
     _lists_view.translatesAutoresizingMaskIntoConstraints = NO;
     _video_blocks_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1290,7 +1230,7 @@
         [_ep_info_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_status_info_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_author_info_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_description_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_description_label.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
 
         [_play_button.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_play_button.heightAnchor constraintEqualToConstant:50],
@@ -1484,6 +1424,19 @@
     CommentsTableViewController* comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::FilterBy::All)];
     comments_view_controller.delegate = self;
     [self.navigationController pushViewController:comments_view_controller animated:YES];
+}
+
+-(UIContextMenuConfiguration*)contextMenuInteraction:(UIContextMenuInteraction*)interaction configurationForMenuAtLocation:(CGPoint)location {
+    
+    return nil;
+    
+//    return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^(NSArray* suggested_actions) {
+//        return [UIMenu menuWithChildren:@[
+//            [UIAction actionWithTitle:@"Сохранить изображение" image:[UIImage systemImageNamed:@"square.and.arrow.down"] identifier:nil handler:^(UIAction* action) {
+//            
+//            }]
+//        ]];
+//    }];
 }
 
 @end

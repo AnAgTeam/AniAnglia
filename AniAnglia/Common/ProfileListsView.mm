@@ -63,12 +63,15 @@
 -(void)setup {
     _legend_color_view = [UIView new];
     _legend_color_view.layer.cornerRadius = 5;
+    
     _legend_name_label = [UILabel new];
     _legend_name_label.text = _legend_name;
     _legend_name_label.textAlignment = NSTextAlignmentLeft;
+    
     _legend_count_label = [UILabel new];
     _legend_count_label.text = [@(_legend_count) stringValue];
     _legend_count_label.textAlignment = NSTextAlignmentRight;
+    _legend_count_label.numberOfLines = 1;
     
     [self addSubview:_legend_color_view];
     [self addSubview:_legend_name_label];
@@ -78,21 +81,25 @@
     _legend_name_label.translatesAutoresizingMaskIntoConstraints = NO;
     _legend_count_label.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_legend_color_view.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-        [_legend_color_view.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [_legend_color_view.widthAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.7],
-        [_legend_color_view.heightAnchor constraintEqualToAnchor:self.heightAnchor multiplier:0.7],
+        [_legend_color_view.centerYAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
+        [_legend_color_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_legend_color_view.widthAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor],
+        [_legend_color_view.heightAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor],
         
-        [_legend_name_label.topAnchor constraintEqualToAnchor:self.topAnchor],
+        // TODO: change constraints
+        [_legend_name_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_legend_name_label.leadingAnchor constraintEqualToAnchor:_legend_color_view.trailingAnchor constant:5],
-        [_legend_name_label.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [_legend_name_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_legend_name_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
         
-        [_legend_count_label.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [_legend_count_label.leadingAnchor constraintEqualToAnchor:_legend_name_label.trailingAnchor constant:5],
-        [_legend_count_label.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-        [_legend_count_label.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
+        [_legend_count_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_legend_count_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_legend_color_view.trailingAnchor constant:5],
+//        [_legend_count_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_legend_name_label.trailingAnchor constant:5],
+        [_legend_count_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_legend_count_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
     ]];
     [_legend_name_label sizeToFit];
+    [_legend_count_label sizeToFit];
 }
 -(void)setupLayout {
     _legend_color_view.backgroundColor = _legend_color;
@@ -102,6 +109,7 @@
 
 -(void)setCount:(NSInteger)count {
     _legend_count_label.text = [@(count) stringValue];
+    [_legend_count_label sizeToFit];
 }
 
 @end
@@ -130,6 +138,20 @@
     _watched_count = profile->watched_count;
     _holdon_count = profile->hold_on_count;
     _dropped_count = profile->dropped_count;
+    _name = name;
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info name:(NSString*)name {
+    self = [super init];
+    
+    _watching_count = collection_get_info->watching_count;
+    _plan_count = collection_get_info->plan_count;
+    _watched_count = collection_get_info->completed_count;
+    _holdon_count = collection_get_info->hold_on_count;
+    _dropped_count = collection_get_info->dropped_count;
     _name = name;
     [self setup];
     [self setupLayout];
@@ -242,10 +264,10 @@
     ]];
     if (total_lists_count != 0) {
         _indicator_constraints = @[
-            [_watching_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
-            [_plan_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
-            [_watched_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
-            [_holdon_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
+            [_watching_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
+            [_plan_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
+            [_watched_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
+            [_holdon_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
             [_dropped_indicator_view.trailingAnchor constraintEqualToAnchor:_total_indicator_view.trailingAnchor]
         ];
         [NSLayoutConstraint activateConstraints:_indicator_constraints];

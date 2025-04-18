@@ -16,7 +16,6 @@
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier;
 +(NSString*)getIndentifier;
--(void)setupDarkLayout;
 @end
 
 @interface SourceSelectViewController ()
