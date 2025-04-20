@@ -17,6 +17,7 @@ namespace anixart {
 		Release::Ptr get_release(const ReleaseID release_id) const;
 
 		Comment::Ptr add_release_comment(const ReleaseID release_id, const requests::CommentAddRequest& add_request) const;
+		Comment::Ptr edit_release_comment(const CommentID comment_id, const requests::CommentEditRequest& edit_equest) const;
 		Comment::Ptr release_comment(const CommentID comment_id) const;
 		void remove_release_comment(const CommentID comment_id) const;
 		ReleaseCommentsPages::UPtr release_comments(const ReleaseID release_id, const int32_t start_page, const Comment::FilterBy filter_by) const;

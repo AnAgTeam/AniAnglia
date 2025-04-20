@@ -1,0 +1,24 @@
+//
+//  ReleasesViewController.h
+//  AniAnglia
+//
+//  Created by Toilettrauma on 18.04.2025.
+//
+
+#ifndef ReleasesViewController_h
+#define ReleasesViewController_h
+
+#import <UIKit/UIKit.h>
+#import "LibanixartApi.h"
+
+@interface ReleasesViewController : UIViewController
+
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+
+-(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(void)reset;
+
+-(void)setHeaderView:(UIView*)header_view;
+@end
+
+#endif /* ReleasesViewController_h */

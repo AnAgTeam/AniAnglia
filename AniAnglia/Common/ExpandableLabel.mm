@@ -93,6 +93,7 @@
     _text_label.numberOfLines = 0;
     [_text_label sizeToFit];
     [_show_all_button removeFromSuperview];
+    [_delegate didExpandPressedForExpandableLabel:self];
 }
 
 @end

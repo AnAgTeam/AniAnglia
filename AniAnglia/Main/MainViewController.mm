@@ -12,6 +12,7 @@
 #import "ReleaseViewController.h"
 #import "StringCvt.h"
 #import "ReleasesTableViewController.h"
+#import "ReleasesViewController.h"
 
 anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, const std::optional<anixart::Release::Status> status, const std::optional<anixart::Release::Category> category) {
     anixart::requests::FilterRequest filter_request;
@@ -40,7 +41,7 @@ anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, con
 -(void)setup {
     _page_view_controler = [SegmentedPageViewController new];
     [_page_view_controler setPageViewControllers:@[
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, std::nullopt) trailingActionDisabled:YES],
+       [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, std::nullopt)],
        [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Ongoing, std::nullopt) trailingActionDisabled:YES],
        [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Upcoming, std::nullopt) trailingActionDisabled:YES],
        [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Finished, std::nullopt) trailingActionDisabled:YES],

@@ -30,6 +30,8 @@
 -(void)reset;
 
 -(void)setHeaderView:(UIView*)header_view;
+
+-(void)setAxisItemCount:(NSInteger)axis_item_count;
 @end
 
 

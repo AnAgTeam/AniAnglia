@@ -23,18 +23,18 @@
 +(NSDictionary*)getDefaults {
     return @{
         // -- appearance
-        app_settings_keys::Appearance::theme: @(static_cast<int>(app_settings_keys::Appearance::Theme::System)),
-        app_settings_keys::Appearance::main_display_style: @(static_cast<int>(app_settings_keys::Appearance::DisplayStyle::Table)),
+        app_settings::Appearance::theme: @(static_cast<int>(app_settings::Appearance::Theme::System)),
+        app_settings::Appearance::main_display_style: @(static_cast<int>(app_settings::Appearance::DisplayStyle::Table)),
         // -- playback
-        app_settings_keys::Playback::default_player: @(static_cast<int>(app_settings_keys::Playback::DefaultPlayer::Internal)),
-        app_settings_keys::Playback::preffered_quality: @"720",
-        app_settings_keys::Playback::default_skip_time: @90,
-        app_settings_keys::Playback::auto_next_video: @(NO),
-        app_settings_keys::Playback::remember_source: @(NO),
+        app_settings::Playback::default_player: @(static_cast<int>(app_settings::Playback::DefaultPlayer::Internal)),
+        app_settings::Playback::preffered_quality: @"720",
+        app_settings::Playback::default_skip_time: @90,
+        app_settings::Playback::auto_next_video: @(NO),
+        app_settings::Playback::remember_source: @(NO),
         // -- data control
-        app_settings_keys::DataControl::max_cache_size: @(10 * 1024 * 1024),
+        app_settings::DataControl::max_cache_size: @(10 * 1024 * 1024),
         // -- general
-        app_settings_keys::General::alternative_connection: @(NO),
+        app_settings::General::alternative_connection: @(NO),
     };
 }
 
@@ -55,63 +55,63 @@
     // TODO. Better not to use this
 }
 // -- appearance
--(app_settings_keys::Appearance::Theme)getTheme {
-    NSNumber* theme = [_settings_dict valueForKey:app_settings_keys::Appearance::theme];
-    return static_cast<app_settings_keys::Appearance::Theme>([theme longValue]);
+-(app_settings::Appearance::Theme)getTheme {
+    NSNumber* theme = [_settings_dict valueForKey:app_settings::Appearance::theme];
+    return static_cast<app_settings::Appearance::Theme>([theme longValue]);
 }
--(void)setTheme:(app_settings_keys::Appearance::Theme)theme {
-    [_settings_dict setValue:@(static_cast<int>(theme)) forKey:app_settings_keys::Appearance::theme];
+-(void)setTheme:(app_settings::Appearance::Theme)theme {
+    [_settings_dict setValue:@(static_cast<int>(theme)) forKey:app_settings::Appearance::theme];
     [self saveSettings];
 }
--(app_settings_keys::Appearance::DisplayStyle)getMainDisplayStyle {
-    NSNumber* display_style = [_settings_dict valueForKey:app_settings_keys::Appearance::main_display_style];
-    return static_cast<app_settings_keys::Appearance::DisplayStyle>([display_style longValue]);
+-(app_settings::Appearance::DisplayStyle)getMainDisplayStyle {
+    NSNumber* display_style = [_settings_dict valueForKey:app_settings::Appearance::main_display_style];
+    return static_cast<app_settings::Appearance::DisplayStyle>([display_style longValue]);
 }
--(void)setMainDisplayStyle:(app_settings_keys::Appearance::DisplayStyle)display_style {
-    [_settings_dict setValue:@(static_cast<int>(display_style)) forKey:app_settings_keys::Appearance::main_display_style];
+-(void)setMainDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
+    [_settings_dict setValue:@(static_cast<int>(display_style)) forKey:app_settings::Appearance::main_display_style];
     [self saveSettings];
 }
 
 // -- playback
--(app_settings_keys::Playback::DefaultPlayer)getDefaultPlayer {
-    NSNumber* default_player = [_settings_dict valueForKey:app_settings_keys::Playback::default_player];
-    return static_cast<app_settings_keys::Playback::DefaultPlayer>([default_player longValue]);
+-(app_settings::Playback::DefaultPlayer)getDefaultPlayer {
+    NSNumber* default_player = [_settings_dict valueForKey:app_settings::Playback::default_player];
+    return static_cast<app_settings::Playback::DefaultPlayer>([default_player longValue]);
 }
--(void)setDefaultPlayer:(app_settings_keys::Playback::DefaultPlayer)default_player {
-    [_settings_dict setValue:@(static_cast<int>(default_player)) forKey:app_settings_keys::Playback::default_player];
+-(void)setDefaultPlayer:(app_settings::Playback::DefaultPlayer)default_player {
+    [_settings_dict setValue:@(static_cast<int>(default_player)) forKey:app_settings::Playback::default_player];
     [self saveSettings];
 }
 -(NSString*)getPrefferedQuality {
-    NSString* preffered_quality = [_settings_dict valueForKey:app_settings_keys::Playback::preffered_quality];
+    NSString* preffered_quality = [_settings_dict valueForKey:app_settings::Playback::preffered_quality];
     return preffered_quality;
 }
 -(void)setPrefferedQuality:(NSString*)preffered_quality {
-    [_settings_dict setValue:preffered_quality forKey:app_settings_keys::Playback::preffered_quality];
+    [_settings_dict setValue:preffered_quality forKey:app_settings::Playback::preffered_quality];
     [self saveSettings];
 }
 -(std::chrono::system_clock::duration)getDefaultSkipTime {
-    NSNumber* default_skip_time = [_settings_dict valueForKey:app_settings_keys::Playback::preffered_quality];
+    NSNumber* default_skip_time = [_settings_dict valueForKey:app_settings::Playback::preffered_quality];
     return std::chrono::seconds([default_skip_time longValue]);
 }
 -(void)setDefaultSkipTime:(std::chrono::system_clock::duration)default_skip_time {
     std::chrono::seconds seconds = std::chrono::floor<std::chrono::seconds>(default_skip_time);
-    [_settings_dict setValue:@(seconds.count()) forKey:app_settings_keys::Playback::default_skip_time];
+    [_settings_dict setValue:@(seconds.count()) forKey:app_settings::Playback::default_skip_time];
     [self saveSettings];
 }
 -(BOOL)getAutoNextVideo {
-    NSNumber* auto_next_video = [_settings_dict valueForKey:app_settings_keys::Playback::auto_next_video];
+    NSNumber* auto_next_video = [_settings_dict valueForKey:app_settings::Playback::auto_next_video];
     return [auto_next_video boolValue];
 }
 -(void)setAutoNextVideo:(BOOL)auto_next_video {
-    [_settings_dict setValue:@(auto_next_video) forKey:app_settings_keys::Playback::auto_next_video];
+    [_settings_dict setValue:@(auto_next_video) forKey:app_settings::Playback::auto_next_video];
     [self saveSettings];
 }
 -(BOOL)setRememberSource {
-    NSNumber* remember_source = [_settings_dict valueForKey:app_settings_keys::Playback::remember_source];
+    NSNumber* remember_source = [_settings_dict valueForKey:app_settings::Playback::remember_source];
     return [remember_source boolValue];
 }
 -(void)setRememberSource:(BOOL)remember_source {
-    [_settings_dict setValue:@(remember_source) forKey:app_settings_keys::Playback::remember_source];
+    [_settings_dict setValue:@(remember_source) forKey:app_settings::Playback::remember_source];
     [self saveSettings];
 }
 
@@ -119,21 +119,21 @@
 
 // -- data control
 -(NSInteger)getMaxCacheSizeBytes {
-    NSNumber* max_cache_size_bytes = [_settings_dict valueForKey:app_settings_keys::DataControl::max_cache_size];
+    NSNumber* max_cache_size_bytes = [_settings_dict valueForKey:app_settings::DataControl::max_cache_size];
     return [max_cache_size_bytes longValue];
 }
 -(void)setMaxCacheSizeBytes:(NSInteger)max_cache_size_bytes {
-    [_settings_dict setValue:@(max_cache_size_bytes) forKey:app_settings_keys::DataControl::max_cache_size];
+    [_settings_dict setValue:@(max_cache_size_bytes) forKey:app_settings::DataControl::max_cache_size];
     [self saveSettings];
 }
 
 // -- general
 -(BOOL)getAlternativeConnection {
-    NSNumber* alternative_connection = [_settings_dict valueForKey:app_settings_keys::General::alternative_connection];
+    NSNumber* alternative_connection = [_settings_dict valueForKey:app_settings::General::alternative_connection];
     return [alternative_connection boolValue];
 }
 -(void)setAlternativeConnection:(BOOL)alternative_connection {
-    [_settings_dict setValue:@(alternative_connection) forKey:app_settings_keys::General::alternative_connection];
+    [_settings_dict setValue:@(alternative_connection) forKey:app_settings::General::alternative_connection];
     [self saveSettings];
 }
 

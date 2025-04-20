@@ -23,6 +23,11 @@
 
 @protocol CommentsTableViewControllerDelegate <NSObject>
 -(void)didReplyPressedForCommentsTableView:(UITableView*)table_view comment:(anixart::Comment::Ptr)comment;
+
+@optional
+-(void)commentsTableView:(UITableView*)table_view didGotPageAtIndex:(NSInteger)page_index;
+@optional
+-(void)commentsTableView:(UITableView*)table_view didEditContextMenuSelected:(anixart::Comment::Ptr)comment;
 @end
 
 @interface CommentsTableViewCell : UITableViewCell
@@ -35,6 +40,7 @@
 -(void)setPublishDate:(NSString*)publish_date;
 -(void)setContent:(NSString*)content;
 -(void)setVoteCount:(NSInteger)vote_count;
+-(void)setIsSpoiler:(BOOL)spoiler;
 
 -(void)setOrigin:(NSString*)origin name:(NSString*)name;
 -(void)setRepliesCount:(NSInteger)replies_count;
@@ -43,6 +49,7 @@
 @interface CommentsTableViewController : UIViewController
 @property(nonatomic, weak) id<CommentsTableViewControllerDelegate> delegate;
 @property(nonatomic) BOOL enable_origin_reference;
+@property(nonatomic) BOOL enable_context_menu;
 @property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
@@ -50,11 +57,15 @@
 
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
 -(void)reset;
+-(void)refresh;
 
 -(void)setHeaderView:(UIView*)header_view;
 -(CGPoint)getContentOffset;
 -(void)setContentOffset:(CGPoint)point;
 -(void)setKeyboardDismissMode:(UIScrollViewKeyboardDismissMode)dismiss_mode;
+
+-(NSInteger)getCommentIndex:(anixart::CommentID)comment_id;
+-(void)scrollToCommentAtIndex:(NSInteger)comment_index;
 @end
 
 #endif /* CommentsTableView_h */

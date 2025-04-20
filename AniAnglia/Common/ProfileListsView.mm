@@ -72,6 +72,7 @@
     _legend_count_label.text = [@(_legend_count) stringValue];
     _legend_count_label.textAlignment = NSTextAlignmentRight;
     _legend_count_label.numberOfLines = 1;
+    _legend_count_label.adjustsFontSizeToFitWidth = YES;
     
     [self addSubview:_legend_color_view];
     [self addSubview:_legend_name_label];
@@ -89,12 +90,12 @@
         // TODO: change constraints
         [_legend_name_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_legend_name_label.leadingAnchor constraintEqualToAnchor:_legend_color_view.trailingAnchor constant:5],
-        [_legend_name_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+//        [_legend_name_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         [_legend_name_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
         
         [_legend_count_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_legend_count_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_legend_color_view.trailingAnchor constant:5],
-//        [_legend_count_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_legend_name_label.trailingAnchor constant:5],
+//        [_legend_count_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_legend_color_view.trailingAnchor constant:5],
+        [_legend_count_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_legend_name_label.trailingAnchor constant:5],
         [_legend_count_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         [_legend_count_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
     ]];
@@ -149,7 +150,7 @@
     
     _watching_count = collection_get_info->watching_count;
     _plan_count = collection_get_info->plan_count;
-    _watched_count = collection_get_info->completed_count;
+    _watched_count = collection_get_info->watched_count;
     _holdon_count = collection_get_info->hold_on_count;
     _dropped_count = collection_get_info->dropped_count;
     _name = name;

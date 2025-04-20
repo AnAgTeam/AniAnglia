@@ -10,7 +10,14 @@
 
 #import <UIKit/UIKit.h>
 
+@class ExpandableLabel;
+
+@protocol ExpandableLabelDelegate <NSObject>
+-(void)didExpandPressedForExpandableLabel:(ExpandableLabel*)expandable_label;
+@end
+
 @interface ExpandableLabel : UIView
+@property(nonatomic, weak) id<ExpandableLabelDelegate> delegate;
 
 -(void)setText:(NSString*)text;
 -(void)setNumberOfLines:(NSInteger)number_of_lines;

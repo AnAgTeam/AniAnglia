@@ -133,6 +133,13 @@
 "app.comments.origin.release" = "к релизу";
 "app.comments.text_enter.placeholder" = "Комментарий";
 
+"app.comments.comment.copy_text" = "Скопировать текст";
+"app.comments.comment.edit" = "Изменить";
+"app.comments.comment.remove" = "Удалить";
+"app.comments.comment.report" = "Пожаловаться";
+
+"app.comments.spoiler.show" = "Показать спойлер";
+
 /* TO PLAY SELECT */
 "app.type_select.nav_item.title" = "Озвучка";
 "app.type_select.cell.ep_count.name" = "эп.";
@@ -337,3 +344,5 @@
 
 /* COMMON */
 "app.common.expandable_label.show_all.title" = "Показать всё";
+
+"app.common.text_enter.edit_text" = "Редактирование комментария";

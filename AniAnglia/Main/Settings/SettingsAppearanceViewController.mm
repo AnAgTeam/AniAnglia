@@ -77,13 +77,13 @@
             [cell setContent:[self getCurrentThemeName]];
             [cell setMenuActions:@[
                 [UIAction actionWithTitle:NSLocalizedString(@"app.settings.appearance.theme.dark", "") image:nil identifier:nil handler:^(UIAction* action) {
-                    [self onThemeMenuItemSelected:app_settings_keys::Appearance::Theme::Dark];
+                    [self onThemeMenuItemSelected:app_settings::Appearance::Theme::Dark];
                 }],
                 [UIAction actionWithTitle:NSLocalizedString(@"app.settings.appearance.theme.light", "") image:nil identifier:nil handler:^(UIAction* action) {
-                    [self onThemeMenuItemSelected:app_settings_keys::Appearance::Theme::Light];
+                    [self onThemeMenuItemSelected:app_settings::Appearance::Theme::Light];
                 }],
                 [UIAction actionWithTitle:NSLocalizedString(@"app.settings.appearance.theme.system", "") image:nil identifier:nil handler:^(UIAction* action) {
-                    [self onThemeMenuItemSelected:app_settings_keys::Appearance::Theme::System];
+                    [self onThemeMenuItemSelected:app_settings::Appearance::Theme::System];
                 }],
             ]];
             return cell;
@@ -95,10 +95,10 @@
             [cell setContent:[self getCurrentMainDisplayStyleName]];
             [cell setMenuActions:@[
                 [UIAction actionWithTitle:NSLocalizedString(@"app.settings.appearance.main_display_style.table", "") image:nil identifier:nil handler:^(UIAction* action) {
-                    [self onDisplayStyleMenuItemSelected:app_settings_keys::Appearance::DisplayStyle::Table];
+                    [self onDisplayStyleMenuItemSelected:app_settings::Appearance::DisplayStyle::Table];
                 }],
                 [UIAction actionWithTitle:NSLocalizedString(@"app.settings.appearance.main_display_style.cards", "") image:nil identifier:nil handler:^(UIAction* action) {
-                    [self onDisplayStyleMenuItemSelected:app_settings_keys::Appearance::DisplayStyle::Cards];
+                    [self onDisplayStyleMenuItemSelected:app_settings::Appearance::DisplayStyle::Cards];
                 }],
             ]];
             return cell;
@@ -110,19 +110,19 @@
 
 -(NSString*)getCurrentThemeName {
     switch ([_settings_data_controller getTheme]) {
-        case app_settings_keys::Appearance::Theme::Dark:
+        case app_settings::Appearance::Theme::Dark:
             return NSLocalizedString(@"app.settings.appearance.theme.dark", "");
-        case app_settings_keys::Appearance::Theme::Light:
+        case app_settings::Appearance::Theme::Light:
             return NSLocalizedString(@"app.settings.appearance.theme.light", "");
-        case app_settings_keys::Appearance::Theme::System:
+        case app_settings::Appearance::Theme::System:
             return NSLocalizedString(@"app.settings.appearance.theme.system", "");
     }
 }
 -(NSString*)getCurrentMainDisplayStyleName {
     switch ([_settings_data_controller getMainDisplayStyle]) {
-        case app_settings_keys::Appearance::DisplayStyle::Table:
+        case app_settings::Appearance::DisplayStyle::Table:
             return NSLocalizedString(@"app.settings.appearance.main_display_style.table", "");
-        case app_settings_keys::Appearance::DisplayStyle::Cards:
+        case app_settings::Appearance::DisplayStyle::Cards:
             return NSLocalizedString(@"app.settings.appearance.main_display_style.cards", "");
     }
 }
@@ -135,11 +135,11 @@
     // TODO
 }
 
--(void)onThemeMenuItemSelected:(app_settings_keys::Appearance::Theme)theme {
+-(void)onThemeMenuItemSelected:(app_settings::Appearance::Theme)theme {
     [_settings_data_controller setTheme:theme];
     [_content_table_view reloadData];
 }
--(void)onDisplayStyleMenuItemSelected:(app_settings_keys::Appearance::DisplayStyle)style {
+-(void)onDisplayStyleMenuItemSelected:(app_settings::Appearance::DisplayStyle)style {
     [_settings_data_controller setMainDisplayStyle:style];
     [_content_table_view reloadData];
 }

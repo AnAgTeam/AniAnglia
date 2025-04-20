@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "LibanixartApi.h"
 
-namespace app_settings_keys {
+namespace app_settings {
 struct Appearance {
     enum class Theme {
         Light = 0,
@@ -67,14 +67,14 @@ struct General {
 @interface AppSettingsDataController : NSObject
 -(void)setSettingsObject:(id)object atKey:(NSString*)key;
 // -- appearance
--(app_settings_keys::Appearance::Theme)getTheme;
--(void)setTheme:(app_settings_keys::Appearance::Theme)theme;
--(app_settings_keys::Appearance::DisplayStyle)getMainDisplayStyle;
--(void)setMainDisplayStyle:(app_settings_keys::Appearance::DisplayStyle)display_style;
+-(app_settings::Appearance::Theme)getTheme;
+-(void)setTheme:(app_settings::Appearance::Theme)theme;
+-(app_settings::Appearance::DisplayStyle)getMainDisplayStyle;
+-(void)setMainDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style;
 
 // -- playback
--(app_settings_keys::Playback::DefaultPlayer)getDefaultPlayer;
--(void)setDefaultPlayer:(app_settings_keys::Playback::DefaultPlayer)default_player;
+-(app_settings::Playback::DefaultPlayer)getDefaultPlayer;
+-(void)setDefaultPlayer:(app_settings::Playback::DefaultPlayer)default_player;
 -(NSString*)getPrefferedQuality;
 -(void)setPrefferedQuality:(NSString*)preffered_quality;
 -(std::chrono::system_clock::duration)getDefaultSkipTime;

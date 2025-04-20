@@ -53,6 +53,7 @@
 		EF8B01B62C7015A300423ECD /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8B01B32C7015A300423ECD /* main.mm */; };
 		EF8C37532DB2B28900ADDBD7 /* CollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */; };
 		EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */; };
+		EF9FE8632DB3196500792D0D /* ReleasesViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9FE8622DB3196500792D0D /* ReleasesViewController.mm */; };
 		EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */; };
 		EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */; };
 		EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F93F2CB497D500555A26 /* AVKit.framework */; };
@@ -1329,6 +1330,8 @@
 		EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionViewController.mm; sourceTree = "<group>"; };
 		EF8C37542DB2C6B000ADDBD7 /* ExpandableLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExpandableLabel.h; sourceTree = "<group>"; };
 		EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ExpandableLabel.mm; sourceTree = "<group>"; };
+		EF9FE8612DB3194E00792D0D /* ReleasesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesViewController.h; sourceTree = "<group>"; };
+		EF9FE8622DB3196500792D0D /* ReleasesViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesViewController.mm; sourceTree = "<group>"; };
 		EFA1F9392CB4301A00555A26 /* EpisodeSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EpisodeSelectViewController.mm; sourceTree = "<group>"; };
 		EFA1F93A2CB4301A00555A26 /* EpisodeSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EpisodeSelectViewController.h; sourceTree = "<group>"; };
 		EFA1F93C2CB4920800555A26 /* PlayerViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlayerViewController.mm; sourceTree = "<group>"; };
@@ -3523,6 +3526,8 @@
 				EF65E3452D82059D00114102 /* ReleasesTableViewController.mm */,
 				EFFA21D72DB01A31007D8AD4 /* ReleasesCollectionViewController.h */,
 				EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */,
+				EF9FE8612DB3194E00792D0D /* ReleasesViewController.h */,
+				EF9FE8622DB3196500792D0D /* ReleasesViewController.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";
@@ -3597,6 +3602,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF9FE8632DB3196500792D0D /* ReleasesViewController.mm in Sources */,
 				EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */,
 				EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */,
 				EF70960C2C77A56500C95429 /* RestoreViewController.mm in Sources */,

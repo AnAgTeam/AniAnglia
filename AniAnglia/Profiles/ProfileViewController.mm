@@ -78,6 +78,24 @@
 -(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
+@interface ProfileRolesViewCollectionViewCell : UICollectionViewCell
+@property(nonatomic, retain) UILabel* name_label;
+
++(NSString*)getIdentifier;
+
+-(void)setColor:(UIColor*)color;
+-(void)setName:(NSString*)name;
+
+@end
+
+@interface ProfileRolesView : UIView <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout> {
+    anixart::Profile::Ptr _profile;
+}
+@property(nonatomic, retain) UICollectionView* roles_collection_view;
+
+-(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
+@end
+
 @interface ProfileActionsView : UIView {
     anixart::Profile::Ptr _profile;
     bool _is_my_profile;
@@ -187,6 +205,7 @@
 @property(nonatomic, retain) LoadableImageView* avatar_image_view;
 @property(nonatomic, retain) UILabel* username_label;
 @property(nonatomic, retain) UILabel* custom_status_label;
+@property(nonatomic, retain) ProfileRolesView* roles_view;
 @property(nonatomic, retain) UILabel* status_label;
 @property(nonatomic, retain) UIButton* action_button;
 
@@ -324,6 +343,134 @@
 -(IBAction)onFriendsStatButtonPressed:(UIButton*)sender {
     [_delegate didFriendsPressedForProfileStatsBlockView:self];
 }
+@end
+
+@implementation ProfileRolesViewCollectionViewCell
+
++(NSString*)getIdentifier {
+    return @"ProfileRolesViewCollectionViewCell";
+}
+
+-(instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    self.contentView.clipsToBounds = YES;
+    self.contentView.layer.cornerRadius = 8;
+    
+    _name_label = [UILabel new];
+    
+    [self.contentView addSubview:_name_label];
+    
+    _name_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_name_label.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [_name_label.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
+        [_name_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        [_name_label.heightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.heightAnchor],
+        [_name_label.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor]
+    ]];
+}
+-(void)setupLayout {
+    
+}
+
+-(void)setColor:(UIColor*)color {
+    self.contentView.backgroundColor = color;
+}
+-(void)setName:(NSString*)name {
+    _name_label.text = name;
+}
+
+-(UICollectionViewLayoutAttributes*)preferredLayoutAttributesFittingAttributes:(UICollectionViewLayoutAttributes *)layout_attributes {
+    UICollectionViewLayoutAttributes* attributes = [super preferredLayoutAttributesFittingAttributes:layout_attributes];
+    return attributes;
+}
+
+@end
+
+@implementation ProfileRolesView
+
+-(instancetype)initWithProfile:(anixart::Profile::Ptr)profile {
+    self = [super init];
+    
+    _profile = profile;
+    [self setup];
+    [self setupLayout];
+    
+    return self;
+}
+-(void)setup {
+    UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
+    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    layout.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize;
+//    layout.itemSize = UICollectionViewFlowLayoutAutomaticSize;
+    _roles_collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
+    [_roles_collection_view registerClass:ProfileRolesViewCollectionViewCell.class forCellWithReuseIdentifier:[ProfileRolesViewCollectionViewCell getIdentifier]];
+    _roles_collection_view.dataSource = self;
+    _roles_collection_view.delegate = self;
+    
+    [self addSubview:_roles_collection_view];
+    
+    _roles_collection_view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_roles_collection_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_roles_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_roles_collection_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_roles_collection_view.heightAnchor constraintGreaterThanOrEqualToConstant:40],
+        [_roles_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+    ]];
+}
+-(void)setupLayout {
+    
+}
+
+-(UIColor*)getRoleColorFromHEX:(NSString*)hex_color_string {
+    NSScanner* scanner = [NSScanner scannerWithString:hex_color_string];
+    uint64_t hex_color;
+    if (![scanner scanHexLongLong:&hex_color]) {
+        return nil;
+    }
+    
+    int red = (hex_color >> 16) & 0xFF;
+    int green = (hex_color >> 8) & 0xFF;
+    int blue = hex_color & 0xFF;
+    return [UIColor colorWithRed:(red / 255.) green:(green / 255.) blue:(blue / 255.) alpha:1.0];
+}
+
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collection_view {
+    return 1;
+}
+-(NSInteger)collectionView:(UICollectionView *)collection_view numberOfItemsInSection:(NSInteger)section {
+    return _profile->roles.size();
+}
+
+-(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
+    return CGSizeMake(collection_view.bounds.size.width, collection_view.bounds.size.height);
+}
+//-(UIEdgeInsets)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout insetForSectionAtIndex:(NSInteger)section {
+//    [self layoutIfNeeded];
+//    CGFloat content_size = MIN(collection_view.bounds.size.width, collection_view.contentSize.width);
+//    CGFloat left_inset = (collection_view.bounds.size.width - content_size) / 2;
+//    CGFloat right_inset = left_inset;
+//    return UIEdgeInsetsMake(0, left_inset, 0, right_inset);
+//}
+
+-(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
+    ProfileRolesViewCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[ProfileRolesViewCollectionViewCell getIdentifier] forIndexPath:index_path];
+    NSInteger index = index_path.row;
+    anixart::Role::Ptr& role = _profile->roles[index];
+    
+    [cell setColor:[self getRoleColorFromHEX:TO_NSSTRING(role->color)]];
+    [cell setName:TO_NSSTRING(role->name)];
+    return cell;
+}
+
 @end
 
 @implementation ProfileActionsView
@@ -685,13 +832,10 @@ static const NSInteger PROFILE_WATCH_DYNAMICS_CELL_COUNT_LABEL_HEIGHT = 30;
 }
 
 -(void)setCount:(NSInteger)count totalCount:(NSInteger)total_count {
-    if (total_count == 0) {
-        return;
-    }
     if (_indicator_height_constraint) {
         _indicator_height_constraint.active = NO;
     }
-    _indicator_height_constraint = [_indicator_view.heightAnchor constraintEqualToAnchor:_indicator_container_view.heightAnchor multiplier:(static_cast<double>(count) / total_count)];
+    _indicator_height_constraint = [_indicator_view.heightAnchor constraintEqualToAnchor:_indicator_container_view.heightAnchor multiplier:(static_cast<double>(count) / MAX(total_count, 1))];
     _indicator_height_constraint.active = YES;
     
     _count_label.text = [@(count) stringValue];
@@ -1032,6 +1176,12 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     
     NSMutableArray<NSLayoutConstraint*>* optional_constraints = [NSMutableArray arrayWithCapacity:2];
     
+    if (!_profile->roles.empty()) {
+        // TODO: center roles horizontally
+        _roles_view = [[ProfileRolesView alloc] initWithProfile:_profile];
+        [optional_constraints addObject:[_roles_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor]];
+    }
+    
     _stats_view = [[ProfileStatsBlockView alloc] initWithProfile:_profile];
     _stats_view.delegate = self;
     
@@ -1061,6 +1211,9 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [_content_stack_view addArrangedSubview:_username_label];
     [_content_stack_view addArrangedSubview:_custom_status_label];
     [_content_stack_view addArrangedSubview:_status_label];
+    if (!_profile->roles.empty()) {
+        [_content_stack_view addArrangedSubview:_roles_view];
+    }
     [_content_stack_view addArrangedSubview:_stats_view];
     [_content_stack_view addArrangedSubview:_actions_view];
     [_content_stack_view addArrangedSubview:_lists_view];
@@ -1072,6 +1225,8 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _content_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
     _avatar_image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _username_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _custom_status_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _roles_view.translatesAutoresizingMaskIntoConstraints = NO;
     _status_label.translatesAutoresizingMaskIntoConstraints = NO;
     _stats_view.translatesAutoresizingMaskIntoConstraints = NO;
     _actions_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1125,7 +1280,11 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [_avatar_image_view tryLoadImageWithURL:avatar_url];
     _username_label.text = TO_NSSTRING(_profile->username);
     _custom_status_label.text = TO_NSSTRING(_profile->status);
-    _status_label.text = _profile->is_online ? NSLocalizedString(@"app.profile.status.online.name", "") : NSLocalizedString(@"app.profile.status.offline.name", "");
+    if (_profile->is_online) {
+        _status_label.text = NSLocalizedString(@"app.profile.status.online.name", "");
+    } else {
+        _status_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.profile.status.offline.start", ""), to_gmt_yy_mm_dd_string_from_gmt(_profile->last_activity_time)];
+    }
     [_stats_view setProfile:_profile];
     [_actions_view setProfile:_profile];
     [_lists_view setProfile:_profile];

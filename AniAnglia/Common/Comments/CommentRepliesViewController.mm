@@ -19,6 +19,7 @@
     anixart::Comment::Ptr _comment;
     anixart::ProfileID _reply_to_profile_id;
     anixart::Comment::Ptr _reply_to_comment;
+    anixart::CommentID _custom_edit_comment_id;
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic) BOOL is_release_comment;
@@ -27,6 +28,7 @@
 @property(nonatomic, retain) TextEnterView* text_enter_view;
 @property(nonatomic, retain) NSLayoutConstraint* text_enter_view_bottom_constraint;
 @property(nonatomic) CGFloat last_text_enter_origin_y;
+@property(nonatomic) BOOL did_scrolled_to_reply_comment;
 
 @end
 
@@ -85,6 +87,10 @@
 }
 
 -(void)setup {
+    // test refresh feature. TODO autorefresh
+    UIBarButtonItem* _refresh_bar_button = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"arrow.clockwise"] style:UIBarButtonItemStylePlain target:self action:@selector(onRefreshBarButtonPressed:)];
+    self.navigationItem.rightBarButtonItem = _refresh_bar_button;
+    
     _replied_comment_view = [[CommentsTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[CommentsTableViewCell getIdentifier]];
     _replied_comment_view.selectionStyle = UITableViewCellSelectionStyleNone;
     _replied_comment_view.delegate = self;
@@ -98,6 +104,7 @@
     [self addChildViewController:_comments_table_view_controller];
     [_comments_table_view_controller setKeyboardDismissMode:UIScrollViewKeyboardDismissModeOnDrag];
     _comments_table_view_controller.delegate = self;
+    _comments_table_view_controller.enable_context_menu = YES;
     
     _text_enter_view = [TextEnterView new];
     _text_enter_view.delegate = self;
@@ -145,6 +152,7 @@
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 -(void)initParentComment {
+    // TODO: make UIView that subclasses UITableViewHeaderFooterView
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_comment->author->avatar_url)];
     [_replied_comment_view setAvatarUrl:avatar_url];
     [_replied_comment_view setUsername:TO_NSSTRING(_comment->author->username)];
@@ -194,6 +202,53 @@
     [_text_enter_view startEditing];
     _reply_to_profile_id = comment->author->id;
 }
+-(void)editCommentWithTextEnter {
+    NSString* message = [_text_enter_view getText];
+    BOOL is_spoiler = _text_enter_view.is_spoiler;
+    
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        anixart::requests::CommentEditRequest request;
+        request.message = TO_STDSTRING(message);
+        request.is_spoiler = is_spoiler;
+        
+        // maybe check collection too
+        if (self->_is_release_comment) {
+            api->releases().edit_release_comment(self->_custom_edit_comment_id, request);
+        }
+        else {
+            api->collections().edit_comment(self->_custom_edit_comment_id, request);
+        }
+        return YES;
+    } withUICompletion:^{
+        [self->_comments_table_view_controller refresh];
+        [self->_text_enter_view setText:@""];
+    }];
+}
+-(void)sendCommentWithTextEnter {
+    NSString* message = [_text_enter_view getText];
+    BOOL is_spoiler = _text_enter_view.is_spoiler;
+    
+    // TODO: scroll to comment
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        anixart::requests::CommentAddRequest request;
+        request.message = TO_STDSTRING(message);
+        request.parent_comment_id = self->_comment->id;
+        request.reply_to_profile_id = self->_reply_to_profile_id;
+        request.is_spoiler = is_spoiler;
+        
+        // maybe check collection too
+        if (self->_is_release_comment) {
+            api->releases().add_release_comment(self->_comment->release->id, request);
+        }
+        else {
+            api->collections().add_collection_comment(self->_comment->collection->id, request);
+        }
+        return YES;
+    } withUICompletion:^{
+        [self->_comments_table_view_controller refresh];
+        [self->_text_enter_view setText:@""];
+    }];
+}
 
 -(void)didShowRepliesPressedForCommentTableViewCell:(CommentsTableViewCell*)comment_table_view_cell {
     [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithComment:_comment] animated:YES];
@@ -232,30 +287,27 @@
 }
 
 -(void)didSendPressedForTextEnterView:(TextEnterView*)text_enter_view {
-    NSString* message = [_text_enter_view getText];
-    BOOL is_spoiler = _text_enter_view.is_spoiler;
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        anixart::requests::CommentAddRequest request;
-        request.message = TO_STDSTRING(message);
-        request.parent_comment_id = self->_comment->id;
-        request.reply_to_profile_id = self->_reply_to_profile_id;
-        request.is_spoiler = is_spoiler;
-        
-        // maybe check collection too
-        if (self->_is_release_comment) {
-            api->releases().add_release_comment(self->_comment->release->id, request);
-        }
-        else {
-            api->collections().add_collection_comment(self->_comment->collection->id, request);
-        }
-        return YES;
-    } withUICompletion:^{
-        [self refresh];
-        [self->_text_enter_view setText:@""];
-    }];
+    if (_text_enter_view.is_custom_editing) {
+        [self editCommentWithTextEnter];
+    } else {
+        [self sendCommentWithTextEnter];
+    }
 }
 -(void)didReplyPressedForCommentsTableView:(UITableView*)table_view comment:(anixart::Comment::Ptr)comment {
     [self replyToComment:comment];
+}
+
+-(void)commentsTableView:(UITableView *)table_view didGotPageAtIndex:(NSInteger)page_index {
+    if (!_reply_to_comment || _did_scrolled_to_reply_comment) {
+        return;
+    }
+    NSInteger comment_index = [_comments_table_view_controller getCommentIndex:_reply_to_comment->id];
+    if (comment_index == NSNotFound) {
+        return;
+    }
+    _did_scrolled_to_reply_comment = YES;
+    
+    [_comments_table_view_controller scrollToCommentAtIndex:comment_index];
 }
 
 -(void)onKeyboardShow:(NSNotification*)notification {
@@ -265,6 +317,16 @@
 }
 -(void)onKeyboardHide:(NSNotification*)notification {
     _text_enter_view_bottom_constraint.constant = 0;
+}
+
+-(IBAction)onRefreshBarButtonPressed:(UIBarButtonItem*)sender {
+    // TODO: check for loaded
+    [_comments_table_view_controller refresh];
+}
+
+-(void)commentsTableView:(UITableView*)table_view didEditContextMenuSelected:(anixart::Comment::Ptr)comment {
+    _custom_edit_comment_id = comment->id;
+    [_text_enter_view beginCustomTextEditing:TO_NSSTRING(comment->message)];
 }
 
 @end

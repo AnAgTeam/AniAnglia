@@ -28,6 +28,7 @@
 
 @protocol CollectionTableHeaderViewDelegate <NSObject>
 -(void)didAuthorAvatarPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
+-(void)didDescriptionExpandPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
 -(void)didBookmarkPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
 -(void)didCommentsPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
 -(void)didRandomPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
@@ -48,7 +49,7 @@
 -(instancetype)initWithCollection:(anixart::Collection::Ptr)collection;
 @end
 
-@interface CollectionTableHeaderView : UIView <CollectionTableAuthorViewDelegate> {
+@interface CollectionTableHeaderView : UIView <CollectionTableAuthorViewDelegate, ExpandableLabelDelegate> {
     anixart::CollectionGetInfo::Ptr _collection_get_info;
     anixart::Collection::Ptr _collection;
 }
@@ -194,7 +195,7 @@
     [self updateBookmarkButton];
     [_bookmark_button addTarget:self action:@selector(onBookmarkButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _bookmark_button.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 8);
-    _bookmark_button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 3, 0);
+    _comments_button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 3); 
     _bookmark_button.layer.cornerRadius = 8;
     
     _comments_button = [UIButton new];
@@ -202,7 +203,7 @@
     [_comments_button setImage:[UIImage systemImageNamed:@"message"] forState:UIControlStateNormal];
     [_comments_button addTarget:self action:@selector(onCommentsButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _comments_button.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 8);
-    _comments_button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 3, 0);
+    _comments_button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 3);
     _comments_button.layer.cornerRadius = 8;
     
     _author_view = [[CollectionTableAuthorView alloc] initWithCollection:_collection];
@@ -210,6 +211,7 @@
     
     _description_label = [ExpandableLabel new];
     [_description_label setText:TO_NSSTRING(_collection->description)];
+    _description_label.delegate = self;
     
     _lists_view = [[ProfileListsView alloc] initWithCollectionGetInfo:_collection_get_info name:NSLocalizedString(@"app.collection.lists.name", "")];
     
@@ -307,6 +309,10 @@
 
 -(void)didAuthorAvatarPressedForCollectionTableAuthorView:(CollectionTableAuthorView*)collection_table_author_view {
     [_delegate didAuthorAvatarPressedForCollectionTableHeaderView:self];
+}
+
+-(void)didExpandPressedForExpandableLabel:(ExpandableLabel*)expandable_label {
+    [_delegate didDescriptionExpandPressedForCollectionTableHeaderView:self];
 }
 
 @end
@@ -415,6 +421,11 @@
 
 -(void)didAuthorAvatarPressedForCollectionTableHeaderView:(CollectionTableHeaderView *)collection_table_header_view {
     [self.navigationController pushViewController:[[ProfileViewController alloc] initWithProfileID:_collection->creator->id] animated:YES];
+}
+
+-(void)didDescriptionExpandPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view {
+    [self.view layoutIfNeeded];
+    [_releases_view_controller setHeaderView:_header_view];
 }
 
 @end

@@ -686,11 +686,11 @@ namespace anixart {
 		CollectionGetInfo(json::CachingJsonObject& object);
 
 		Collection::Ptr collection;
-		int64_t completed_count;
-		int64_t dropped_count;
-		int64_t hold_on_count;
-		int64_t plan_count;
-		int64_t watching_count;
+		int32_t watched_count;
+		int32_t dropped_count;
+		int32_t hold_on_count;
+		int32_t plan_count;
+		int32_t watching_count;
 	};
 }
 

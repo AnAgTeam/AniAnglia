@@ -19,6 +19,7 @@
 @interface TextEnterView : UIView
 @property(nonatomic, weak) id<TextEnterViewDelegate> delegate;
 @property(nonatomic, readonly) BOOL is_spoiler;
+@property(nonatomic, readonly) BOOL is_custom_editing;
 
 -(void)setText:(NSString*)text;
 -(NSString*)getText;
@@ -26,6 +27,9 @@
 
 -(void)endEditing:(BOOL)end_editing;
 -(void)startEditing;
+
+-(void)beginCustomTextEditing:(NSString*)original_text;
+-(void)endCustomTextEditing;
 @end
 
 #endif /* TextEnterView_h */

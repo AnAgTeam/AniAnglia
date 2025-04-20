@@ -27,6 +27,7 @@
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic) UICollectionViewScrollDirection axis;
+@property(nonatomic) NSInteger axis_item_count;
 @property(nonatomic, retain) NSLock* lock;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UICollectionView* collection_view;
@@ -126,6 +127,7 @@
     _lock = [NSLock new];
     _pages = std::move(pages);
     _axis = axis;
+    _axis_item_count = 1;
     
     return self;
 }
@@ -228,6 +230,11 @@
     [_collection_view reloadData];
 }
 
+-(void)setAxisItemCount:(NSInteger)axis_item_count {
+    _axis_item_count = axis_item_count;
+    [_collection_view reloadData];
+}
+
 -(void)collectionView:(UICollectionView*)collection_view prefetchItemsAtIndexPaths:(NSArray<NSIndexPath *>*)index_paths {
     if (!_pages || _pages->is_end()) {
         return;
@@ -262,8 +269,16 @@
     return cell;
 }
 
--(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
-    return CGSizeMake(collection_view.frame.size.height * (9. / 16.), collection_view.frame.size.height);
+-(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewFlowLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
+    // TODO: maybe change aspect ratio
+    if (_axis == UICollectionViewScrollDirectionHorizontal) {
+        return CGSizeMake(collection_view.frame.size.height * (9. / 16), collection_view.frame.size.height);
+    }
+    
+    CGFloat width_inset = collection_view_layout.sectionInset.left + collection_view_layout.sectionInset.right;
+    CGFloat item_insets = collection_view_layout.minimumLineSpacing * (_axis_item_count - 1);
+    CGFloat item_width = (collection_view.frame.size.width - width_inset - item_insets) / _axis_item_count;
+    return CGSizeMake(item_width, item_width * (19. / 9));
 }
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {

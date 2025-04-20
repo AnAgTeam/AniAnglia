@@ -16,6 +16,7 @@
 #import "ReleaseViewController.h"
 #import "CommentRepliesViewController.h"
 #import "CollectionViewController.h"
+#import "AppDataController.h"
 
 @interface CommentsTableViewCell ()
 @property(nonatomic, retain) UIButton* avatar_button;
@@ -32,13 +33,21 @@
 @property(nonatomic, retain) UILabel* vote_count_label;
 @property(nonatomic, retain) NSLayoutConstraint* show_replies_button_height_constraint;
 
+@property(nonatomic, retain) UIVisualEffectView* blur_effect_view;
+@property(nonatomic, retain) UIButton* spoiler_show_button;
+
+-(void)highlightCell;
+
 @end
 
 @interface CommentsTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching, CommentsTableViewCellDelegate> {
     anixart::Pageable<anixart::Comment>::UPtr _pages;
     std::vector<anixart::Comment::Ptr> _comments;
+    
+    anixart::ProfileID _my_profile_id;
 }
 @property(nonatomic) LibanixartApi* api_proxy;
+@property(nonatomic) AppDataController* app_data_controller;
 @property(nonatomic, retain) NSLock* lock;
 @property(nonatomic, retain) UITableView* table_view;
 @property(nonatomic, retain) LoadableView* loadable_view;
@@ -97,6 +106,14 @@
     [_downvote_button addTarget:self action:@selector(onDownvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _vote_count_label = [UILabel new];
     
+    _blur_effect_view = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleProminent]];
+    _blur_effect_view.layer.cornerRadius = 8;
+    _blur_effect_view.clipsToBounds = YES;
+    
+    _spoiler_show_button = [UIButton new];
+    [_spoiler_show_button setTitle:NSLocalizedString(@"app.comments.spoiler.show", "") forState:UIControlStateNormal];
+    [_spoiler_show_button addTarget:self action:@selector(onSpoilerShowButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    
     [self.contentView addSubview:_avatar_button];
     [_avatar_button addSubview:_avatar_image_view];
     [self.contentView addSubview:_username_label];
@@ -122,6 +139,8 @@
     _upvote_button.translatesAutoresizingMaskIntoConstraints = NO;
     _downvote_button.translatesAutoresizingMaskIntoConstraints = NO;
     _vote_count_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _blur_effect_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _spoiler_show_button.translatesAutoresizingMaskIntoConstraints = NO;
     
     _show_replies_button_height_constraint =
     [_show_replies_button.heightAnchor constraintEqualToConstant:0];
@@ -194,6 +213,29 @@
     _upvote_button.tintColor = [AppColorProvider primaryColor];
     _vote_count_label.textColor = [AppColorProvider textSecondaryColor];
     _downvote_button.tintColor = [AppColorProvider primaryColor];
+    [_spoiler_show_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
+}
+
+-(void)setBlurred:(BOOL)blurred {
+    if (blurred) {
+        [self.contentView addSubview:_blur_effect_view];
+        [self.contentView addSubview:_spoiler_show_button];
+        
+        [NSLayoutConstraint activateConstraints:@[
+            [_blur_effect_view.topAnchor constraintEqualToAnchor:_content_label.topAnchor],
+            [_blur_effect_view.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
+            [_blur_effect_view.trailingAnchor constraintEqualToAnchor:_content_label.trailingAnchor],
+            [_blur_effect_view.bottomAnchor constraintEqualToAnchor:_content_label.bottomAnchor],
+            
+            [_spoiler_show_button.topAnchor constraintEqualToAnchor:_content_label.topAnchor],
+            [_spoiler_show_button.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
+            [_spoiler_show_button.trailingAnchor constraintEqualToAnchor:_content_label.trailingAnchor],
+            [_spoiler_show_button.bottomAnchor constraintEqualToAnchor:_content_label.bottomAnchor],
+        ]];
+    } else {
+        [_blur_effect_view removeFromSuperview];
+        [_spoiler_show_button removeFromSuperview];
+    }
 }
 
 -(void)setAvatarUrl:(NSURL*)url {
@@ -227,6 +269,16 @@
     _show_replies_button_height_constraint.constant = replies_count != 0 ? 35 : 0;
     // TODO: add replies count to button
 }
+-(void)setIsSpoiler:(BOOL)spoiler {
+    [self setBlurred:spoiler];
+}
+
+-(void)highlightCell {
+    [self setHighlighted:YES animated:YES];
+//    [UIView animateWithDuration:4 delay:2 options:(UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse) animations:^{
+//        self.backgroundColor = [AppColorProvider foregroundColor1];
+//    } completion:nil];
+}
 
 -(IBAction)onAvatarPressed:(UIButton*)sender {
     [_delegate didAvatarPressedCommentForTableViewCell:self];
@@ -244,6 +296,10 @@
     [_delegate didDownvotePressedForCommentTableViewCell:self];
 }
 
+-(IBAction)onSpoilerShowButtonPressed:(UIButton*)sender {
+    [self setBlurred:NO];
+}
+
 
 @end
 
@@ -253,6 +309,8 @@
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
+    _app_data_controller = [AppDataController sharedInstance];
+    _my_profile_id = [_app_data_controller getMyProfileID];
     _lock = [NSLock new];
     _table_view = table_view;
     _pages = std::move(pages);
@@ -269,6 +327,7 @@
     _table_view = table_view;
     _comments = comments;
     _enable_origin_reference = NO;
+    _enable_context_menu = NO;
     
     return self;
 }
@@ -340,7 +399,7 @@
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
--(void)appendItemsFromBlock:(std::vector<anixart::Comment::Ptr>(^)())block {
+-(void)appendItemsFromBlock:(std::vector<anixart::Comment::Ptr>(^)())block completion:(void(^)())completion {
     if (!_pages) {
         return;
     }
@@ -353,8 +412,15 @@
         [self->_lock unlock];
         return YES;
     } withUICompletion:^{
+        completion();
+    }];
+}
+
+-(void)appendItemsFromBlock:(std::vector<anixart::Comment::Ptr>(^)())block {
+    [self appendItemsFromBlock:block completion:^{
         [self->_loadable_view endLoading];
         [self->_table_view reloadData];
+        [self callDelegateDidGotPage];
     }];
 }
 
@@ -370,6 +436,12 @@
     }];
 }
 
+-(void)callDelegateDidGotPage {
+    if ([_delegate respondsToSelector:@selector(commentsTableView:didGotPageAtIndex:)]) {
+        [_delegate commentsTableView:_table_view didGotPageAtIndex:_pages->get_current_page()];
+    }
+}
+
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
     _pages = std::move(pages);
     [self reset];
@@ -379,6 +451,17 @@
     /* todo: load cancel */
     _comments.clear();
     [_table_view reloadData];
+}
+-(void)refresh {
+    // TODO: maybe not reset full comments array, but because this pageable always returns *all* comment, we can ignore it
+    _comments.clear();
+    [self appendItemsFromBlock:^{
+        return self->_pages->go(0);
+    } completion:^{
+        NSIndexSet* sections = [NSIndexSet indexSetWithIndex:0];
+        [self->_table_view reloadSections:sections withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self callDelegateDidGotPage];
+    }];
 }
 
 -(void)setHeaderView:(UIView*)header_view {
@@ -392,6 +475,25 @@
 }
 -(void)setKeyboardDismissMode:(UIScrollViewKeyboardDismissMode)dismiss_mode {
     _table_view.keyboardDismissMode = dismiss_mode;
+}
+
+-(NSInteger)getCommentIndex:(anixart::CommentID)comment_id {
+    // TODO: maybe unefficient, due to vector of shared_ptr's. If it's a problem, will need to improve libanixart
+    auto iter = std::find_if(_comments.begin(), _comments.end(), [comment_id](anixart::Comment::Ptr& comment) {
+        return comment->id == comment_id;
+    });
+    return iter != _comments.end() ? std::distance(_comments.begin(), iter) : NSNotFound;
+}
+-(void)scrollToCommentAtIndex:(NSInteger)comment_index {
+    if (comment_index >= _comments.size()) {
+        return;
+    }
+    NSIndexPath* index_path = [NSIndexPath indexPathForRow:comment_index inSection:0];
+    [_table_view scrollToRowAtIndexPath:index_path atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+    
+    // TODO: add this to willDisplayCell, because now it's not on the screen and animating wont work
+//    CommentsTableViewCell* cell = [_table_view cellForRowAtIndexPath:index_path];
+//    [cell highlightCell];
 }
 
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
@@ -412,6 +514,7 @@
     [cell setContent:TO_NSSTRING(comment->message)];
     [cell setRepliesCount:comment->reply_count];
     [cell setVoteCount:comment->vote_count];
+    [cell setIsSpoiler:comment->is_spoiler];
     if (_enable_origin_reference) {
         if (comment->collection) {
             [cell setOrigin:NSLocalizedString(@"app.comments.origin.collection", "") name:TO_NSSTRING(comment->collection->title)];
@@ -425,6 +528,46 @@
     }
     
     return cell;
+}
+
+-(UIContextMenuConfiguration *)tableView:(UITableView *)table_view contextMenuConfigurationForRowAtIndexPath:(NSIndexPath *)index_path point:(CGPoint)point {
+    if (!_enable_context_menu) {
+        return nil;
+    }
+    NSInteger index = index_path.row;
+    anixart::Comment::Ptr& comment = _comments[index];
+    
+    NSArray* actions;
+    if (comment->author->id == _my_profile_id) {
+        UIAction* remove_action = [UIAction actionWithTitle:NSLocalizedString(@"app.comments.comment.remove", "") image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(UIAction* action) {
+            [self onRemoveContextMenuItemSelectedAtIndex:index];
+        }];
+        remove_action.attributes = UIMenuOptionsDestructive;
+        actions = @[
+            [UIAction actionWithTitle:NSLocalizedString(@"app.comments.comment.copy_text", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
+                [self onCopyTextContextMenuItemSelectedAtIndex:index];
+            }],
+            [UIAction actionWithTitle:NSLocalizedString(@"app.comments.comment.edit", "") image:[UIImage systemImageNamed:@"pencil"] identifier:nil handler:^(UIAction* action) {
+                [self onEditContextMenuItemSelectedAtIndex:index];
+            }],
+            remove_action
+        ];
+    } else {
+        UIAction* report_action = [UIAction actionWithTitle:NSLocalizedString(@"app.comments.comment.report", "") image:[UIImage systemImageNamed:@"megaphone"] identifier:nil handler:^(UIAction* action) {
+            [self onReportContextMenuItemSelectedAtIndex:index];
+        }];
+        report_action.attributes = UIMenuOptionsDestructive;
+        actions = @[
+            [UIAction actionWithTitle:NSLocalizedString(@"app.comments.comment.copy_text", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
+                [self onCopyTextContextMenuItemSelectedAtIndex:index];
+            }],
+            report_action
+        ];
+    }
+    
+    return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^(NSArray* suggested_actions) {
+        return [UIMenu menuWithChildren:actions];
+    }];
 }
 
 -(void)tableView:(UITableView*)table_view
@@ -513,5 +656,35 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     
     [self.navigationController pushViewController:[[ProfileViewController alloc] initWithProfileID:comment->author->id] animated:YES];
 }
+
+-(void)onCopyTextContextMenuItemSelectedAtIndex:(NSInteger)index {
+    UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = TO_NSSTRING(_comments[index]->message);
+}
+-(void)onEditContextMenuItemSelectedAtIndex:(NSInteger)index {
+    if ([_delegate respondsToSelector:@selector(commentsTableView:didEditContextMenuSelected:)]) {
+        anixart::Comment::Ptr& comment = _comments[index];
+        [_delegate commentsTableView:_table_view didEditContextMenuSelected:comment];
+    }
+}
+-(void)onRemoveContextMenuItemSelectedAtIndex:(NSInteger)index {
+    anixart::Comment::Ptr& comment = _comments[index];
+    BOOL is_release_comment = comment->release ? YES : NO;
+    
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        if (is_release_comment) {
+            api->releases().remove_release_comment(comment->id);
+        } else {
+            api->collections().remove_comment(comment->id);
+        }
+        return YES;
+    } withUICompletion:^{
+        [self refresh];
+    }];
+}
+-(void)onReportContextMenuItemSelectedAtIndex:(NSInteger)index {
+    // TODO
+}
+
 
 @end

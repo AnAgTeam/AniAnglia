@@ -97,6 +97,7 @@ enum class ProfileFriendsSections {
 }
 
 -(void)setupLayout {
+    _avatar_image.backgroundColor = [AppColorProvider foregroundColor1];
     _username_label.textColor = [AppColorProvider textColor];
     _friend_count_label.textColor = [AppColorProvider textSecondaryColor];
 }
