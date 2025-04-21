@@ -1066,13 +1066,13 @@
     [_release_image_view addInteraction:_context_menu];
 
     _title_label = [UILabel new];
-    _title_label.textAlignment = NSTextAlignmentJustified;
+//    _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 0;
     _title_label.text = TO_NSSTRING(_release->title_ru);
     [_title_label setFont:[UIFont boldSystemFontOfSize:22]];
     
     _orig_title_label = [UILabel new];
-    _orig_title_label.textAlignment = NSTextAlignmentJustified;
+//    _orig_title_label.textAlignment = NSTextAlignmentJustified;
     _orig_title_label.numberOfLines = 0;
     _orig_title_label.text = TO_NSSTRING(_release->title_original);
     
@@ -1257,7 +1257,7 @@
 
 -(void)setupLayout {
     _title_label.textColor = [AppColorProvider textColor];
-    _orig_title_label.textColor = [AppColorProvider textColor];
+    _orig_title_label.textColor = [AppColorProvider textSecondaryColor];
     _add_list_button.backgroundColor = [AppColorProvider foregroundColor1];
     [_add_list_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _bookmark_button.backgroundColor = [AppColorProvider foregroundColor1];
@@ -1275,7 +1275,7 @@
     }
 }
 -(void)updateAddListButton {
-    [_add_list_button setTitle:[self getListStatusNameFor:_release->profile_list_status] forState:UIControlStateNormal];
+    [_add_list_button setTitle:[ProfileListsView getListStatusName:_release->profile_list_status] forState:UIControlStateNormal];
 }
 
 -(NSString*)getSeasonNameFor:(anixart::Release::Season)season {
@@ -1316,47 +1316,25 @@
             return NSLocalizedString(@"app.release.status.unknown.name", "");
     }
 }
--(NSString*)getListStatusNameFor:(anixart::Profile::ListStatus)list_status {
-    switch(list_status) {
-        case anixart::Profile::ListStatus::Watching:
-            return NSLocalizedString(@"app.profile.list_status.watching.name", "");
-            break;
-        case anixart::Profile::ListStatus::Plan:
-            return NSLocalizedString(@"app.profile.list_status.plan.name", "");
-            break;
-        case anixart::Profile::ListStatus::Watched:
-            return NSLocalizedString(@"app.profile.list_status.watched.name", "");
-            break;
-        case anixart::Profile::ListStatus::HoldOn:
-            return NSLocalizedString(@"app.profile.list_status.holdon.name", "");
-            break;
-        case anixart::Profile::ListStatus::Dropped:
-            return NSLocalizedString(@"app.profile.list_status.dropped.name", "");
-            break;
-        default:
-            return NSLocalizedString(@"app.profile.list_status.none.name", "");
-            break;
-    }
-}
 
 -(UIMenu*)makeAddListButtonMenu {
     return [UIMenu menuWithChildren:@[
-        [UIAction actionWithTitle:[self getListStatusNameFor:anixart::Profile::ListStatus::NotWatching] image:nil identifier:nil handler:^(UIAction* action) {
+        [UIAction actionWithTitle:[ProfileListsView getListStatusName:anixart::Profile::ListStatus::NotWatching] image:nil identifier:nil handler:^(UIAction* action) {
             [self onAddListMenuItemSelected:anixart::Profile::ListStatus::NotWatching];
         }],
-        [UIAction actionWithTitle:[self getListStatusNameFor:anixart::Profile::ListStatus::Watching] image:nil identifier:nil handler:^(UIAction* action) {
+        [UIAction actionWithTitle:[ProfileListsView getListStatusName:anixart::Profile::ListStatus::Watching] image:nil identifier:nil handler:^(UIAction* action) {
             [self onAddListMenuItemSelected:anixart::Profile::ListStatus::Watching];
         }],
-        [UIAction actionWithTitle:[self getListStatusNameFor:anixart::Profile::ListStatus::Plan] image:nil identifier:nil handler:^(UIAction* action) {
+        [UIAction actionWithTitle:[ProfileListsView getListStatusName:anixart::Profile::ListStatus::Plan] image:nil identifier:nil handler:^(UIAction* action) {
             [self onAddListMenuItemSelected:anixart::Profile::ListStatus::Plan];
         }],
-        [UIAction actionWithTitle:[self getListStatusNameFor:anixart::Profile::ListStatus::Watched] image:nil identifier:nil handler:^(UIAction* action) {
+        [UIAction actionWithTitle:[ProfileListsView getListStatusName:anixart::Profile::ListStatus::Watched] image:nil identifier:nil handler:^(UIAction* action) {
             [self onAddListMenuItemSelected:anixart::Profile::ListStatus::Watched];
         }],
-        [UIAction actionWithTitle:[self getListStatusNameFor:anixart::Profile::ListStatus::HoldOn] image:nil identifier:nil handler:^(UIAction* action) {
+        [UIAction actionWithTitle:[ProfileListsView getListStatusName:anixart::Profile::ListStatus::HoldOn] image:nil identifier:nil handler:^(UIAction* action) {
             [self onAddListMenuItemSelected:anixart::Profile::ListStatus::HoldOn];
         }],
-        [UIAction actionWithTitle:[self getListStatusNameFor:anixart::Profile::ListStatus::Dropped] image:nil identifier:nil handler:^(UIAction* action) {
+        [UIAction actionWithTitle:[ProfileListsView getListStatusName:anixart::Profile::ListStatus::Dropped] image:nil identifier:nil handler:^(UIAction* action) {
             [self onAddListMenuItemSelected:anixart::Profile::ListStatus::Dropped];
         }]
     ]];

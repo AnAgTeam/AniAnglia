@@ -58,7 +58,7 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     _image_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(10, 0, 10, 0);
     
     _title_label = [UILabel new];
-    _title_label.textAlignment = NSTextAlignmentJustified;
+//    _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 2;
     _title_label.font = [_title_label.font fontWithSize:23];
     
@@ -70,6 +70,7 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     
     _rating_label = [UILabel new];
     _rating_label.layer.cornerRadius = RATING_BADGE_HEIGHT / 2;
+    _rating_label.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner | kCALayerMinXMaxYCorner;
     _rating_label.layer.masksToBounds = YES;
     _rating_label.textAlignment = NSTextAlignmentCenter;
     
@@ -77,7 +78,7 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     [self addSubview:_title_label];
     [self addSubview:_ep_count_label];
     [self addSubview:_description_label];
-    [self addSubview:_rating_label];
+    [_image_view addSubview:_rating_label];
     
     _image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _title_label.translatesAutoresizingMaskIntoConstraints = NO;
@@ -136,7 +137,6 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
 -(void)setEpCount:(NSUInteger)ep_count {
     _ep_count_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.release_search.ep_count.text", ""), [@(ep_count) stringValue]];
     [_ep_count_label sizeToFit];
-    [_ep_count_label layoutIfNeeded];
 }
 
 -(void)setRating:(double)rating {

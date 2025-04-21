@@ -755,6 +755,7 @@
 }
 
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
+    [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
     anixart::Release::Ptr& release = _profile->votes[index];
     
@@ -979,6 +980,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     ]];
 }
 -(void)setupLayout {
+    _image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _title_label.textColor = [AppColorProvider textColor];
     _episode_label.textColor = [AppColorProvider textSecondaryColor];
     _time_label.textColor = [AppColorProvider textSecondaryColor];
@@ -1068,6 +1070,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
+    [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
     anixart::Release::Ptr& release = _profile->history[index];
 

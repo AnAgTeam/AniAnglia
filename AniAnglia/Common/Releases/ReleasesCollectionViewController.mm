@@ -60,14 +60,16 @@
     _rating_badge_label = [UILabel new];
     _rating_badge_label.clipsToBounds = YES;
     _rating_badge_label.textAlignment = NSTextAlignmentCenter;
+    _rating_badge_label.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner | kCALayerMinXMaxYCorner;
+    _rating_badge_label.layer.cornerRadius = 20;
     
     _list_status_label = [UILabel new];
     _list_status_label.textAlignment = NSTextAlignmentCenter;
     
-    [self addSubview:_image_view];
-    [self addSubview:_title_label];
-    [self addSubview:_episode_count_label];
-    [self addSubview:_rating_badge_label];
+    [self.contentView addSubview:_image_view];
+    [self.contentView addSubview:_title_label];
+    [self.contentView addSubview:_episode_count_label];
+    [_image_view addSubview:_rating_badge_label];
     [_image_view addSubview:_list_status_label];
     
     _image_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -75,26 +77,27 @@
     _episode_count_label.translatesAutoresizingMaskIntoConstraints = NO;
     _rating_badge_label.translatesAutoresizingMaskIntoConstraints = NO;
     _list_status_label.translatesAutoresizingMaskIntoConstraints = NO;
+    // TODO: remove constraint errors
     [NSLayoutConstraint activateConstraints:@[
-        [_image_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_image_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_image_view.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
+        [_image_view.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
+        [_image_view.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
         
-        [_rating_badge_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_rating_badge_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_rating_badge_label.topAnchor constraintGreaterThanOrEqualToAnchor:_image_view.topAnchor],
+        [_rating_badge_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_image_view.leadingAnchor],
         [_rating_badge_label.trailingAnchor constraintEqualToAnchor:_image_view.trailingAnchor],
         [_rating_badge_label.widthAnchor constraintEqualToConstant:40],
         [_rating_badge_label.heightAnchor constraintEqualToConstant:40],
         [_rating_badge_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor],
         
         [_title_label.topAnchor constraintEqualToAnchor:_image_view.bottomAnchor constant:5],
-        [_title_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_title_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_title_label.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
+        [_title_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
         
         [_episode_count_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
-        [_episode_count_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_episode_count_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_episode_count_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+        [_episode_count_label.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
+        [_episode_count_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        [_episode_count_label.bottomAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.bottomAnchor],
         
         [_list_status_label.topAnchor constraintEqualToAnchor:_image_view.topAnchor],
         [_list_status_label.leadingAnchor constraintEqualToAnchor:_image_view.leadingAnchor],
@@ -109,7 +112,6 @@
 }
 -(void)layoutSubviews {
     [super layoutSubviews];
-    _rating_badge_label.layer.cornerRadius = _rating_badge_label.bounds.size.height / 2;
 }
 
 -(void)setImageUrl:(NSURL*)image_url {
@@ -278,6 +280,10 @@
     return CGSizeMake(item_width, item_width * (19. / 9));
 }
 
+-(UIContextMenuConfiguration *)collectionView:(UICollectionView *)collection_view contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)index_path point:(CGPoint)point {
+    return [_data_provider getContextMenuConfigurationForItemAtIndex:index_path.row];
+}
+
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = index_path.row;
     anixart::Release::Ptr release = [_data_provider getReleaseAtIndex:index];
@@ -286,6 +292,11 @@
 }
 
 -(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index {
+    // reload section causes constraints errors
+    [_collection_view reloadData];
+}
+-(void)didUpdatedDataForReleasesPageableDataProvider:(ReleasesPageableDataProvider *)releases_pageable_data_provider {
+    // reload section causes constraints errors
     [_collection_view reloadData];
 }
 

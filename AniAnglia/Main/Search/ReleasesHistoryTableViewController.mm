@@ -125,12 +125,35 @@
 
     return cell;
 }
+
+-(UISwipeActionsConfiguration *)tableView:(UITableView *)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)index_path {
+    NSInteger index = index_path.row;
+    
+    UIContextualAction* remove_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL action_performed)) {
+        [self onRemoveTrailingActionAtIndex:index];
+        completion_handler(YES);
+    }];
+    remove_action.backgroundColor = [UIColor systemRedColor];
+    remove_action.image = [UIImage systemImageNamed:@"trash"];
+    
+    return [UISwipeActionsConfiguration configurationWithActions:@[
+        remove_action
+    ]];
+}
+
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     ReleasesHistoryTableViewCell* cell = [table_view cellForRowAtIndexPath:index_path];
     
     [_app_data_controller addSearchHistoryItem:[cell getHistoryText]];
     [_delegate releasesHistoryTableViewController:self didSelectHistoryItem:[cell getHistoryText]];
+}
+
+-(void)onRemoveTrailingActionAtIndex:(NSInteger)index {
+    [_app_data_controller removeSearchHistoryItemAtIndex:index];
+    
+    NSIndexSet* sections = [NSIndexSet indexSetWithIndex:0];
+    [_table_view reloadSections:sections withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 @end

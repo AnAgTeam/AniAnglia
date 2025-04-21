@@ -118,6 +118,10 @@
 
 "app.release.episode_count.end" = "эп.";
 
+"app.release.list_status.add" = "Добавить в список";
+"app.release.bookmark.add" = "Добавить в закладки";
+"app.release.bookmark.remove" = "Убрать из закладок";
+
 /* COLLECTION */
 "app.collection.created.start" = "Создано";
 "app.collection.updated.start" = "Обновлено";

@@ -160,6 +160,7 @@
     [_replied_comment_view setContent:TO_NSSTRING(_comment->message)];
     [_replied_comment_view setRepliesCount:0];
     [_replied_comment_view setVoteCount:_comment->vote_count];
+    [_replied_comment_view setIsSpoiler:_comment->is_spoiler];
     
     [_replied_comment_view layoutIfNeeded];
     [_comments_table_view_controller setHeaderView:_replied_comment_view];

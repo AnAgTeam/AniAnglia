@@ -147,7 +147,7 @@
         case anixart::Profile::ListStatus::Dropped:
             return NSLocalizedString(@"app.profile.list_status.dropped.name", "");
         case anixart::Profile::ListStatus::NotWatching:
-            return NSLocalizedString(@"app.profile.list_status.not_watching.name", "");
+            return NSLocalizedString(@"app.profile.list_status.none.name", "");
     }
     return nil;
 }

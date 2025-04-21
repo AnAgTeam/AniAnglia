@@ -110,8 +110,10 @@ struct General {
 
 -(NSArray<NSString*>*)getSearchHistory;
 -(void)addSearchHistoryItem:(NSString*)item;
--(NSUInteger)getSearchHistoryLength;
 -(NSString*)getSearchHistoryItemAtIndex:(NSUInteger)index;
+-(void)removeSearchHistoryItemAtIndex:(NSInteger)index;
+-(NSUInteger)getSearchHistoryLength;
+
 -(NSArray<AppDataReleaseTypeObject*>*)getSavedReleaseTypes:(NSInteger)release_id;
 
 -(AppSettingsDataController*)getSettingsController;

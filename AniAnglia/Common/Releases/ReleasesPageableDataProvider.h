@@ -13,7 +13,10 @@
 
 @class ReleasesPageableDataProvider;
 
-@protocol ReleasesPageableDataProviderDelegate
+@protocol ReleasesPageableDataProviderDelegate <NSObject>
+-(void)didUpdatedDataForReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
+
+@optional
 -(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index;
 @end
 
@@ -31,6 +34,8 @@
 
 -(void)loadCurrentPage;
 -(void)loadNextPage;
+
+-(UIContextMenuConfiguration*)getContextMenuConfigurationForItemAtIndex:(NSInteger)index;
 
 @end
 

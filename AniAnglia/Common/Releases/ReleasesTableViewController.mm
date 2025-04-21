@@ -210,15 +210,23 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
         add_to_list_action
     ]];
 }
+-(UIContextMenuConfiguration *)tableView:(UITableView *)table_view contextMenuConfigurationForRowAtIndexPath:(NSIndexPath *)index_path point:(CGPoint)point {
+    return [_data_provider getContextMenuConfigurationForItemAtIndex:index_path.row];
+}
 
 -(void)onAddToBookmarkTrailingActionAtindexPath:(NSIndexPath*)index_path {
-    
+    // TODO
 }
 -(void)onAddToListTrailingActionAtindexPath:(NSIndexPath*)index_path  {
-    
+    // TODO
 }
 
 -(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index {
+    // reload sections causes constraints errors
+    [_table_view reloadData];
+}
+-(void)didUpdatedDataForReleasesPageableDataProvider:(ReleasesPageableDataProvider *)releases_pageable_data_provider {
+    // reload sections causes constraints errors
     [_table_view reloadData];
 }
 

@@ -194,11 +194,16 @@
     [history insertObject:item atIndex:0];
     [_user_defaults setObject:history forKey:@"search_history"];
 }
--(NSUInteger)getSearchHistoryLength {
-    return [[self getSearchHistory] count];
-}
 -(NSString*)getSearchHistoryItemAtIndex:(NSUInteger)index {
     return [[self getSearchHistory] objectAtIndex:index];
+}
+-(void)removeSearchHistoryItemAtIndex:(NSInteger)index {
+    NSMutableArray<NSString*>* history = [[_user_defaults arrayForKey:@"search_history"] mutableCopy];
+    [history removeObjectAtIndex:index];
+    [_user_defaults setObject:history forKey:@"search_history"];
+}
+-(NSUInteger)getSearchHistoryLength {
+    return [[self getSearchHistory] count];
 }
 
 -(AppSettingsDataController*)getSettingsController {
