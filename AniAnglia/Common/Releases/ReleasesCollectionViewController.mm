@@ -149,6 +149,8 @@
     _axis = axis;
     _axis_item_count = 1;
     
+    [_data_provider loadCurrentPage];
+    
     return self;
 }
 -(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider axis:(UICollectionViewScrollDirection)axis {

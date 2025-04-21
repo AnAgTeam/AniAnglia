@@ -17,7 +17,7 @@ namespace anixart {
 		Release::Ptr get_release(const ReleaseID release_id) const;
 
 		Comment::Ptr add_release_comment(const ReleaseID release_id, const requests::CommentAddRequest& add_request) const;
-		Comment::Ptr edit_release_comment(const CommentID comment_id, const requests::CommentEditRequest& edit_equest) const;
+		void edit_release_comment(const CommentID comment_id, const requests::CommentEditRequest& edit_equest) const;
 		Comment::Ptr release_comment(const CommentID comment_id) const;
 		void remove_release_comment(const CommentID comment_id) const;
 		ReleaseCommentsPages::UPtr release_comments(const ReleaseID release_id, const int32_t start_page, const Comment::FilterBy filter_by) const;
@@ -50,7 +50,7 @@ namespace anixart {
 		HistoryPages::UPtr get_history(const int32_t start_page) const;
 
 		void add_release_to_profile_list(const ReleaseID release_id, const Profile::ListStatus status) const;
-		void remove_release_from_profile_list(const ReleaseID release_id, const Profile::ListStatus status) const;
+		void remove_release_from_profile_list(const ReleaseID release_id, const Profile::ListStatus status) const; // wtf?
 		ProfileListPages::UPtr my_profile_list(const Profile::ListStatus status, const Profile::ListSort sort, const int32_t start_page) const;
 		ProfileListByProfilePages::UPtr profile_list(const ProfileID profile_id, const Profile::ListStatus status, const Profile::ListSort sort, const int32_t start_page) const;
 

@@ -15,7 +15,7 @@ namespace anixart {
 		CollectionReleasesPages::UPtr collection_releases(const CollectionID collection_id, const int32_t start_page);
 		void report_collection(const CollectionID collection_id, const requests::CollectionReportRequest& request);
 
-		void add_collection_comment(const CollectionID collection_id, const requests::CommentAddRequest& request);
+		Comment::Ptr add_collection_comment(const CollectionID collection_id, const requests::CommentAddRequest& request);
 		Comment::Ptr collection_comment(const CommentID comment_id);
 		CollectionCommentsPages::UPtr collection_comments(const CollectionID collection_id, const Comment::Sort sort, const int32_t start_page);
 		void remove_comment(const CommentID comment_id);

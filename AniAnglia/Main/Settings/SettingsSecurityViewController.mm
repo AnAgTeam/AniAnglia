@@ -233,22 +233,46 @@
         case anixart::Profile::FriendRequestPermission::AllUsers:
             return NSLocalizedString(@"app.settings.privacy_and_security.privacy.all", "");
         case anixart::Profile::FriendRequestPermission::Nobody:
-            return NSLocalizedString(@"app.settings.privacy_and_security.privacy.only_me", "");
+            return NSLocalizedString(@"app.settings.privacy_and_security.privacy.nobody", "");
     }
 }
 
 
 -(void)onStatsPrivacyMenuItemSelected:(anixart::Profile::StatsPermission)permission {
-    
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().edit_privacy_stats(permission);
+        return YES;
+    } withUICompletion:^{
+        self->_profile_preferences->privacy_stats = permission;
+        [self->_content_table_view reloadData];
+    }];
 }
 -(void)onSocialPrivacyMenuItemSelected:(anixart::Profile::SocialPermission)permission {
-    
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().edit_privacy_social(permission);
+        return YES;
+    } withUICompletion:^{
+        self->_profile_preferences->privacy_social = permission;
+        [self->_content_table_view reloadData];
+    }];
 }
 -(void)onActivityPrivacyMenuItemSelected:(anixart::Profile::ActivityPermission)permission {
-    
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().edit_privacy_activity(permission);
+        return YES;
+    } withUICompletion:^{
+        self->_profile_preferences->privacy_activity = permission;
+        [self->_content_table_view reloadData];
+    }];
 }
 -(void)onFriendRequestsPrivacyMenuItemSelected:(anixart::Profile::FriendRequestPermission)permission {
-    
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        api->profiles().edit_privacy_friend_requests(permission);
+        return YES;
+    } withUICompletion:^{
+        self->_profile_preferences->privacy_friend_requests = permission;
+        [self->_content_table_view reloadData];
+    }];
 }
 
 @end

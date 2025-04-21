@@ -51,7 +51,6 @@
 "app.main_tab_bar.profile_tab.title" = "Профиль";
 
 /* MAIN STRINGS */
-"app.main.search_bar.placeholder" = "Найти релиз...";
 "app.main.pages_segment_control.actual.name" = "Актуальное";
 "app.main.pages_segment_control.ongoing.name" = "Онгоинги";
 "app.main.pages_segment_control.upcoming.name" = "Анонсы";
@@ -60,7 +59,6 @@
 "app.main.pages_segment_control.ova.name" = "OVA";
 
 /* DISCOVER */
-"app.discover.search_bar.placeholder" = "Найти релиз...";
 "app.discover.option.popular.name" = "Популярное";
 "app.discover.option.schedule.name" = "Расписание";
 "app.discover.option.collections.name" = "Коллекции";
@@ -75,7 +73,6 @@
 "app.discover.weak_comments.title" = "Комментарии недели";
 
 /* RELEASES */
-"app.releases.search_bar.placeholder" = "Найти релиз...";
 "app.release.play_button.title" = "Смотреть";
 "app.release.add_list_button.menu.title" = "В список";
 
@@ -122,6 +119,8 @@
 "app.release.bookmark.add" = "Добавить в закладки";
 "app.release.bookmark.remove" = "Убрать из закладок";
 
+"app.release.search.placeholder" = "Найти релиз...";
+
 /* COLLECTION */
 "app.collection.created.start" = "Создано";
 "app.collection.updated.start" = "Обновлено";
@@ -156,7 +155,7 @@
 "app.bookmarks.search_bar.placeholder" = "Найти закладку...";
 
 /* PROFILE */
-"app.profile.search_bar.placeholder" = "Найти пользователя...";
+"app.profile.search.placeholder" = "Найти пользователя...";
 
 "app.bookmarks.history.title" = "История";
 "app.bookmarks.favorites.title" = "Избранное";

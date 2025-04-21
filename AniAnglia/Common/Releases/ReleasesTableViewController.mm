@@ -37,6 +37,8 @@
     _auto_page_load_disabled = NO;
     _is_container_view_controller = NO;
     
+    [_data_provider loadCurrentPage];
+    
     return self;
 }
 -(instancetype)initWithTableView:(UITableView*)table_view releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider {

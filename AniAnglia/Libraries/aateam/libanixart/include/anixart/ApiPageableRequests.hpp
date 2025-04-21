@@ -134,19 +134,21 @@ namespace anixart {
 
     class ProfileCollectionSearchPages : public Paginator<Collection> {
     public:
-        ProfileCollectionSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
+        ProfileCollectionSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const ReleaseID release_id, const requests::SearchRequest& request);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
     private:
         const ApiSession& _session;
         const std::string& _token;
+        ProfileID _profile_id;
+        ReleaseID _release_id;
         requests::SearchRequest _request;
     };
 
     class ProfileListSearchPages : public Paginator<Release> {
     public:
-        ProfileListSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
+        ProfileListSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const Profile::ListStatus list_status, const requests::SearchRequest& request);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -154,6 +156,7 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         requests::SearchRequest _request;
+        Profile::ListStatus _list_status;
     };
 
     class ProfileSearchPages : public Paginator<Profile> {

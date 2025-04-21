@@ -26,7 +26,6 @@
     _api_proxy = [LibanixartApi sharedInstance];
     _lock = [NSLock new];
     _pages = std::move(pages);
-    [self loadCurrentPage];
     
     return self;
 }
@@ -34,10 +33,12 @@
 -(void)reset {
     // TODO: load cancel
     _releases.clear();
+    [_delegate didUpdatedDataForReleasesPageableDataProvider:self];
 }
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     _releases.clear();
     _pages = std::move(pages);
+    [_delegate didUpdatedDataForReleasesPageableDataProvider:self];
     [self loadCurrentPage];
 }
 
@@ -78,6 +79,9 @@
     }];
 }
 -(void)loadNextPage {
+    if (_pages->is_end()) {
+        return;
+    }
     [self appendItemsFromBlock:^() {
         return self->_pages->next();
     }];

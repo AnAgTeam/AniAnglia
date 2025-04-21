@@ -44,6 +44,7 @@
     
     [self setup];
     [self setupLayout];
+    [_data_provider loadCurrentPage];
 }
 -(void)setup {
     [self addViewControllerView];

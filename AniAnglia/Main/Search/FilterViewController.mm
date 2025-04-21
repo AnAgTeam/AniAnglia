@@ -706,7 +706,7 @@
     [_stack_view addArrangedSubview:_list_exclude_select_button];
     [_stack_view addArrangedSubview:_age_rating_select_button];
     [_stack_view addArrangedSubview:_sort_select_button];
-    [_stack_view addArrangedSubview:_search_button];
+    [self.view addSubview:_search_button];
     
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
     _stack_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -729,7 +729,7 @@
         [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
         [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+//        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
         
         [_stack_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor constant:10],
         [_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
@@ -742,7 +742,12 @@
         [_genres_exclude_mode_button.trailingAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.trailingAnchor],
         [_genres_exclude_mode_button.widthAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.heightAnchor],
         [_genres_exclude_mode_button.heightAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.heightAnchor],
+        
+        [_search_button.topAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor constant:3],
+        [_search_button.leadingAnchor constraintEqualToAnchor:_scroll_view.layoutMarginsGuide.leadingAnchor],
+        [_search_button.trailingAnchor constraintEqualToAnchor:_scroll_view.layoutMarginsGuide.trailingAnchor],
         [_search_button.heightAnchor constraintEqualToConstant:50],
+        [_search_button.bottomAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.bottomAnchor],
     ]];
     
     [self tryLoadEpisodeTypes];
