@@ -13,22 +13,21 @@
 #import "StringCvt.h"
 #import "ReleaseViewController.h"
 
+#import "ProfileListsView.h"
+
 @interface ReleaseCollectionViewCell ()
 @property(nonatomic, retain) LoadableImageView* image_view;
 @property(nonatomic, retain) UILabel* title_label;
 @property(nonatomic, retain) UILabel* episode_count_label;
 @property(nonatomic, retain) UILabel* rating_badge_label;
+@property(nonatomic, retain) UILabel* list_status_label;
 
 @end
 
-@interface ReleasesCollectionViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDataSourcePrefetching, UICollectionViewDelegateFlowLayout> {
-    anixart::Pageable<anixart::Release>::UPtr _pages;
-    std::vector<anixart::Release::Ptr> _releases;
-}
-@property(nonatomic, strong) LibanixartApi* api_proxy;
+@interface ReleasesCollectionViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDataSourcePrefetching, UICollectionViewDelegateFlowLayout>
 @property(nonatomic) UICollectionViewScrollDirection axis;
+@property(nonatomic, retain) ReleasesPageableDataProvider* data_provider;
 @property(nonatomic) NSInteger axis_item_count;
-@property(nonatomic, retain) NSLock* lock;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UICollectionView* collection_view;
 
@@ -62,15 +61,20 @@
     _rating_badge_label.clipsToBounds = YES;
     _rating_badge_label.textAlignment = NSTextAlignmentCenter;
     
+    _list_status_label = [UILabel new];
+    _list_status_label.textAlignment = NSTextAlignmentCenter;
+    
     [self addSubview:_image_view];
     [self addSubview:_title_label];
     [self addSubview:_episode_count_label];
     [self addSubview:_rating_badge_label];
+    [_image_view addSubview:_list_status_label];
     
     _image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _title_label.translatesAutoresizingMaskIntoConstraints = NO;
     _episode_count_label.translatesAutoresizingMaskIntoConstraints = NO;
     _rating_badge_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _list_status_label.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_image_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
@@ -91,6 +95,11 @@
         [_episode_count_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
         [_episode_count_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         [_episode_count_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+        
+        [_list_status_label.topAnchor constraintEqualToAnchor:_image_view.topAnchor],
+        [_list_status_label.leadingAnchor constraintEqualToAnchor:_image_view.leadingAnchor],
+        [_list_status_label.trailingAnchor constraintEqualToAnchor:_image_view.trailingAnchor],
+        [_list_status_label.bottomAnchor constraintLessThanOrEqualToAnchor:_image_view.bottomAnchor],
     ]];
 }
 -(void)setupLayout {
@@ -116,6 +125,16 @@
     _rating_badge_label.text = [@(round(rating * 10) / 10) stringValue];
     _rating_badge_label.backgroundColor = [ReleaseTableViewCell getBadgeColor:rating];
 }
+-(void)setListStatus:(anixart::Profile::ListStatus)list_status {
+    if (list_status == anixart::Profile::ListStatus::NotWatching) {
+        _list_status_label.text = nil;
+        _list_status_label.backgroundColor = [UIColor clearColor];
+        return;
+    }
+    _list_status_label.text = [ProfileListsView getListStatusName:list_status];
+    _list_status_label.backgroundColor = [ProfileListsView getColorForListStatus:list_status];
+}
+
 @end
 
 @implementation ReleasesCollectionViewController
@@ -123,20 +142,28 @@
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages axis:(UICollectionViewScrollDirection)axis {
     self = [super init];
     
-    _api_proxy = [LibanixartApi sharedInstance];
-    _lock = [NSLock new];
-    _pages = std::move(pages);
+    _data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:std::move(pages)];
+    _data_provider.delegate = self;
     _axis = axis;
     _axis_item_count = 1;
     
     return self;
 }
+-(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider axis:(UICollectionViewScrollDirection)axis {
+    self = [super init];
+    
+    _data_provider = releases_pageable_data_provider;
+    _axis = axis;
+    _axis_item_count = 1;
+    
+    return self;
+}
+
 -(void)viewDidLoad {
     [super viewDidLoad];
     
     [self setup];
     [self setupLayout];
-    [self loadFirstPage];
 }
 -(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
@@ -187,46 +214,15 @@
     // TODO
 }
 
--(void)appendItemsFromBlock:(std::vector<anixart::Release::Ptr>(^)())block {
-    if (!_pages) {
-        return;
-    }
-    
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
-        /* todo: change to thread-safe */
-        auto new_items = block();
-        [self->_lock lock];
-        self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
-        [self->_lock unlock];
-        return YES;
-    } withUICompletion:^{
-        [self->_loadable_view endLoading];
-        [self->_collection_view reloadData];
-    }];
-}
-
--(void)loadFirstPage {
-    [_loadable_view startLoading];
-    [self appendItemsFromBlock:^{
-        return self->_pages->get();
-    }];
-}
--(void)loadNextPage {
-    [self appendItemsFromBlock:^{
-        return self->_pages->next();
-    }];
-}
-
-
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
-    _pages = std::move(pages);
-    [self reset];
-    [self loadFirstPage];
+    [_data_provider setPages:std::move(pages)];
 }
 
 -(void)reset {
-    /* todo: load cancel */
-    _releases.clear();
+    [_data_provider reset];
+}
+
+-(void)reloadData {
     [_collection_view reloadData];
 }
 
@@ -236,13 +232,13 @@
 }
 
 -(void)collectionView:(UICollectionView*)collection_view prefetchItemsAtIndexPaths:(NSArray<NSIndexPath *>*)index_paths {
-    if (!_pages || _pages->is_end()) {
+    if ([_data_provider isEnd]) {
         return;
     }
     NSUInteger item_count = [_collection_view numberOfItemsInSection:0];
     for (NSIndexPath* index_path in index_paths) {
         if ([index_path row] >= item_count - 1) {
-            [self loadNextPage];
+            [_data_provider loadNextPage];
             return;
         }
     }
@@ -253,12 +249,12 @@
 }
 
 -(NSInteger)collectionView:(UICollectionView *)collection_view numberOfItemsInSection:(NSInteger)section {
-    return _releases.size();
+    return [_data_provider getItemsCount];
 }
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     ReleaseCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[ReleaseCollectionViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = index_path.row;
-    anixart::Release::Ptr& release = _releases[index];
+    anixart::Release::Ptr release = [_data_provider getReleaseAtIndex:index];
     NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(release->image_url)];
     NSString* episode_count = [NSString stringWithFormat:@"%d/%d %@", release->episodes_released, release->episodes_total, NSLocalizedString(@"app.release.episode_count.end", "")];
     
@@ -266,6 +262,7 @@
     [cell setTitle:TO_NSSTRING(release->title_ru)];
     [cell setSetEpisodeCount:episode_count];
     [cell setRating:release->grade];
+    [cell setListStatus:release->profile_list_status];
     return cell;
 }
 
@@ -283,9 +280,13 @@
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = index_path.row;
-    anixart::Release::Ptr& release = _releases[index];
+    anixart::Release::Ptr release = [_data_provider getReleaseAtIndex:index];
     
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
+}
+
+-(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index {
+    [_collection_view reloadData];
 }
 
 @end

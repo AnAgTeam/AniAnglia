@@ -12,6 +12,7 @@
 #import "LibanixartApi.h"
 
 @interface ReleasesViewController : UIViewController
+@property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 

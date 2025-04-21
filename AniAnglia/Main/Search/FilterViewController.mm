@@ -12,7 +12,7 @@
 #import "StringCvt.h"
 #import "SearchViewController.h"
 #import "ReleasesHistoryTableViewController.h"
-#import "ReleasesTableViewController.h"
+#import "ReleasesViewController.h"
 
 @class MultiSelectMenuModalViewController;
 
@@ -939,8 +939,7 @@
 -(IBAction)onSearchButtonPressed:(UIButton*)sender {
     anixart::FilterPages::UPtr pages = _api_proxy.api->search().filter_search(_filter_request, false, 0);
     
-    ReleasesTableViewController* releases_view_controller = [[ReleasesTableViewController alloc] initWithPages:std::move(pages)];
-    
+    ReleasesViewController* releases_view_controller = [[ReleasesViewController alloc] initWithPages:std::move(pages)];
     [self.navigationController pushViewController:releases_view_controller animated:YES];
 }
 

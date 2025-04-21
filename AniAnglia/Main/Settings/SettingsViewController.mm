@@ -218,7 +218,6 @@
 
 -(void)onAlternativeConnectionSwitched:(BOOL)is_on {
     [_app_settings_controller setAlternativeConnection:is_on];
-    [_api_proxy setIsAlternativeConnection:is_on];
 }
 
 @end

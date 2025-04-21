@@ -13,19 +13,19 @@
 #import "ProfileViewController.h"
 #import "AppColor.h"
 #import "SearchViewController.h"
-#import "ReleasesTableViewController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
 #import "AppDataController.h"
 #import "FilterViewController.h"
 #import "ProfileViewController.h"
 #import "SettingsViewController.h"
+#import "ReleasesViewController.h"
 
 @interface ReleasesSearchController : NSObject <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesHistoryTableViewControllerDelegate>
 @property(nonatomic, strong) AppDataController* app_data_controller;
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, weak) SearchViewController* search_view_controller;
-@property(nonatomic, weak) ReleasesTableViewController* view_controller;
+@property(nonatomic, weak) ReleasesViewController* view_controller;
 @end
 
 @interface MainTabBarController ()
@@ -148,12 +148,11 @@
     _profile_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"person.fill"];
 
     [self setViewControllers:@[
-            _main_nav_controller,
-            _discover_nav_controller,
-            _bookmarks_nav_controller,
-            _profile_nav_controller
-        ]
-    ];
+        _main_nav_controller,
+        _discover_nav_controller,
+        _bookmarks_nav_controller,
+        _profile_nav_controller
+    ]];
 }
 
 -(void)setupLayout {
@@ -168,7 +167,7 @@
     request.query = TO_STDSTRING(query);
     anixart::ReleaseSearchPages::UPtr pages = _api_proxy.api->search().release_search(request, 0);
     
-    ReleasesTableViewController* releases_view_controller = [[ReleasesTableViewController alloc] initWithPages:std::move(pages)];
+    ReleasesViewController* releases_view_controller = [[ReleasesViewController alloc] initWithPages:std::move(pages)];
     SearchViewController* search_view_controller = [[SearchViewController alloc] initWithContentViewController:releases_view_controller];
     search_view_controller.search_bar_placeholder = placeholder;
     [search_view_controller setSearchText:query];

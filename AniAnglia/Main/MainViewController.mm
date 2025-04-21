@@ -42,11 +42,11 @@ anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, con
     _page_view_controler = [SegmentedPageViewController new];
     [_page_view_controler setPageViewControllers:@[
        [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, std::nullopt)],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Ongoing, std::nullopt) trailingActionDisabled:YES],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Upcoming, std::nullopt) trailingActionDisabled:YES],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Finished, std::nullopt) trailingActionDisabled:YES],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Movies) trailingActionDisabled:YES],
-       [[ReleasesTableViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Ova) trailingActionDisabled:YES]
+       [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Ongoing, std::nullopt)],
+       [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Upcoming, std::nullopt)],
+       [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, anixart::Release::Status::Finished, std::nullopt)],
+       [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Movies)],
+       [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Ova)]
    ]];
     [_page_view_controler setSegmentTitles:@[
         NSLocalizedString(@"app.main.pages_segment_control.actual.name", ""),

@@ -51,90 +51,94 @@
     [_user_defaults setObject:_settings_dict forKey:@"settings"];
 }
 
--(void)setSettingsObject:(id)object atKey:(NSString*)key {
-    // TODO. Better not to use this
+-(void)postNotificationForObject:(id)object atKey:(NSString*)key {
+    NSNotification* notification = [NSNotification notificationWithName:(app_settings::notification_name) object:self userInfo:@{
+        (app_settings::notification_info_key): key,
+        (app_settings::notification_info_value): object
+    }];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
+-(void)setSettingsObject:(id)object atKey:(NSString*)key {
+    [_settings_dict setValue:object forKey:key];
+    [self saveSettings];
+    [self postNotificationForObject:object atKey:key];
+}
+-(id)getSettingsObjectAtKey:(NSString*)key {
+    return [_settings_dict valueForKey:key];
+}
+
 // -- appearance
 -(app_settings::Appearance::Theme)getTheme {
-    NSNumber* theme = [_settings_dict valueForKey:app_settings::Appearance::theme];
+    NSNumber* theme = [self getSettingsObjectAtKey:app_settings::Appearance::theme];
     return static_cast<app_settings::Appearance::Theme>([theme longValue]);
 }
 -(void)setTheme:(app_settings::Appearance::Theme)theme {
-    [_settings_dict setValue:@(static_cast<int>(theme)) forKey:app_settings::Appearance::theme];
-    [self saveSettings];
+    [self setSettingsObject:@(static_cast<int>(theme)) atKey:app_settings::Appearance::theme];
 }
 -(app_settings::Appearance::DisplayStyle)getMainDisplayStyle {
-    NSNumber* display_style = [_settings_dict valueForKey:app_settings::Appearance::main_display_style];
+    NSNumber* display_style = [self getSettingsObjectAtKey:app_settings::Appearance::main_display_style];
     return static_cast<app_settings::Appearance::DisplayStyle>([display_style longValue]);
 }
 -(void)setMainDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
-    [_settings_dict setValue:@(static_cast<int>(display_style)) forKey:app_settings::Appearance::main_display_style];
-    [self saveSettings];
+    [self setSettingsObject:@(static_cast<int>(display_style)) atKey:app_settings::Appearance::main_display_style];
 }
 
 // -- playback
 -(app_settings::Playback::DefaultPlayer)getDefaultPlayer {
-    NSNumber* default_player = [_settings_dict valueForKey:app_settings::Playback::default_player];
+    NSNumber* default_player = [self getSettingsObjectAtKey:app_settings::Playback::default_player];
     return static_cast<app_settings::Playback::DefaultPlayer>([default_player longValue]);
 }
 -(void)setDefaultPlayer:(app_settings::Playback::DefaultPlayer)default_player {
-    [_settings_dict setValue:@(static_cast<int>(default_player)) forKey:app_settings::Playback::default_player];
-    [self saveSettings];
+    [self setSettingsObject:@(static_cast<int>(default_player)) atKey:app_settings::Playback::default_player];
 }
 -(NSString*)getPrefferedQuality {
-    NSString* preffered_quality = [_settings_dict valueForKey:app_settings::Playback::preffered_quality];
+    NSString* preffered_quality = [self getSettingsObjectAtKey:app_settings::Playback::preffered_quality];
     return preffered_quality;
 }
 -(void)setPrefferedQuality:(NSString*)preffered_quality {
-    [_settings_dict setValue:preffered_quality forKey:app_settings::Playback::preffered_quality];
-    [self saveSettings];
+    [self setSettingsObject:preffered_quality atKey:app_settings::Playback::preffered_quality];
 }
 -(std::chrono::system_clock::duration)getDefaultSkipTime {
-    NSNumber* default_skip_time = [_settings_dict valueForKey:app_settings::Playback::preffered_quality];
+    NSNumber* default_skip_time = [self getSettingsObjectAtKey:app_settings::Playback::preffered_quality];
     return std::chrono::seconds([default_skip_time longValue]);
 }
 -(void)setDefaultSkipTime:(std::chrono::system_clock::duration)default_skip_time {
     std::chrono::seconds seconds = std::chrono::floor<std::chrono::seconds>(default_skip_time);
-    [_settings_dict setValue:@(seconds.count()) forKey:app_settings::Playback::default_skip_time];
-    [self saveSettings];
+    [self setSettingsObject:@(seconds.count()) atKey:app_settings::Playback::default_skip_time];
 }
 -(BOOL)getAutoNextVideo {
-    NSNumber* auto_next_video = [_settings_dict valueForKey:app_settings::Playback::auto_next_video];
+    NSNumber* auto_next_video = [self getSettingsObjectAtKey:app_settings::Playback::auto_next_video];
     return [auto_next_video boolValue];
 }
 -(void)setAutoNextVideo:(BOOL)auto_next_video {
-    [_settings_dict setValue:@(auto_next_video) forKey:app_settings::Playback::auto_next_video];
-    [self saveSettings];
+    [self setSettingsObject:@(auto_next_video) atKey:app_settings::Playback::auto_next_video];
 }
 -(BOOL)setRememberSource {
-    NSNumber* remember_source = [_settings_dict valueForKey:app_settings::Playback::remember_source];
+    NSNumber* remember_source = [self getSettingsObjectAtKey:app_settings::Playback::remember_source];
     return [remember_source boolValue];
 }
 -(void)setRememberSource:(BOOL)remember_source {
-    [_settings_dict setValue:@(remember_source) forKey:app_settings::Playback::remember_source];
-    [self saveSettings];
+    [self setSettingsObject:@(remember_source) atKey:app_settings::Playback::remember_source];
 }
 
 // -- notifications
 
 // -- data control
 -(NSInteger)getMaxCacheSizeBytes {
-    NSNumber* max_cache_size_bytes = [_settings_dict valueForKey:app_settings::DataControl::max_cache_size];
+    NSNumber* max_cache_size_bytes = [self getSettingsObjectAtKey:app_settings::DataControl::max_cache_size];
     return [max_cache_size_bytes longValue];
 }
 -(void)setMaxCacheSizeBytes:(NSInteger)max_cache_size_bytes {
-    [_settings_dict setValue:@(max_cache_size_bytes) forKey:app_settings::DataControl::max_cache_size];
-    [self saveSettings];
+    [self setSettingsObject:@(max_cache_size_bytes) atKey:app_settings::DataControl::max_cache_size];
 }
 
 // -- general
 -(BOOL)getAlternativeConnection {
-    NSNumber* alternative_connection = [_settings_dict valueForKey:app_settings::General::alternative_connection];
+    NSNumber* alternative_connection = [self getSettingsObjectAtKey:app_settings::General::alternative_connection];
     return [alternative_connection boolValue];
 }
 -(void)setAlternativeConnection:(BOOL)alternative_connection {
-    [_settings_dict setValue:@(alternative_connection) forKey:app_settings::General::alternative_connection];
-    [self saveSettings];
+    [self setSettingsObject:@(alternative_connection) atKey:app_settings::General::alternative_connection];
 }
 
 @end

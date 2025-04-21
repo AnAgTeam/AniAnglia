@@ -9,6 +9,9 @@
 #import "LibanixartApi.h"
 
 namespace app_settings {
+    constexpr NSString* notification_name = @"AppSettingsDataControllerValueChanged";
+    constexpr NSString* notification_info_key = @"SettingName";
+    constexpr NSString* notification_info_value = @"SettingValue";
 struct Appearance {
     enum class Theme {
         Light = 0,

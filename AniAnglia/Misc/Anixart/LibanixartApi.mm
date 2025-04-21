@@ -29,6 +29,8 @@
     _api->get_session().switch_base_url([[_app_data_controller getSettingsController] getAlternativeConnection]);
     _parsers = new anixart::parsers::Parsers();
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
+    
     return self;
 }
 -(void)dealloc {
@@ -293,6 +295,17 @@
         @"Zuiyo Eizo",
         @"8bit"
     ];
+}
+
+-(void)onSettingsValueChanged:(NSNotification*)notification {
+    NSString* name = notification.userInfo[app_settings::notification_info_key];
+    if (![name isEqualToString:(app_settings::General::alternative_connection)]) {
+        return;
+    }
+    
+    NSNumber* value = notification.userInfo[app_settings::notification_info_value];
+    BOOL is_alternative_connection = [value boolValue];
+    [self setIsAlternativeConnection:is_alternative_connection];
 }
 
 +(instancetype)sharedInstance {

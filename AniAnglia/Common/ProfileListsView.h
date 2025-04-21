@@ -16,7 +16,10 @@
 -(instancetype)initWithLegendName:(NSString*)name color:(UIColor*)color count:(NSInteger)count;
 @end
 
-@interface ProfileListsView : UIView 
+@interface ProfileListsView : UIView
+
++(UIColor*)getColorForListStatus:(anixart::Profile::ListStatus)list_status;
++(NSString*)getListStatusName:(anixart::Profile::ListStatus)list_status;
 
 -(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release name:(NSString*)name;
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile name:(NSString*)name;

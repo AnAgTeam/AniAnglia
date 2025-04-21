@@ -10,6 +10,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LibanixartApi.h"
+#import "ReleasesPageableDataProvider.h"
 
 @interface ReleaseCollectionViewCell : UICollectionViewCell
 
@@ -19,15 +20,19 @@
 -(void)setTitle:(NSString*)title;
 -(void)setSetEpisodeCount:(NSString*)episode_count;
 -(void)setRating:(double)rating;
+-(void)setListStatus:(anixart::Profile::ListStatus)list_status;
 @end
 
-@interface ReleasesCollectionViewController : UIViewController
+@interface ReleasesCollectionViewController : UIViewController <ReleasesPageableDataProviderDelegate>
 @property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages axis:(UICollectionViewScrollDirection)axis;
+-(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider axis:(UICollectionViewScrollDirection)axis;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(void)reset;
+
+-(void)reloadData;
 
 -(void)setHeaderView:(UIView*)header_view;
 

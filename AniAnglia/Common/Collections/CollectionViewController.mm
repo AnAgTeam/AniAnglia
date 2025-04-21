@@ -9,7 +9,7 @@
 #import "CollectionViewController.h"
 #import "AppColor.h"
 #import "StringCvt.h"
-#import "ReleasesTableViewController.h"
+#import "ReleasesViewController.h"
 #import "LoadableView.h"
 #import "ExpandableLabel.h"
 #import "ProfileListsView.h"
@@ -80,7 +80,7 @@
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) CollectionTableHeaderView* header_view;
-@property(nonatomic, retain) ReleasesTableViewController* releases_view_controller;
+@property(nonatomic, retain) ReleasesViewController* releases_view_controller;
 
 @end
 
@@ -353,7 +353,7 @@
     _header_view = [[CollectionTableHeaderView alloc] initWithCollectionGetInfo:_collection_get_info];
     _header_view.delegate = self;
     
-    _releases_view_controller = [[ReleasesTableViewController alloc] initWithPages:_api_proxy.api->collections().collection_releases(_collection->id, 0)];
+    _releases_view_controller = [[ReleasesViewController alloc] initWithPages:_api_proxy.api->collections().collection_releases(_collection->id, 0)];
     _releases_view_controller.is_container_view_controller = YES;
     [self addChildViewController:_releases_view_controller];
     [_releases_view_controller setHeaderView:_header_view];

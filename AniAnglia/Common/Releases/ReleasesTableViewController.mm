@@ -16,12 +16,8 @@
 #import "LoadableView.h"
 #import "ReleaseViewController.h"
 
-@interface ReleasesTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching> {
-    anixart::Pageable<anixart::Release>::UPtr _pages;
-    std::vector<anixart::Release::Ptr> _releases;
-}
-@property(nonatomic, strong) LibanixartApi* api_proxy;
-@property(nonatomic, retain) NSLock* lock;
+@interface ReleasesTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching>
+@property(nonatomic, retain) ReleasesPageableDataProvider* data_provider;
 @property(nonatomic, retain) UITableView* table_view;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UILabel* empty_label;
@@ -31,32 +27,28 @@
 
 @implementation ReleasesTableViewController
 
--(instancetype)init {
-    return [self initWithTableView:nil pages:nullptr trailingActionDisabled:NO];
-}
-
--(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
-    return [self initWithTableView:nil pages:std::move(pages) trailingActionDisabled:NO];
-}
-
 -(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Release>::UPtr)pages {
-    return [self initWithTableView:table_view pages:std::move(pages) trailingActionDisabled:NO];
-}
--(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Release>::UPtr)pages trailingActionDisabled:(BOOL)trailing_action_disabled {
     self = [super init];
     
     _table_view = table_view;
-    _pages = std::move(pages);
+    _data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:std::move(pages)];
+    _data_provider.delegate = self;
     _trailing_action_disabled = NO;
     _auto_page_load_disabled = NO;
-    _api_proxy = [LibanixartApi sharedInstance];
-    _lock = [NSLock new];
     _is_container_view_controller = NO;
     
     return self;
 }
--(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages trailingActionDisabled:(BOOL)trailing_action_disabled {
-    return [self initWithTableView:nil pages:std::move(pages) trailingActionDisabled:trailing_action_disabled];
+-(instancetype)initWithTableView:(UITableView*)table_view releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider {
+    self = [super init];
+    
+    _table_view = table_view;
+    _data_provider = releases_pageable_data_provider;
+    _trailing_action_disabled = NO;
+    _auto_page_load_disabled = NO;
+    _is_container_view_controller = NO;
+    
+    return self;
 }
 
 -(void)viewDidLoad {
@@ -64,7 +56,6 @@
     
     [self setup];
     [self setupLayout];
-    [self loadFirstPage];
 }
 
 -(void)setup {
@@ -133,49 +124,16 @@
     _empty_label.textColor = [AppColorProvider textColor];
 }
 
--(void)appendItemsFromBlock:(std::vector<anixart::Release::Ptr>(^)())block {
-    if (!_pages) {
-        return;
-    }
-    
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
-        /* todo: change to thread-safe */
-        auto new_items = block();
-        [self->_lock lock];
-        self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
-        [self->_lock unlock];
-        return YES;
-    } withUICompletion:^{
-        [self->_loadable_view endLoading];
-        self->_empty_label.hidden = !self->_releases.empty();
-        [self->_table_view reloadData];
-    }];
-}
--(void)loadFirstPage {
-    [_loadable_view startLoading];
-    [self appendItemsFromBlock:^{
-        return self->_pages->get();
-    }];
-}
--(void)loadNextPage {
-    if (_auto_page_load_disabled) {
-        return;
-    }
-    
-    [self appendItemsFromBlock:^{
-        return self->_pages->next();
-    }];
-}
-
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
-    _pages = std::move(pages);
-    [self reset];
-    [self loadFirstPage];
+    [_data_provider setPages:std::move(pages)];
 }
 -(void)reset {
-    /* todo: load cancel */
-    _releases.clear();
-    _empty_label.hidden = YES;
+    /* TODO: */
+    [_data_provider reset];
+    [_table_view reloadData];
+}
+
+-(void)reloadData {
     [_table_view reloadData];
 }
 
@@ -187,7 +145,7 @@
 }
 
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
-    return _releases.size();
+    return [_data_provider getItemsCount];
 }
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path {
     return 175;
@@ -195,7 +153,7 @@
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     ReleaseTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleaseTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
-    anixart::Release::Ptr& release = _releases[index];
+    anixart::Release::Ptr release = [_data_provider getReleaseAtIndex:index];
     NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(release->image_url)];
     
     [cell setTitle:TO_NSSTRING(release->title_ru)];
@@ -209,13 +167,13 @@
 
 -(void)tableView:(UITableView*)table_view
 prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
-    if (_pages->is_end() || _auto_page_load_disabled) {
+    if ([_data_provider isEnd] || _auto_page_load_disabled) {
         return;
     }
     NSUInteger item_count = [_table_view numberOfRowsInSection:0];
     for (NSIndexPath* index_path in index_paths) {
         if ([index_path row] >= item_count - 1) {
-            [self loadNextPage];
+            [_data_provider loadNextPage];
             return;
         }
     }
@@ -224,7 +182,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 -(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger index = [index_path item];
-    anixart::Release::Ptr& release = _releases[index];
+    anixart::Release::Ptr release = [_data_provider getReleaseAtIndex:index];
     
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
@@ -258,6 +216,10 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 }
 -(void)onAddToListTrailingActionAtindexPath:(NSIndexPath*)index_path  {
     
+}
+
+-(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index {
+    [_table_view reloadData];
 }
 
 @end
