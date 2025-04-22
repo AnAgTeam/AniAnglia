@@ -406,8 +406,8 @@
     
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         /* todo: change to thread-safe */
-        auto new_items = block();
         [self->_lock lock];
+        auto new_items = block();
         self->_comments.insert(self->_comments.end(), new_items.begin(), new_items.end());
         [self->_lock unlock];
         return YES;
@@ -427,11 +427,18 @@
 -(void)loadFirstPage {
     [_loadable_view startLoading];
     [self appendItemsFromBlock:^{
+        // TODO: fix another way
+        if (self->_pages->get_current_page() != 0 && self->_pages->is_end()) {
+            return std::vector<anixart::Comment::Ptr>();
+        }
         return self->_pages->get();
     }];
 }
 -(void)loadNextPage {
     [self appendItemsFromBlock:^{
+        if (self->_pages->is_end()) {
+            return std::vector<anixart::Comment::Ptr>();
+        }
         return self->_pages->next();
     }];
 }
@@ -443,6 +450,7 @@
 }
 
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
+    // TODO: fix race condition
     _pages = std::move(pages);
     [self reset];
     [self loadFirstPage];

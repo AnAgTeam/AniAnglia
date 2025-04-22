@@ -29,6 +29,7 @@
 @property(nonatomic, retain) NSLayoutConstraint* text_enter_view_bottom_constraint;
 @property(nonatomic) CGFloat last_text_enter_origin_y;
 @property(nonatomic) BOOL did_scrolled_to_reply_comment;
+@property(nonatomic, retain) UIBarButtonItem* refresh_bar_button;
 
 @end
 
@@ -88,7 +89,7 @@
 
 -(void)setup {
     // test refresh feature. TODO autorefresh
-    UIBarButtonItem* _refresh_bar_button = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"arrow.clockwise"] style:UIBarButtonItemStylePlain target:self action:@selector(onRefreshBarButtonPressed:)];
+    _refresh_bar_button = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"arrow.clockwise"] style:UIBarButtonItemStylePlain target:self action:@selector(onRefreshBarButtonPressed:)];
     self.navigationItem.rightBarButtonItem = _refresh_bar_button;
     
     _replied_comment_view = [[CommentsTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:[CommentsTableViewCell getIdentifier]];
@@ -191,10 +192,10 @@
 
 -(void)refresh {
     if (_is_release_comment) {
-        [_comments_table_view_controller setPages: self->_api_proxy.api->releases().replies_to_comment(_comment->id, 0, anixart::Comment::Sort::Oldest)];
+        [_comments_table_view_controller setPages:_api_proxy.api->releases().replies_to_comment(_comment->id, 0, anixart::Comment::Sort::Oldest)];
     }
     else {
-        [_comments_table_view_controller setPages: self->_api_proxy.api->collections().replies_to_comment(_comment->id, anixart::Comment::Sort::Oldest, 0)];
+        [_comments_table_view_controller setPages:_api_proxy.api->collections().replies_to_comment(_comment->id, anixart::Comment::Sort::Oldest, 0)];
     }
 }
 -(void)replyToComment:(anixart::Comment::Ptr)comment {
@@ -299,6 +300,7 @@
 }
 
 -(void)commentsTableView:(UITableView *)table_view didGotPageAtIndex:(NSInteger)page_index {
+    _refresh_bar_button.enabled = YES;
     if (!_reply_to_comment || _did_scrolled_to_reply_comment) {
         return;
     }
@@ -322,6 +324,7 @@
 
 -(IBAction)onRefreshBarButtonPressed:(UIBarButtonItem*)sender {
     // TODO: check for loaded
+    _refresh_bar_button.enabled = NO;
     [_comments_table_view_controller refresh];
 }
 

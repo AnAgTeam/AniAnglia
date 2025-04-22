@@ -166,11 +166,12 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     
     if (![_section_providers containsObject:profiles_pageable_data_provider]) {
         if (profiles_pageable_data_provider == _requests_in_data_provider ) {
-            [_section_providers insertObject:profiles_pageable_data_provider atIndex:MIN(0, [_section_providers count])];
+            [_section_providers insertObject:profiles_pageable_data_provider atIndex:0];
         } else if (profiles_pageable_data_provider == _requests_out_data_provider) {
-            [_section_providers insertObject:profiles_pageable_data_provider atIndex:MIN(1, [_section_providers count])];
+            NSInteger index = [_section_providers containsObject:_requests_in_data_provider] ? 1 : 0;
+            [_section_providers insertObject:profiles_pageable_data_provider atIndex:index];
         } else if (profiles_pageable_data_provider == _friends_data_provider) {
-            [_section_providers insertObject:profiles_pageable_data_provider atIndex:MIN(2, [_section_providers count])];
+            [_section_providers addObject:profiles_pageable_data_provider];
         }
     }
     [_table_view reloadData];
