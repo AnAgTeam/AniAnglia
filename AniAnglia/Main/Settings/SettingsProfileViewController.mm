@@ -78,6 +78,7 @@
     
     _avatar_image_view = [LoadableImageView new];
     _avatar_image_view.layer.cornerRadius = 60;
+    _avatar_image_view.clipsToBounds = YES;
     
     _content_table_view.tableHeaderView = _avatar_button;
     

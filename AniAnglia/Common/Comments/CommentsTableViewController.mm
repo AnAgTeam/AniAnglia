@@ -144,6 +144,14 @@
     
     _show_replies_button_height_constraint =
     [_show_replies_button.heightAnchor constraintEqualToConstant:0];
+    NSArray* constraints = @[
+        [_username_label.heightAnchor constraintGreaterThanOrEqualToConstant:10],
+        [_content_label.heightAnchor constraintGreaterThanOrEqualToConstant:10],
+        [_publish_date_label.heightAnchor constraintGreaterThanOrEqualToConstant:10],
+    ];
+    for (NSLayoutConstraint* constr : constraints) {
+        constr.priority = 700;
+    }
     [NSLayoutConstraint activateConstraints:@[
         [_avatar_button.topAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.topAnchor],
         [_avatar_button.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
@@ -334,7 +342,7 @@
 
 -(void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-
+    [_table_view reloadData];
 }
 
 -(void)viewDidLayoutSubviews {
@@ -355,12 +363,21 @@
     }
 }
 
+-(void)viewWillLayoutSubviews {
+    _table_view.contentOffset = CGPointZero;
+//    _table_view.contentInset = UIEdgeInsetsZero;
+//    _table_view.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+}
+
 -(void)setup {
     [_table_view registerClass:CommentsTableViewCell.class forCellReuseIdentifier:[CommentsTableViewCell getIdentifier]];
     _table_view.rowHeight = UITableViewAutomaticDimension;
     _table_view.dataSource = self;
     _table_view.delegate = self;
     _table_view.prefetchDataSource = self;
+    
+    // TEST
+//    self.edgesForExtendedLayout = 0;
     
     _loadable_view = [LoadableView new];
     

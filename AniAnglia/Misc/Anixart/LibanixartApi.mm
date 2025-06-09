@@ -43,6 +43,7 @@
 -(anixart::parsers::Parsers*)getParsers {
     return _parsers;
 }
+
 -(void)performAsyncBlock:(BOOL(^)(anixart::Api* api))block withUICompletion:(void(^)())completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         try {
@@ -61,8 +62,37 @@
             NSLog(@"Uncatched libanixart::UrlSession exception: %s", e.what());
         }
         catch (std::runtime_error& e) {
-            NSLog(@"Uncatched libanixart runtime error: %s)", e.what());
+            NSLog(@"Uncatched libanixart runtime error: %s", e.what());
         }
+    });
+}
+
+-(void)asyncCall:(BOOL(^)(anixart::Api* api))block completion:(void(^)(BOOL errored))completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        BOOL errored = NO;
+        try {
+            errored |= block(self->_api);
+        }
+        catch (anixart::ApiError& e) {
+            NSLog(@"Uncatched libanixart api exception: %s", e.what());
+            errored |= YES;
+        }
+        catch (network::JsonError& e) {
+            NSLog(@"Uncatched libanixart api json exception: %s", e.what());
+            errored |= YES;
+        }
+        catch (network::UrlSessionError& e) {
+            NSLog(@"Uncatched libanixart::UrlSession exception: %s", e.what());
+            errored |= YES;
+        }
+        catch (std::runtime_error& e) {
+            NSLog(@"Uncatched libanixart runtime error: %s", e.what());
+            errored |= YES;
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(errored);
+        });
     });
 }
 

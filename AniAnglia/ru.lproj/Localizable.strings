@@ -349,3 +349,7 @@
 "app.common.expandable_label.show_all.title" = "Показать всё";
 
 "app.common.text_enter.edit_text" = "Редактирование комментария";
+
+/* COMMON LOADABLE */
+"app.loadable.error.text" = "Что-то пошло не так :O";
+"app.loadable.reload.title" = "Повторить";

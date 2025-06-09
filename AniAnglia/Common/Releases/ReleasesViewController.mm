@@ -12,13 +12,20 @@
 #import "AppColor.h"
 #import "AppDataController.h"
 #import "ReleasesPageableDataProvider.h"
+#import "DataReloadable.h"
+
+@interface ReleasesCollectionViewController (Reloadable) <DataReloadable>
+@end
+
+@interface ReleasesTableViewController (Reloadable) <DataReloadable>
+@end
 
 @interface ReleasesViewController ()
 @property(nonatomic, strong) AppSettingsDataController* settings_data_controller;
 @property(nonatomic, retain) ReleasesPageableDataProvider* data_provider;
 @property(nonatomic, retain) ReleasesTableViewController* table_view_controller;
 @property(nonatomic, retain) ReleasesCollectionViewController* collection_view_controller;
-@property(nonatomic, retain) UIViewController* current_view_controller;
+@property(nonatomic, retain) UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* current_view_controller;
 
 
 @end
@@ -32,10 +39,6 @@
     _data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:std::move(pages)];
     _is_container_view_controller = NO;
     
-    [self updateDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
-    
     return self;
 }
 
@@ -47,7 +50,9 @@
     [_data_provider loadCurrentPage];
 }
 -(void)setup {
-    [self addViewControllerView];
+    UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
+    [self setContentViewController:view_controller];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
 }
 -(void)setupLayout {
 
@@ -65,37 +70,25 @@
     // TODO
 }
 
--(void)updateDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
+-(UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>*)getViewControllerForDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
+    switch (display_style) {
+        case app_settings::Appearance::DisplayStyle::Table:
+            return [[ReleasesTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:_data_provider];
+        case app_settings::Appearance::DisplayStyle::Cards:
+            ReleasesCollectionViewController* view_controller = [[ReleasesCollectionViewController alloc] initWithReleasesPageableDataProvider:_data_provider axis:UICollectionViewScrollDirectionVertical];
+            [view_controller setAxisItemCount:3];
+            return view_controller;
+    }
+}
+-(void)setContentViewController:(UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>*)view_controller {
     if (_current_view_controller) {
         [_current_view_controller removeFromParentViewController];
         [_current_view_controller.view removeFromSuperview];
     }
-    switch (display_style) {
-        case app_settings::Appearance::DisplayStyle::Table:
-            if (!_table_view_controller) {
-                _table_view_controller = [[ReleasesTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:_data_provider];
-                _data_provider.delegate = _table_view_controller;
-                // TODO: change
-                _table_view_controller.trailing_action_disabled = YES;
-            }
-            _data_provider.delegate = _table_view_controller;
-            _current_view_controller = _table_view_controller;
-            [_table_view_controller reloadData];
-            break;
-        case app_settings::Appearance::DisplayStyle::Cards:
-            if (!_collection_view_controller) {
-                _collection_view_controller = [[ReleasesCollectionViewController alloc] initWithReleasesPageableDataProvider:_data_provider axis:UICollectionViewScrollDirectionVertical];
-                [_collection_view_controller setAxisItemCount:3];
-            }
-            _data_provider.delegate = _collection_view_controller;
-            _current_view_controller = _collection_view_controller;
-            [_collection_view_controller reloadData];
-            break;
-    }
+    _current_view_controller = view_controller;
+    _data_provider.delegate = _current_view_controller;
+    
     [self addChildViewController:_current_view_controller];
-    [self addViewControllerView];
-}
--(void)addViewControllerView {
     [self.view addSubview:_current_view_controller.view];
     
     _current_view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -114,7 +107,6 @@
             [_current_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
         ]];
     }
-
 }
 
 -(void)onSettingsValueChanged:(NSNotification*)notification {
@@ -125,8 +117,9 @@
     
     NSNumber* value = notification.userInfo[app_settings::notification_info_value];
     app_settings::Appearance::DisplayStyle display_style = static_cast<app_settings::Appearance::DisplayStyle>([value integerValue]);
-    [self updateDisplayStyle:display_style];
     
+    UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:display_style];
+    [self setContentViewController:view_controller];
 }
 
 @end

@@ -10,6 +10,8 @@
 @interface LoadableView : UIView
 -(void)startLoading;
 -(void)endLoading;
+-(void)endLoadingWithErrored:(BOOL)errored;
+-(void)setErrored:(BOOL)errored;
 @end
 
 @interface LoadableImageView : UIImageView

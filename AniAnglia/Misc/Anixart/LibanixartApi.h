@@ -20,7 +20,9 @@
 -(anixart::Api*)getApi;
 -(anixart::parsers::Parsers*)getParsers;
 /* completion executed if block returned TRUE, if returned FALSE or libanixart error catched it isn't executed */
--(void)performAsyncBlock:(BOOL(^)(anixart::Api* api))block withUICompletion:(void(^)())completion;
+-(void)performAsyncBlock:(BOOL(^)(anixart::Api* api))block withUICompletion:(void(^)())completion DEPRECATED_MSG_ATTRIBUTE("Use asyncCall:completed:");
+/* completion executed with errored from any catched error or if block returned YES */
+-(void)asyncCall:(BOOL(^)(anixart::Api* api))block completion:(void(^)(BOOL errored))completion;
 
 -(void)setIsAlternativeConnection:(BOOL)is_alternative_connection;
 

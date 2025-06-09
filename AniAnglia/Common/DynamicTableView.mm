@@ -28,13 +28,15 @@
 -(void)setContentSize:(CGSize)content_size {
     [super setContentSize:content_size];
     if (!_my_height_constraint) {
-//        _my_height_constraint = [self.heightAnchor constraintEqualToConstant:content_size.height];
+//        _my_height_constraint = [self.heightAnchor constraintEqualToConstant:content_size.height + (self.adjustedContentInset.bottom - self.adjustedContentInset.top)];
+        _my_height_constraint.priority = 100;
         _my_height_constraint.active = YES;
     } else {
         _my_height_constraint.constant = content_size.height;
     }
     [self invalidateIntrinsicContentSize];
 }
+
 //-(CGSize)contentSize {
 //    [self layoutIfNeeded];
 //    return [super contentSize];
@@ -58,8 +60,8 @@
 }
 -(CGSize)intrinsicContentSize {
 //    [self setNeedsLayout];
-    [self layoutIfNeeded];
-    return CGSizeMake(self.contentSize.width, self.contentSize.height);
+//    [self layoutIfNeeded];
+    return CGSizeMake(self.contentSize.width, self.contentSize.height + (self.adjustedContentInset.bottom - self.adjustedContentInset.top));
 }
 //-(void)layoutSubviews {
 //    [super layoutSubviews];

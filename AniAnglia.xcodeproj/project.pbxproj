@@ -87,6 +87,7 @@
 /* Begin PBXFileReference section */
 		EF0D7D182D26F0E7000E516A /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = AniAnglia/Libraries/aateam/libanixart/libanixart.xcframework; sourceTree = "<group>"; };
 		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
+		EF15C91F2DF75B3A00335578 /* DataReloadable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataReloadable.h; sourceTree = "<group>"; };
 		EF17A2E12DB6AE06003429FC /* ProfilesTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfilesTableViewController.h; sourceTree = "<group>"; };
 		EF17A2E22DB6AE19003429FC /* ProfilesTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProfilesTableViewController.mm; sourceTree = "<group>"; };
 		EF17A2E42DB6B245003429FC /* ProfilesPageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfilesPageableDataProvider.h; sourceTree = "<group>"; };
@@ -1497,6 +1498,7 @@
 				EF7CD28A2DA03C3F00F88227 /* TimeCvt.h */,
 				EF3568A62DA84F2A00086593 /* SharedRunningData.h */,
 				EF3568A42DA84F1D00086593 /* SharedRunningData.mm */,
+				EF15C91F2DF75B3A00335578 /* DataReloadable.h */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
