@@ -30,6 +30,14 @@
     return self;
 }
 
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages initialReleases:(std::vector<anixart::Release::Ptr>)releases {
+    self = [self initWithPages:std::move(pages)];
+    
+    _releases = std::move(releases);
+    
+    return self;
+}
+
 -(void)reset {
     // TODO: load cancel
     _releases.clear();

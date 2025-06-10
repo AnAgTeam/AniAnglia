@@ -24,6 +24,7 @@
 @property(nonatomic, weak) id<ReleasesPageableDataProviderDelegate> delegate;
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages initialReleases:(std::vector<anixart::Release::Ptr>)releases;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(void)reset;

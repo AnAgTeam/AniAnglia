@@ -42,6 +42,16 @@
     return self;
 }
 
+-(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider {
+    self = [super init];
+    
+    _settings_data_controller = [[AppDataController sharedInstance] getSettingsController];
+    _data_provider = releases_pageable_data_provider;
+    _is_container_view_controller = NO;
+    
+    return self;
+}
+
 -(void)viewDidLoad {
     [super viewDidLoad];
     
@@ -52,6 +62,7 @@
 -(void)setup {
     UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
     [self setContentViewController:view_controller];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
 }
 -(void)setupLayout {

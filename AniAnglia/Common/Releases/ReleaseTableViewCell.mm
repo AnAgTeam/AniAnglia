@@ -9,6 +9,7 @@
 #import "ReleaseTableViewCell.h"
 #import "LoadableView.h"
 #import "AppColor.h"
+#import "StringCvt.h"
 
 @interface ReleaseTableViewCell ()
 @property(nonatomic, retain) LoadableImageView* image_view;

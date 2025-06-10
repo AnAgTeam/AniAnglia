@@ -91,9 +91,12 @@
 -(IBAction)onShowAllButtonPressed:(UIButton*)sender {
     _show_all_button_pressed = YES;
     _text_label.numberOfLines = 0;
-    [_text_label sizeToFit];
-    [_show_all_button removeFromSuperview];
-    [_delegate didExpandPressedForExpandableLabel:self];
+    [UIView animateWithDuration:0.2 animations:^{
+        [self->_text_label sizeToFit];
+        [self->_show_all_button removeFromSuperview];
+    } completion:^(BOOL finished) {
+        [self->_delegate didExpandPressedForExpandableLabel:self];
+    }];
 }
 
 @end

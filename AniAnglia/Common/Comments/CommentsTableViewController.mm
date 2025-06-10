@@ -26,6 +26,7 @@
 @property(nonatomic, retain) UILabel* publish_date_label;
 @property(nonatomic, retain) UILabel* origin_name_label;
 @property(nonatomic, retain) UILabel* content_label;
+@property(nonatomic, retain) UIView* content_container_view;
 @property(nonatomic, retain) UIButton* reply_button;
 @property(nonatomic, retain) UIButton* show_replies_button;
 @property(nonatomic, retain) UIButton* upvote_button;
@@ -83,6 +84,9 @@
     _publish_date_label = [UILabel new];
     _origin_name_label = [UILabel new];
     
+    _content_container_view = [UIView new];
+    _content_container_view.layoutMargins = UIEdgeInsetsMake(4, 0, 4, 0);
+    
     _content_label = [UILabel new];
     _content_label.numberOfLines = 0;
     _content_label.textAlignment = NSTextAlignmentJustified;
@@ -106,7 +110,7 @@
     [_downvote_button addTarget:self action:@selector(onDownvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _vote_count_label = [UILabel new];
     
-    _blur_effect_view = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleProminent]];
+    _blur_effect_view = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
     _blur_effect_view.layer.cornerRadius = 8;
     _blur_effect_view.clipsToBounds = YES;
     
@@ -120,7 +124,8 @@
     [self.contentView addSubview:_origin_label];
     [self.contentView addSubview:_publish_date_label];
     [self.contentView addSubview:_origin_name_label];
-    [self.contentView addSubview:_content_label];
+    [self.contentView addSubview:_content_container_view];
+    [_content_container_view addSubview:_content_label];
     [self.contentView addSubview:_reply_button];
     [self.contentView addSubview:_show_replies_button];
     [self.contentView addSubview:_upvote_button];
@@ -133,6 +138,7 @@
     _origin_label.translatesAutoresizingMaskIntoConstraints = NO;
     _publish_date_label.translatesAutoresizingMaskIntoConstraints = NO;
     _origin_name_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _content_container_view.translatesAutoresizingMaskIntoConstraints = NO;
     _content_label.translatesAutoresizingMaskIntoConstraints = NO;
     _reply_button.translatesAutoresizingMaskIntoConstraints = NO;
     _show_replies_button.translatesAutoresizingMaskIntoConstraints = NO;
@@ -179,12 +185,17 @@
         [_origin_name_label.leadingAnchor constraintEqualToAnchor:_username_label.leadingAnchor],
         [_origin_name_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
         
-        [_content_label.topAnchor constraintEqualToAnchor:_origin_name_label.bottomAnchor constant:5],
-        [_content_label.leadingAnchor constraintEqualToAnchor:_origin_name_label.leadingAnchor],
-        [_content_label.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
+        [_content_container_view.topAnchor constraintEqualToAnchor:_origin_name_label.bottomAnchor constant:5],
+        [_content_container_view.leadingAnchor constraintEqualToAnchor:_origin_name_label.leadingAnchor],
+        [_content_container_view.trailingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.trailingAnchor],
         
-        [_reply_button.topAnchor constraintEqualToAnchor:_content_label.bottomAnchor constant:5],
-        [_reply_button.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
+        [_content_label.topAnchor constraintEqualToAnchor:_content_container_view.layoutMarginsGuide.topAnchor],
+        [_content_label.leadingAnchor constraintEqualToAnchor:_content_container_view.layoutMarginsGuide.leadingAnchor],
+        [_content_label.trailingAnchor constraintEqualToAnchor:_content_container_view.layoutMarginsGuide.trailingAnchor],
+        [_content_label.bottomAnchor constraintEqualToAnchor:_content_container_view.layoutMarginsGuide.bottomAnchor],
+        
+        [_reply_button.topAnchor constraintEqualToAnchor:_content_container_view.bottomAnchor constant:5],
+        [_reply_button.leadingAnchor constraintEqualToAnchor:_content_container_view.leadingAnchor],
         [_reply_button.heightAnchor constraintEqualToConstant:20],
         [_reply_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.layoutMarginsGuide.centerXAnchor],
         
@@ -230,15 +241,15 @@
         [self.contentView addSubview:_spoiler_show_button];
         
         [NSLayoutConstraint activateConstraints:@[
-            [_blur_effect_view.topAnchor constraintEqualToAnchor:_content_label.topAnchor],
-            [_blur_effect_view.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
-            [_blur_effect_view.trailingAnchor constraintEqualToAnchor:_content_label.trailingAnchor],
-            [_blur_effect_view.bottomAnchor constraintEqualToAnchor:_content_label.bottomAnchor],
+            [_blur_effect_view.topAnchor constraintEqualToAnchor:_content_container_view.topAnchor],
+            [_blur_effect_view.leadingAnchor constraintEqualToAnchor:_content_container_view.leadingAnchor],
+            [_blur_effect_view.trailingAnchor constraintEqualToAnchor:_content_container_view.trailingAnchor],
+            [_blur_effect_view.bottomAnchor constraintEqualToAnchor:_content_container_view.bottomAnchor],
             
-            [_spoiler_show_button.topAnchor constraintEqualToAnchor:_content_label.topAnchor],
-            [_spoiler_show_button.leadingAnchor constraintEqualToAnchor:_content_label.leadingAnchor],
-            [_spoiler_show_button.trailingAnchor constraintEqualToAnchor:_content_label.trailingAnchor],
-            [_spoiler_show_button.bottomAnchor constraintEqualToAnchor:_content_label.bottomAnchor],
+            [_spoiler_show_button.topAnchor constraintEqualToAnchor:_content_container_view.topAnchor],
+            [_spoiler_show_button.leadingAnchor constraintEqualToAnchor:_content_container_view.leadingAnchor],
+            [_spoiler_show_button.trailingAnchor constraintEqualToAnchor:_content_container_view.trailingAnchor],
+            [_spoiler_show_button.bottomAnchor constraintEqualToAnchor:_content_container_view.bottomAnchor],
         ]];
     } else {
         [_blur_effect_view removeFromSuperview];
@@ -375,9 +386,8 @@
     _table_view.dataSource = self;
     _table_view.delegate = self;
     _table_view.prefetchDataSource = self;
-    
-    // TEST
-//    self.edgesForExtendedLayout = 0;
+//    _table_view.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+//    _table_view.scrollEnabled = NO;
     
     _loadable_view = [LoadableView new];
     

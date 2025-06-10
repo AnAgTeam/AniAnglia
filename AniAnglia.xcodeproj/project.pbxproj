@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
 		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
+		EF15C9222DF8582100335578 /* NamedSectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF15C9212DF8582100335578 /* NamedSectionView.m */; };
 		EF17A2E32DB6AE19003429FC /* ProfilesTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF17A2E22DB6AE19003429FC /* ProfilesTableViewController.mm */; };
 		EF17A2E62DB6B259003429FC /* ProfilesPageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF17A2E52DB6B259003429FC /* ProfilesPageableDataProvider.mm */; };
 		EF1A7F0E2DB5C73600E03494 /* ReleasesPageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF1A7F0D2DB5C73600E03494 /* ReleasesPageableDataProvider.mm */; };
@@ -88,6 +89,8 @@
 		EF0D7D182D26F0E7000E516A /* libanixart.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libanixart.xcframework; path = AniAnglia/Libraries/aateam/libanixart/libanixart.xcframework; sourceTree = "<group>"; };
 		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
 		EF15C91F2DF75B3A00335578 /* DataReloadable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataReloadable.h; sourceTree = "<group>"; };
+		EF15C9202DF8580D00335578 /* NamedSectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NamedSectionView.h; sourceTree = "<group>"; };
+		EF15C9212DF8582100335578 /* NamedSectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NamedSectionView.m; sourceTree = "<group>"; };
 		EF17A2E12DB6AE06003429FC /* ProfilesTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfilesTableViewController.h; sourceTree = "<group>"; };
 		EF17A2E22DB6AE19003429FC /* ProfilesTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProfilesTableViewController.mm; sourceTree = "<group>"; };
 		EF17A2E42DB6B245003429FC /* ProfilesPageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfilesPageableDataProvider.h; sourceTree = "<group>"; };
@@ -1487,8 +1490,6 @@
 			children = (
 				EFCBC3A32D54F6A600080866 /* Torrent */,
 				EFCBC3A22D54F67A00080866 /* Anixart */,
-				EF4941032C72383500832A6C /* AppColor.h */,
-				EF4941052C7238B700832A6C /* AppColor.mm */,
 				EFC6077C2C7616B200BA8B44 /* TextErrorField.h */,
 				EFC6077A2C76169500BA8B44 /* TextErrorField.mm */,
 				EF5A3CB12C7F928400B4F637 /* AppDataController.h */,
@@ -3446,6 +3447,8 @@
 				EF8C37502DB2B23E00ADDBD7 /* Collections */,
 				EFFA21DA2DB021C3007D8AD4 /* Releases */,
 				EF2330622DAD9171008B0A2A /* Comments */,
+				EF4941032C72383500832A6C /* AppColor.h */,
+				EF4941052C7238B700832A6C /* AppColor.mm */,
 				EFED8F552CE2985300C53C1C /* LoadableView.h */,
 				EFED8F562CE2986300C53C1C /* LoadableView.mm */,
 				EF3568A02DA5839A00086593 /* CustomTableViewCells.h */,
@@ -3460,6 +3463,8 @@
 				EF2330672DAD9293008B0A2A /* TextEnterView.mm */,
 				EF8C37542DB2C6B000ADDBD7 /* ExpandableLabel.h */,
 				EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */,
+				EF15C9202DF8580D00335578 /* NamedSectionView.h */,
+				EF15C9212DF8582100335578 /* NamedSectionView.m */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3634,6 +3639,7 @@
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */,
+				EF15C9222DF8582100335578 /* NamedSectionView.m in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EF7CD2912DA040EC00F88227 /* ProfileListsView.mm in Sources */,
 				EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */,

@@ -9,6 +9,7 @@
 #define ReleaseTableViewCell_h
 
 #import <UIKit/UIKit.h>
+#import "LibanixartApi.h"
 
 @interface ReleaseTableViewCell : UITableViewCell
 
@@ -22,6 +23,7 @@
 -(void)setAccesibilityView:(UIView*)accesibility_view;
 -(void)setRating:(double)rating;
 -(void)setEpCount:(NSUInteger)ep_count;
+
 @end
 
 

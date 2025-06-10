@@ -153,9 +153,15 @@
     return 175;
 }
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
-    ReleaseTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleaseTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
     anixart::Release::Ptr release = [_data_provider getReleaseAtIndex:index];
+    
+    return [self tableView:table_view cellForRowAtIndexPath:index_path withRelease:release];
+}
+
+-(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path withRelease:(anixart::Release::Ptr)release {
+    ReleaseTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleaseTableViewCell getIdentifier] forIndexPath:index_path];
+    
     NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(release->image_url)];
     
     [cell setTitle:TO_NSSTRING(release->title_ru)];

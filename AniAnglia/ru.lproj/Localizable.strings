@@ -108,7 +108,7 @@
 
 "app.release.previews.title" = "Скриншоты";
 
-"app.release.related.title" = "Связанное";
+"app.release.related" = "Связанное";
 
 "app.release.comments.title" = "Комментарии";
 "app.release.comments.show_all_button.title" = "Показать все";
@@ -353,3 +353,4 @@
 /* COMMON LOADABLE */
 "app.loadable.error.text" = "Что-то пошло не так :O";
 "app.loadable.reload.title" = "Повторить";
+"app.common.named_section.show_all" = "Показать все";

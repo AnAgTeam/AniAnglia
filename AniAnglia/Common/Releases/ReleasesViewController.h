@@ -10,11 +10,13 @@
 
 #import <UIKit/UIKit.h>
 #import "LibanixartApi.h"
+#import "ReleasesPageableDataProvider.h"
 
 @interface ReleasesViewController : UIViewController
 @property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(void)reset;

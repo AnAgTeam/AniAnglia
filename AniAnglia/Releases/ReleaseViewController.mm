@@ -19,6 +19,8 @@
 #import "CommentsTableViewController.h"
 #import "CommentRepliesViewController.h"
 #import "ExpandableLabel.h"
+#import "ReleasesTableViewController.h"
+#import "NamedSectionView.h"
 
 @class ReleaseRatingView;
 @class ReleaseVideoBlocksView;
@@ -145,14 +147,10 @@
 -(void)setCategory:(NSString*)category;
 @end
 
-@interface ReleaseRelatedView : UIView <UITableViewDataSource, UITableViewDelegate> {
-    anixart::Release::Ptr _release;
-}
-@property(nonatomic, weak) id<ReleaseRelatedViewDelegate> delegate;
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UITableView* related_table_view;
+@interface ReleaseRelatedTableViewController : ReleasesTableViewController
+@property(nonatomic, readonly) BOOL is_registered_class;
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
+-(instancetype)initWithTableView:(UITableView*)table_view releaseInfo:(anixart::Release::Ptr)release;
 @end
 
 @interface ReleaseEmbedCommentsViewController : CommentsTableViewController
@@ -202,7 +200,8 @@
 @property(nonatomic, retain) ProfileListsView* lists_view;
 @property(nonatomic, retain) ReleaseVideoBlocksView* video_blocks_view;
 @property(nonatomic, retain) ReleasePreviewsView* previews_view;
-@property(nonatomic, retain) ReleaseRelatedView* related_view;
+@property(nonatomic, retain) NamedSectionView* related_view;
+@property(nonatomic, retain) ReleaseRelatedTableViewController* related_view_controller;
 @property(nonatomic, retain) ReleaseCommentsView* comments_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
 
@@ -797,60 +796,26 @@
 }
 @end
 
-@implementation ReleaseRelatedView : UIView
+@implementation ReleaseRelatedTableViewController
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release {
-    self = [super init];
-    
-    _release = release;
-    [self setup];
-    [self setupLayout];
+-(instancetype)initWithTableView:(UITableView*)table_view releaseInfo:(anixart::Release::Ptr)release {
+    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:release->related_releases];
+    self = [super initWithTableView:table_view releasesPageableDataProvider:data_provider];
     
     return self;
 }
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.text = NSLocalizedString(@"app.release.related.title", "");
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _related_table_view = [UITableView new];
-    [_related_table_view registerClass:ReleaseRelatedTableViewCell.class forCellReuseIdentifier:[ReleaseRelatedTableViewCell getIdentifier]];
-    _related_table_view.dataSource = self;
-    _related_table_view.delegate = self;
-    _related_table_view.scrollEnabled = NO;
-    
-    [self addSubview:_me_label];
-    [self addSubview:_related_table_view];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _related_table_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_related_table_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_related_table_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_related_table_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_related_table_view.heightAnchor constraintEqualToConstant:[self tableView:_related_table_view numberOfRowsInSection:0] * [self tableView:_related_table_view heightForRowAtIndexPath:[NSIndexPath indexPathWithIndex:0]]],
-        [_related_table_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
-    ]];
-    [_me_label sizeToFit];
-}
--(void)setupLayout {
-    self.backgroundColor = [AppColorProvider backgroundColor];
-    _me_label.textColor = [AppColorProvider textColor];
-}
 
--(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
-    return _release->related_releases.size();
-}
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path {
     return 100;
 }
--(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
+
+-(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path withRelease:(anixart::Release::Ptr)release {
+    if (!_is_registered_class) {
+        _is_registered_class = YES;
+        [table_view registerClass:ReleaseRelatedTableViewCell.class forCellReuseIdentifier:[ReleaseRelatedTableViewCell getIdentifier]];
+    }
+    
     ReleaseRelatedTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleaseRelatedTableViewCell getIdentifier] forIndexPath:index_path];
-    NSInteger index = [index_path item];
-    anixart::Release::Ptr release = _release->related_releases[index];
     NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(release->image_url)];
     NSInteger rating = round(release->grade * 10) / 10;
     // TODO: add global function for category name
@@ -870,6 +835,7 @@
             break;
     }
     
+    
     [cell setImageUrl:image_url];
     [cell setTitle:TO_NSSTRING(release->title_ru)];
     [cell setYear:TO_NSSTRING(release->year)];
@@ -879,12 +845,6 @@
     return cell;
 }
 
--(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
-    [table_view deselectRowAtIndexPath:index_path animated:YES];
-    NSInteger index = [index_path item];
-    anixart::Release::Ptr release = _release->related_releases[index];
-    [_delegate releaseRelatedView:self didSelectRelease:release];
-}
 @end
 
 @implementation ReleaseCommentsView
@@ -1050,6 +1010,8 @@
 }
 
 -(void)setup {
+    __weak ReleaseViewController* weak_self = self;
+    
     _content_stack_view = [UIStackView new];
     _content_stack_view.axis = UILayoutConstraintAxisVertical;
     _content_stack_view.distribution = UIStackViewDistributionEqualSpacing;
@@ -1139,21 +1101,26 @@
     _previews_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     _previews_view.delegate = self;
     
-    _related_view = nil;
     if (!_release->related_releases.empty()) {
-        _related_view = [[ReleaseRelatedView alloc] initWithReleaseInfo:_release];
+        _related_view_controller = [[ReleaseRelatedTableViewController alloc] initWithTableView:[DynamicTableView new] releaseInfo:_release];
+        _related_view_controller.is_container_view_controller = YES;
+        [self addChildViewController:_related_view_controller];
+        
+        _related_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.release.related", "") view:_related_view_controller.view];
+        [_related_view setShowAllButtonEnabled:YES];
+        [_related_view setShowAllHandler:^{
+            [weak_self onRelatedShowAllPressed];
+        }];
         _related_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
-        _related_view.delegate = self;
     }
     
     _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] comments:_release->comments];
     [self addChildViewController:_comments_view_controller];
     _comments_view_controller.delegate = self;
     _comments_view_controller.is_container_view_controller = YES;
-//    _comments_view_controller.view.preservesSuperviewLayoutMargins = YES;
     
     _comments_view = [[ReleaseCommentsView alloc] initWithView:_comments_view_controller.view];
-    _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+//    _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     _comments_view.delegate = self;
     
     NSMutableArray<NSLayoutConstraint*>* _optional_view_constraints = [NSMutableArray arrayWithCapacity:5];
@@ -1214,7 +1181,8 @@
         [_content_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
         [_content_stack_view.trailingAnchor constraintEqualToAnchor:_scroll_view.trailingAnchor],
         [_content_stack_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
-        [_content_stack_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor],
+        [_content_stack_view.bottomAnchor constraintLessThanOrEqualToAnchor:_scroll_view.bottomAnchor],
+//        [_content_stack_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor], // wow, how this expand/collapse effect works??
         
         [_release_image_view.heightAnchor constraintEqualToConstant:340],
         [_release_image_view.widthAnchor constraintEqualToAnchor:_release_image_view.heightAnchor multiplier:(9. / 16)],
@@ -1256,6 +1224,7 @@
 }
 
 -(void)setupLayout {
+    _release_image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _title_label.textColor = [AppColorProvider textColor];
     _orig_title_label.textColor = [AppColorProvider textSecondaryColor];
     _add_list_button.backgroundColor = [AppColorProvider foregroundColor1];
@@ -1366,6 +1335,10 @@
         self->_release->is_favorite = to_bookmark_on;
         [self updateBookmarkButton];
     }];
+}
+
+-(void)onRelatedShowAllPressed {
+    // TODO
 }
 
 -(void)releaseRatingView:(ReleaseRatingView *)release_rating_view didPressedVote:(NSInteger)vote {
