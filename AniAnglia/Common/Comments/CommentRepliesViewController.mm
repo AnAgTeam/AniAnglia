@@ -14,6 +14,19 @@
 #import "TimeCvt.h"
 #import "ProfileViewController.h"
 
+// bad
+class SingleCommentPageable : anixart::Pageable<anixart::Comment> {
+public:
+    SingleCommentPageable(anixart::CommentID comment_id);
+    ~SingleCommentPageable() = default;
+    
+protected:
+    std::vector<anixart::Comment::Ptr> do_request(uint32_t page) const;
+    
+private:
+    const anixart::CommentID _comment_id;
+};
+
 @interface CommentRepliesViewController () <CommentsTableViewCellDelegate, TextEnterViewDelegate, UIScrollViewDelegate, CommentsTableViewControllerDelegate> {
     anixart::CommentID _comment_id;
     anixart::Comment::Ptr _comment;
@@ -23,6 +36,7 @@
 }
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic) BOOL is_release_comment;
+@property(nonatomic, retain) CommentsPageableDataProvider* replied_comment_data_provider;
 @property(nonatomic, retain) CommentsTableViewCell* replied_comment_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_table_view_controller;
 @property(nonatomic, retain) TextEnterView* text_enter_view;
@@ -40,6 +54,7 @@
     _api_proxy = [LibanixartApi sharedInstance];
     _comment_id = comment->id;
     _comment = comment;
+    _replied_comment_data_provider = [[CommentsPageableDataProvider alloc] initWithPages:nullptr initialComments:{comment}];
     _reply_to_profile_id = comment->author->id;
     _is_release_comment = comment->release ? YES : NO;
     _last_text_enter_origin_y = -1;
@@ -105,7 +120,6 @@
     [self addChildViewController:_comments_table_view_controller];
     [_comments_table_view_controller setKeyboardDismissMode:UIScrollViewKeyboardDismissModeOnDrag];
     _comments_table_view_controller.delegate = self;
-    _comments_table_view_controller.enable_context_menu = YES;
     
     _text_enter_view = [TextEnterView new];
     _text_enter_view.delegate = self;
@@ -159,6 +173,7 @@
     [_replied_comment_view setUsername:TO_NSSTRING(_comment->author->username)];
     [_replied_comment_view setPublishDate:to_utc_yy_mm_dd_string_from_gmt(_comment->date)];
     [_replied_comment_view setContent:TO_NSSTRING(_comment->message)];
+    // hide 'show replies' button
     [_replied_comment_view setRepliesCount:0];
     [_replied_comment_view setVoteCount:_comment->vote_count];
     [_replied_comment_view setIsSpoiler:_comment->is_spoiler];
@@ -166,6 +181,7 @@
     [_replied_comment_view layoutIfNeeded];
     [_comments_table_view_controller setHeaderView:_replied_comment_view];
 }
+
 -(void)loadParentComment {
     if (_comment) {
         // already loaded
@@ -173,21 +189,21 @@
         if (_reply_to_comment) {
             [self replyToComment:_reply_to_comment];
         }
-    } else {
-        [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-            if (self->_is_release_comment) {
-                self->_comment = api->releases().release_comment(self->_comment_id);
-            } else {
-                self->_comment = api->collections().collection_comment(self->_comment_id);
-            }
-            return YES;
-        } withUICompletion:^{
-            [self initParentComment];
-            if (self->_reply_to_comment) {
-                [self replyToComment:self->_reply_to_comment];
-            }
-        }];
+        return;
     }
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        if (self->_is_release_comment) {
+            self->_comment = api->releases().release_comment(self->_comment_id);
+        } else {
+            self->_comment = api->collections().collection_comment(self->_comment_id);
+        }
+        return YES;
+    } withUICompletion:^{
+        [self initParentComment];
+        if (self->_reply_to_comment) {
+            [self replyToComment:self->_reply_to_comment];
+        }
+    }];
 }
 
 -(void)refresh {

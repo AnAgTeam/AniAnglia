@@ -199,10 +199,10 @@
 @property(nonatomic, retain) ReleaseRatingView* rating_view;
 @property(nonatomic, retain) ProfileListsView* lists_view;
 @property(nonatomic, retain) ReleaseVideoBlocksView* video_blocks_view;
-@property(nonatomic, retain) ReleasePreviewsView* previews_view;
+@property(nonatomic, retain) NamedSectionView* previews_view;
 @property(nonatomic, retain) NamedSectionView* related_view;
 @property(nonatomic, retain) ReleaseRelatedTableViewController* related_view_controller;
-@property(nonatomic, retain) ReleaseCommentsView* comments_view;
+@property(nonatomic, retain) NamedSectionView* comments_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
 
 @property(nonatomic, retain) UIContextMenuInteraction* context_menu;
@@ -647,30 +647,20 @@
     return self;
 }
 -(void)setup {
-    _me_label = [UILabel new];
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _me_label.text = NSLocalizedString(@"app.release.previews.title", "");
-    
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    layout.minimumLineSpacing = 10;
     _previews_collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
     [_previews_collection_view registerClass:ReleasePreviewsCollectionViewCell.class forCellWithReuseIdentifier:[ReleasePreviewsCollectionViewCell getIdentifier]];
     _previews_collection_view.dataSource = self;
     _previews_collection_view.delegate = self;
-    _previews_collection_view.showsHorizontalScrollIndicator = NO;
     
-    [self addSubview:_me_label];
     [self addSubview:_previews_collection_view];
     
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
     _previews_collection_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_previews_collection_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_previews_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor constant:5],
+        [_previews_collection_view.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [_previews_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
         [_previews_collection_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         [_previews_collection_view.heightAnchor constraintEqualToConstant:180],
         [_previews_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
@@ -700,6 +690,10 @@
 
 -(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
     return CGSizeMake(collection_view.frame.size.height * (16. / 9), collection_view.frame.size.height);
+}
+
+-(UIEdgeInsets)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout insetForSectionAtIndex:(NSInteger)section {
+    return UIEdgeInsetsMake(0, 10, 0, 10);
 }
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
@@ -774,9 +768,9 @@
 -(void)setupLayout {
     _image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _title_label.textColor = [AppColorProvider textColor];
-    _year_label.textColor = [AppColorProvider textColor];
-    _rating_label.textColor = [AppColorProvider textColor];
-    _category_label.textColor = [AppColorProvider textColor];
+    _year_label.textColor = [AppColorProvider textSecondaryColor];
+    _rating_label.textColor = [AppColorProvider textSecondaryColor];
+    _category_label.textColor = [AppColorProvider textSecondaryColor];
 }
 
 -(void)setImageUrl:(NSURL*)url {
@@ -1097,9 +1091,11 @@
     _video_blocks_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     _video_blocks_view.delegate = self;
     
-    _previews_view = [[ReleasePreviewsView alloc] initWithReleaseInfo:_release];
+    ReleasePreviewsView* previews_collection_view = [[ReleasePreviewsView alloc] initWithReleaseInfo:_release];
+    _previews_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.release.previews", "") view:previews_collection_view];
     _previews_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
-    _previews_view.delegate = self;
+    previews_collection_view.layoutMargins = UIEdgeInsetsZero;
+    previews_collection_view.delegate = self;
     
     if (!_release->related_releases.empty()) {
         _related_view_controller = [[ReleaseRelatedTableViewController alloc] initWithTableView:[DynamicTableView new] releaseInfo:_release];
@@ -1114,14 +1110,18 @@
         _related_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     }
     
-    _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] comments:_release->comments];
+    CommentsPageableDataProvider* comments_data_provider = [[CommentsPageableDataProvider alloc] initWithPages:nullptr initialComments:_release->comments];
+    _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] dataProvider:comments_data_provider];
     [self addChildViewController:_comments_view_controller];
     _comments_view_controller.delegate = self;
     _comments_view_controller.is_container_view_controller = YES;
     
-    _comments_view = [[ReleaseCommentsView alloc] initWithView:_comments_view_controller.view];
-//    _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
-    _comments_view.delegate = self;
+    _comments_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.release.comments", "") view:_comments_view_controller.view];
+    _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    [_comments_view setShowAllButtonEnabled:YES];
+    [_comments_view setShowAllHandler:^{
+        [weak_self onCommentsShowAllPresed];
+    }];
     
     NSMutableArray<NSLayoutConstraint*>* _optional_view_constraints = [NSMutableArray arrayWithCapacity:5];
     
@@ -1208,8 +1208,8 @@
         [_rating_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_lists_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_video_blocks_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_previews_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_comments_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_previews_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_comments_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
     ]];
     [NSLayoutConstraint activateConstraints:_optional_view_constraints];
     [_title_label sizeToFit];
@@ -1341,6 +1341,12 @@
     // TODO
 }
 
+-(void)onCommentsShowAllPresed {
+    CommentsTableViewController* comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::FilterBy::All)];
+    comments_view_controller.delegate = self;
+    [self.navigationController pushViewController:comments_view_controller animated:YES];
+}
+
 -(void)releaseRatingView:(ReleaseRatingView *)release_rating_view didPressedVote:(NSInteger)vote {
     // TODO: add UI response, add remove vote action
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
@@ -1369,25 +1375,6 @@
 
 -(void)didReplyPressedForCommentsTableView:(UITableView *)table_view comment:(anixart::Comment::Ptr)comment {
     [self.navigationController pushViewController:[[CommentRepliesViewController alloc] initWithReplyToComment:comment] animated:YES];
-}
-
--(void)didShowAllPressedForReleaseCommentsView:(ReleaseCommentsView *)release_comments_view {
-    CommentsTableViewController* comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::FilterBy::All)];
-    comments_view_controller.delegate = self;
-    [self.navigationController pushViewController:comments_view_controller animated:YES];
-}
-
--(UIContextMenuConfiguration*)contextMenuInteraction:(UIContextMenuInteraction*)interaction configurationForMenuAtLocation:(CGPoint)location {
-    
-    return nil;
-    
-//    return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^(NSArray* suggested_actions) {
-//        return [UIMenu menuWithChildren:@[
-//            [UIAction actionWithTitle:@"Сохранить изображение" image:[UIImage systemImageNamed:@"square.and.arrow.down"] identifier:nil handler:^(UIAction* action) {
-//            
-//            }]
-//        ]];
-//    }];
 }
 
 @end

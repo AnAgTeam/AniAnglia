@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D182D26F0E7000E516A /* libanixart.xcframework */; };
 		EF0D7D1D2D26F0F9000E516A /* libtorrentrepo.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */; };
-		EF15C9222DF8582100335578 /* NamedSectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF15C9212DF8582100335578 /* NamedSectionView.m */; };
+		EF15C9222DF8582100335578 /* NamedSectionView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF15C9212DF8582100335578 /* NamedSectionView.mm */; };
 		EF17A2E32DB6AE19003429FC /* ProfilesTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF17A2E22DB6AE19003429FC /* ProfilesTableViewController.mm */; };
 		EF17A2E62DB6B259003429FC /* ProfilesPageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF17A2E52DB6B259003429FC /* ProfilesPageableDataProvider.mm */; };
 		EF1A7F0E2DB5C73600E03494 /* ReleasesPageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF1A7F0D2DB5C73600E03494 /* ReleasesPageableDataProvider.mm */; };
@@ -77,6 +77,8 @@
 		EFD5CD772CDABD3800A1E057 /* curl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD92CCE956700EA11BB /* curl.xcframework */; };
 		EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDDA2CCE956700EA11BB /* curlpp.xcframework */; };
 		EFD7F7B02DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD7F7AF2DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm */; };
+		EFDE6BCD2DF8D32900408CF0 /* CommentsPageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */; };
+		EFDE6BD02DF8D38000408CF0 /* PageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */; };
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
 		EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */; };
@@ -90,7 +92,7 @@
 		EF0D7D1C2D26F0F9000E516A /* libtorrentrepo.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libtorrentrepo.xcframework; path = AniAnglia/Libraries/aateam/libtorrentrepo/libtorrentrepo.xcframework; sourceTree = "<group>"; };
 		EF15C91F2DF75B3A00335578 /* DataReloadable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataReloadable.h; sourceTree = "<group>"; };
 		EF15C9202DF8580D00335578 /* NamedSectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NamedSectionView.h; sourceTree = "<group>"; };
-		EF15C9212DF8582100335578 /* NamedSectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NamedSectionView.m; sourceTree = "<group>"; };
+		EF15C9212DF8582100335578 /* NamedSectionView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NamedSectionView.mm; sourceTree = "<group>"; };
 		EF17A2E12DB6AE06003429FC /* ProfilesTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfilesTableViewController.h; sourceTree = "<group>"; };
 		EF17A2E22DB6AE19003429FC /* ProfilesTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProfilesTableViewController.mm; sourceTree = "<group>"; };
 		EF17A2E42DB6B245003429FC /* ProfilesPageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfilesPageableDataProvider.h; sourceTree = "<group>"; };
@@ -1366,6 +1368,10 @@
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
 		EFD7F7AE2DAFBF5100D0FBC0 /* ReleaseTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseTableViewCell.h; sourceTree = "<group>"; };
 		EFD7F7AF2DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseTableViewCell.mm; sourceTree = "<group>"; };
+		EFDE6BCB2DF8D30F00408CF0 /* CommentsPageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommentsPageableDataProvider.h; sourceTree = "<group>"; };
+		EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommentsPageableDataProvider.mm; sourceTree = "<group>"; };
+		EFDE6BCE2DF8D36900408CF0 /* PageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PageableDataProvider.h; sourceTree = "<group>"; };
+		EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PageableDataProvider.mm; sourceTree = "<group>"; };
 		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
@@ -1416,6 +1422,8 @@
 				EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */,
 				EF2330632DAD9192008B0A2A /* CommentRepliesViewController.h */,
 				EF2330642DAD91A6008B0A2A /* CommentRepliesViewController.mm */,
+				EFDE6BCB2DF8D30F00408CF0 /* CommentsPageableDataProvider.h */,
+				EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */,
 			);
 			path = Comments;
 			sourceTree = "<group>";
@@ -3464,7 +3472,9 @@
 				EF8C37542DB2C6B000ADDBD7 /* ExpandableLabel.h */,
 				EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */,
 				EF15C9202DF8580D00335578 /* NamedSectionView.h */,
-				EF15C9212DF8582100335578 /* NamedSectionView.m */,
+				EF15C9212DF8582100335578 /* NamedSectionView.mm */,
+				EFDE6BCE2DF8D36900408CF0 /* PageableDataProvider.h */,
+				EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3631,15 +3641,17 @@
 				EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */,
 				EF3568A22DA583C800086593 /* CustomTableViewCells.m in Sources */,
 				EF2330652DAD91A6008B0A2A /* CommentRepliesViewController.mm in Sources */,
+				EFDE6BD02DF8D38000408CF0 /* PageableDataProvider.mm in Sources */,
 				EF1A7F0E2DB5C73600E03494 /* ReleasesPageableDataProvider.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
 				EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */,
 				EFFA21DD2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm in Sources */,
 				EFA1F93D2CB4920800555A26 /* PlayerViewController.mm in Sources */,
+				EFDE6BCD2DF8D32900408CF0 /* CommentsPageableDataProvider.mm in Sources */,
 				EF8B01B62C7015A300423ECD /* main.mm in Sources */,
 				EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */,
-				EF15C9222DF8582100335578 /* NamedSectionView.m in Sources */,
+				EF15C9222DF8582100335578 /* NamedSectionView.mm in Sources */,
 				EF5A3CCE2C7FA19C00B4F637 /* DiscoverViewController.mm in Sources */,
 				EF7CD2912DA040EC00F88227 /* ProfileListsView.mm in Sources */,
 				EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */,

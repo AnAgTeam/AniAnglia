@@ -25,7 +25,7 @@
 @property(nonatomic, retain) ReleasesPageableDataProvider* data_provider;
 @property(nonatomic, retain) ReleasesTableViewController* table_view_controller;
 @property(nonatomic, retain) ReleasesCollectionViewController* collection_view_controller;
-@property(nonatomic, retain) UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* current_view_controller;
+@property(nonatomic, retain) UIViewController<PageableDataProviderDelegate, DataReloadable>* current_view_controller;
 
 
 @end
@@ -60,7 +60,7 @@
     [_data_provider loadCurrentPage];
 }
 -(void)setup {
-    UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
+    UIViewController<PageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
     [self setContentViewController:view_controller];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
@@ -81,7 +81,7 @@
     // TODO
 }
 
--(UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>*)getViewControllerForDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
+-(UIViewController<PageableDataProviderDelegate, DataReloadable>*)getViewControllerForDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
     switch (display_style) {
         case app_settings::Appearance::DisplayStyle::Table:
             return [[ReleasesTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:_data_provider];
@@ -91,7 +91,7 @@
             return view_controller;
     }
 }
--(void)setContentViewController:(UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>*)view_controller {
+-(void)setContentViewController:(UIViewController<PageableDataProviderDelegate, DataReloadable>*)view_controller {
     if (_current_view_controller) {
         [_current_view_controller removeFromParentViewController];
         [_current_view_controller.view removeFromSuperview];
@@ -129,7 +129,7 @@
     NSNumber* value = notification.userInfo[app_settings::notification_info_value];
     app_settings::Appearance::DisplayStyle display_style = static_cast<app_settings::Appearance::DisplayStyle>([value integerValue]);
     
-    UIViewController<ReleasesPageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:display_style];
+    UIViewController<PageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:display_style];
     [self setContentViewController:view_controller];
 }
 

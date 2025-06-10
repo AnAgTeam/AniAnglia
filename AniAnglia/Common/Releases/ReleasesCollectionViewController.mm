@@ -293,11 +293,11 @@
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
--(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
     // reload section causes constraints errors
     [_collection_view reloadData];
 }
--(void)didUpdatedDataForReleasesPageableDataProvider:(ReleasesPageableDataProvider *)releases_pageable_data_provider {
+-(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     // reload section causes constraints errors
     [_collection_view reloadData];
 }

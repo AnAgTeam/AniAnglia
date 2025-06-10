@@ -14,7 +14,7 @@
 
 @end
 
-@interface ReleasesTableViewController : UIViewController <ReleasesPageableDataProviderDelegate>
+@interface ReleasesTableViewController : UITableViewController <PageableDataProviderDelegate>
 @property(nonatomic) BOOL is_container_view_controller;
 @property(nonatomic) BOOL trailing_action_disabled;
 @property(nonatomic) BOOL auto_page_load_disabled;

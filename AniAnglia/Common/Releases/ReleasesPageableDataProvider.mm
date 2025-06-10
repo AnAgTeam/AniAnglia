@@ -13,18 +13,14 @@
     anixart::Pageable<anixart::Release>::UPtr _pages;
     std::vector<anixart::Release::Ptr> _releases;
 }
-@property(nonatomic, strong) LibanixartApi* api_proxy;
-@property(nonatomic, retain) NSLock* lock;
 
 @end
 
-@implementation ReleasesPageableDataProvider : NSObject
+@implementation ReleasesPageableDataProvider
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     self = [super init];
     
-    _api_proxy = [LibanixartApi sharedInstance];
-    _lock = [NSLock new];
     _pages = std::move(pages);
     
     return self;
@@ -41,12 +37,12 @@
 -(void)reset {
     // TODO: load cancel
     _releases.clear();
-    [_delegate didUpdatedDataForReleasesPageableDataProvider:self];
+    [self callDelegateDidUpdated];
 }
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     _releases.clear();
     _pages = std::move(pages);
-    [_delegate didUpdatedDataForReleasesPageableDataProvider:self];
+    [self callDelegateDidUpdated];
     [self loadCurrentPage];
 }
 
@@ -69,7 +65,7 @@
         return;
     }
     
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
+    [self.api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         /* todo: change to thread-safe */
         auto new_items = block();
 //        [self->_lock lock];
@@ -77,7 +73,7 @@
 //        [self->_lock unlock];
         return YES;
     } withUICompletion:^{
-        [self callDelegateDidLoadedPage];
+        [self callDelegateDidLoadedPageAtIndex:self->_pages->get_current_page()];
     }];
 }
 
@@ -140,24 +136,20 @@
     }];
 }
 
--(void)callDelegateDidLoadedPage {
-    if ([_delegate respondsToSelector:@selector(releasesPageableDataProvider:didLoadedPageWithIndex:)]) {
-        [_delegate releasesPageableDataProvider:self didLoadedPageWithIndex:_pages->get_current_page()];
-    }
-}
-
 -(void)onAddListContextMenuAtIndex:(NSInteger)index listStatus:(anixart::Profile::ListStatus)list_status{
     anixart::Release::Ptr release = _releases[index];
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+    
+    [self.api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         api->releases().add_release_to_profile_list(release->id, list_status);
         return YES;
     } withUICompletion:^{
-        [self->_delegate didUpdatedDataForReleasesPageableDataProvider:self];
+        [self callDelegateDidUpdated];
     }];
 }
 -(void)onBookmarkContextMenuAtIndex:(NSInteger)index bookmark:(BOOL)bookmark {
     anixart::Release::Ptr release = _releases[index];
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+    
+    [self.api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         if (bookmark) {
             api->releases().add_release_to_favorites(release->id);
         } else {
@@ -165,7 +157,7 @@
         }
         return YES;
     } withUICompletion:^{
-        [self->_delegate didUpdatedDataForReleasesPageableDataProvider:self];
+        [self callDelegateDidUpdated];
     }];
 }
 

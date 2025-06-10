@@ -54,6 +54,7 @@
 -(void)setup {
     _segments_scroll_view = [UIScrollView new];
     _segments_scroll_view.showsHorizontalScrollIndicator = NO;
+    _segments_scroll_view.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     
     if (_segment_titles) {
         _segmented_control = [[NoSwipeSegmentedControl alloc] initWithItems:_segment_titles];
@@ -87,7 +88,7 @@
         [_segmented_control.topAnchor constraintEqualToAnchor:_segments_scroll_view.topAnchor],
         [_segmented_control.leadingAnchor constraintEqualToAnchor:_segments_scroll_view.leadingAnchor],
         [_segmented_control.trailingAnchor constraintEqualToAnchor:_segments_scroll_view.trailingAnchor],
-        [_segmented_control.trailingAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [_segmented_control.widthAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor],
         [_segmented_control.heightAnchor constraintEqualToAnchor:_segments_scroll_view.heightAnchor],
         
         [_page_view_controller.view.topAnchor constraintEqualToAnchor:_segments_scroll_view.bottomAnchor constant:8],

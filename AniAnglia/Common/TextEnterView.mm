@@ -216,7 +216,7 @@
 }
 -(void)updateTextViewHeight {
     [_text_view layoutIfNeeded];
-    _text_view_height_constraint.constant = MAX(MIN(_text_view.contentSize.height, 300), 35);
+    _text_view_height_constraint.constant = MAX(MIN(_text_view.contentSize.height, 180), 35);
 }
 
 -(void)setText:(NSString*)text {

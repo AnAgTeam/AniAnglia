@@ -10,6 +10,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LibanixartApi.h"
+#import "CommentsPageableDataProvider.h"
 
 @class CommentsTableViewCell;
 
@@ -46,14 +47,14 @@
 -(void)setRepliesCount:(NSInteger)replies_count;
 @end
 
-@interface CommentsTableViewController : UIViewController
+@interface CommentsTableViewController : UITableViewController <PageableDataProviderDelegate>
 @property(nonatomic, weak) id<CommentsTableViewControllerDelegate> delegate;
 @property(nonatomic) BOOL enable_origin_reference;
-@property(nonatomic) BOOL enable_context_menu;
 @property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
--(instancetype)initWithTableView:(UITableView*)table_view comments:(std::vector<anixart::Comment::Ptr>)comments;
+//-(instancetype)initWithTableView:(UITableView*)table_view comments:(std::vector<anixart::Comment::Ptr>)comments;
+-(instancetype)initWithTableView:(UITableView*)table_view dataProvider:(CommentsPageableDataProvider*)data_provider;
 
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
 -(void)reset;

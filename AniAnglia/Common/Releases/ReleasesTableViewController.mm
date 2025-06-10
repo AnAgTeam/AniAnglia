@@ -53,6 +53,20 @@
     return self;
 }
 
+-(void)loadView {
+    [super loadView];
+    
+    if (!_table_view) {
+        _table_view = [UITableView new];
+    }
+    _table_view.dataSource = self;
+    _table_view.delegate = self;
+    _table_view.prefetchDataSource = self;
+    _table_view.contentInsetAdjustmentBehavior = _is_container_view_controller ? UIScrollViewContentInsetAdjustmentNever : UIScrollViewContentInsetAdjustmentAutomatic;
+    self.view = _table_view;
+    self.tableView = _table_view;
+}
+
 -(void)viewDidLoad {
     [super viewDidLoad];
     
@@ -61,13 +75,7 @@
 }
 
 -(void)setup {
-    if (!_table_view) {
-        _table_view = [UITableView new];
-    }
     [_table_view registerClass:ReleaseTableViewCell.class forCellReuseIdentifier:[ReleaseTableViewCell getIdentifier]];
-    _table_view.dataSource = self;
-    _table_view.delegate = self;
-    _table_view.prefetchDataSource = self;
     _table_view.tableHeaderView = _header_view;
     
     _loadable_view = [LoadableView new];
@@ -76,49 +84,22 @@
     _empty_label.text = NSLocalizedString(@"app.releases_table_view.is_empty_label.text", "");
     _empty_label.hidden = YES;
     
-    [self.view addSubview:_table_view];
     [self.view addSubview:_loadable_view];
     [self.view addSubview:_empty_label];
     
-    _table_view.translatesAutoresizingMaskIntoConstraints = NO;
     _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
     _empty_label.translatesAutoresizingMaskIntoConstraints = NO;
-    if (_is_container_view_controller) {
-        [NSLayoutConstraint activateConstraints:@[
-            [_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [_table_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-            [_table_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-            [_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-            
-            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
-            
-            [_empty_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.view.topAnchor],
-            [_empty_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.view.leadingAnchor],
-            [_empty_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.view.trailingAnchor],
-            [_empty_label.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-            [_empty_label.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
-            [_empty_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.bottomAnchor]
-        ]];
-    } else {
-        [NSLayoutConstraint activateConstraints:@[
-            [_table_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-            
-            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
-            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
-            
-            [_empty_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [_empty_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [_empty_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [_empty_label.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
-            [_empty_label.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
-            [_empty_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
-        ]];
-    }
-
+    [NSLayoutConstraint activateConstraints:@[
+        [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
+        [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
+        
+        [_empty_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_empty_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [_empty_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [_empty_label.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
+        [_empty_label.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
+        [_empty_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+    ]];
 }
 
 -(void)setupLayout {
@@ -229,11 +210,11 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     // TODO
 }
 
--(void)releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider didLoadedPageWithIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
     // reload sections causes constraints errors
     [_table_view reloadData];
 }
--(void)didUpdatedDataForReleasesPageableDataProvider:(ReleasesPageableDataProvider *)releases_pageable_data_provider {
+-(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     // reload sections causes constraints errors
     [_table_view reloadData];
 }

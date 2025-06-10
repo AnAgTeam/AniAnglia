@@ -23,7 +23,7 @@
 -(void)setListStatus:(anixart::Profile::ListStatus)list_status;
 @end
 
-@interface ReleasesCollectionViewController : UIViewController <ReleasesPageableDataProviderDelegate>
+@interface ReleasesCollectionViewController : UIViewController <PageableDataProviderDelegate>
 @property(nonatomic) BOOL is_container_view_controller;
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages axis:(UICollectionViewScrollDirection)axis;

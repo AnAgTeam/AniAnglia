@@ -61,7 +61,8 @@
 -(CGSize)intrinsicContentSize {
 //    [self setNeedsLayout];
 //    [self layoutIfNeeded];
-    return CGSizeMake(self.contentSize.width, self.contentSize.height + (self.adjustedContentInset.bottom + self.adjustedContentInset.top));
+//    return CGSizeMake(self.contentSize.width, self.contentSize.height + (self.adjustedContentInset.bottom + self.adjustedContentInset.top));
+    return CGSizeMake(self.contentSize.width, self.contentSize.height);
 }
 //-(void)layoutSubviews {
 //    [super layoutSubviews];

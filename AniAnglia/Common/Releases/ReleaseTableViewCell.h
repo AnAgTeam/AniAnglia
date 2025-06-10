@@ -14,8 +14,9 @@
 @interface ReleaseTableViewCell : UITableViewCell
 
 +(NSString*)getIdentifier;
-
 +(UIColor*)getBadgeColor:(double)rating;
+
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier;
 
 -(void)setImageUrl:(NSURL*)image_url;
 -(void)setTitle:(NSString*)title;
