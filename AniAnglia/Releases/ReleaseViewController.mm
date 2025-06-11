@@ -416,11 +416,11 @@
     [self addSubview:_total_votes_label];
     [self addSubview:_votes_indicators_stack_view];
     [self addSubview:_my_votes_stack_view];
-    for (UIImageView* image_view : _vote_indicators) {
-        [_votes_indicators_stack_view addArrangedSubview:image_view];
+    for (ReleaseVoteIndicatorView* indicator_view : _vote_indicators) {
+        [_votes_indicators_stack_view addArrangedSubview:indicator_view];
         
-        image_view.translatesAutoresizingMaskIntoConstraints = NO;
-        [_vote_indicators[0].widthAnchor constraintEqualToAnchor:_votes_indicators_stack_view.widthAnchor].active = YES;
+        indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
+        [indicator_view.widthAnchor constraintEqualToAnchor:_votes_indicators_stack_view.widthAnchor].active = YES;
     }
     [_my_votes_stack_view addArrangedSubview:[UIView new]];
     [_my_votes_stack_view addArrangedSubview:_profile_image_view];
@@ -1087,7 +1087,7 @@
         [_content_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
         [_content_stack_view.trailingAnchor constraintEqualToAnchor:_scroll_view.trailingAnchor],
         [_content_stack_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
-        [_content_stack_view.bottomAnchor constraintLessThanOrEqualToAnchor:_scroll_view.bottomAnchor],
+        [_content_stack_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor],
 //        [_content_stack_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor], // wow, how this expand/collapse effect works??
         
         [_release_image_view.heightAnchor constraintEqualToConstant:340],

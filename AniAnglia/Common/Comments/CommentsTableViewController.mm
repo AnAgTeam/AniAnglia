@@ -34,6 +34,7 @@
 @property(nonatomic, retain) UIButton* downvote_button;
 @property(nonatomic, retain) UILabel* vote_count_label;
 @property(nonatomic, retain) NSLayoutConstraint* show_replies_button_height_constraint;
+@property(nonatomic) UIEdgeInsets normal_edge_insets;
 
 @property(nonatomic, retain) UIVisualEffectView* blur_effect_view;
 @property(nonatomic, retain) UIButton* spoiler_show_button;
@@ -42,8 +43,9 @@
 
 @end
 
-@interface CommentsTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching, CommentsTableViewCellDelegate>
+@interface CommentsTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching, CommentsTableViewCellDelegate, LoadableViewDelegate>
 @property(nonatomic) BOOL is_first_loading;
+@property(nonatomic) UIEdgeInsets content_insets;
 @property(nonatomic, retain) CommentsPageableDataProvider* data_provider;
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) NSLock* lock;
@@ -70,10 +72,7 @@
 
 -(void)setup {
     _content_view = [UIView new];
-    UIEdgeInsets layout_margins = _content_view.layoutMargins;
-    layout_margins.right += 8;
-    layout_margins.left += 8;
-    _content_view.layoutMargins = layout_margins;
+    _content_view.layoutMargins = _normal_edge_insets = UIEdgeInsetsMake(8, 10, 8, 12);
     
     _avatar_button = [UIButton new];
     [_avatar_button addTarget:self action:@selector(onAvatarPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -160,6 +159,8 @@
         [_content_view.heightAnchor constraintEqualToAnchor:self.contentView.heightAnchor],
         [_content_view.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
         [_content_view.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
+        [_content_view.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor],
+        [_content_view.heightAnchor constraintEqualToAnchor:self.contentView.heightAnchor],
         [_content_view.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
     ];
     for (NSLayoutConstraint* constr : constraints) {
@@ -169,7 +170,7 @@
         [_avatar_button.topAnchor constraintEqualToAnchor:_content_view.layoutMarginsGuide.topAnchor],
         [_avatar_button.leadingAnchor constraintEqualToAnchor:_content_view.layoutMarginsGuide.leadingAnchor],
         [_avatar_button.widthAnchor constraintEqualToConstant:40],
-        [_avatar_button.heightAnchor constraintLessThanOrEqualToConstant:40],
+        [_avatar_button.heightAnchor constraintEqualToAnchor:_avatar_button.widthAnchor],
         [_avatar_button.bottomAnchor constraintLessThanOrEqualToAnchor:_content_view.layoutMarginsGuide.bottomAnchor],
         
         [_avatar_image_view.topAnchor constraintEqualToAnchor:_avatar_button.topAnchor],
@@ -266,6 +267,13 @@
     }
 }
 
+-(void)setAdditionalContentInsets:(UIEdgeInsets)insets {
+    _content_view.layoutMargins = UIEdgeInsetsMake(_normal_edge_insets.top + insets.top, _normal_edge_insets.left + insets.left, _normal_edge_insets.bottom + insets.bottom, _normal_edge_insets.right + insets.right);
+}
+-(void)setContentInsets:(UIEdgeInsets)insets {
+    _content_view.layoutMargins = _normal_edge_insets = insets;
+}
+
 -(void)setAvatarUrl:(NSURL*)url {
     [_avatar_image_view tryLoadImageWithURL:url];
 }
@@ -279,7 +287,7 @@
 }
 -(void)setContent:(NSString*)content {
     _content_label.text = content;
-    [_content_label sizeToFit];
+//    [_content_label sizeToFit];
 }
 -(void)setVoteCount:(NSInteger)vote_count {
     _vote_count_label.text = [@(vote_count) stringValue];
@@ -343,6 +351,7 @@
     _data_provider.delegate = self;
     _enable_origin_reference = NO;
     _is_first_loading = YES;
+    _content_insets = UIEdgeInsetsZero;
     
     __weak auto weak_self = self;
     
@@ -366,6 +375,7 @@
     _data_provider = data_provider;
     _enable_origin_reference = NO;
     _is_first_loading = NO;
+    _content_insets = UIEdgeInsetsZero;
     
     return self;
 }
@@ -380,6 +390,7 @@
     _table_view.delegate = self;
     _table_view.prefetchDataSource = self;
     _table_view.contentInsetAdjustmentBehavior = _is_container_view_controller ? UIScrollViewContentInsetAdjustmentNever : UIScrollViewContentInsetAdjustmentAutomatic;
+//    _table_view.alwaysBounceVertical = NO;
     self.view = _table_view;
     self.tableView = _table_view;
 }
@@ -397,6 +408,8 @@
     _table_view.rowHeight = UITableViewAutomaticDimension;
     
     _loadable_view = [LoadableView new];
+    _loadable_view.delegate = self;
+    
     [self.view addSubview:_loadable_view];
     
     _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -420,17 +433,18 @@
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
     [_data_provider setPages:std::move(pages)];
 }
--(void)reset {
-    /* TODO: */
-    [_data_provider reset];
-    [_table_view reloadData];
+-(void)clear {
+    [_data_provider clear];
 }
--(void)refresh {
+-(void)reset {
     [_data_provider reset];
 }
 
 -(void)setHeaderView:(UIView*)header_view {
     _table_view.tableHeaderView = header_view;
+}
+-(void)setContentInsets:(UIEdgeInsets)insets {
+    _content_insets = insets;
 }
 -(CGPoint)getContentOffset {
     return _table_view.contentOffset;
@@ -455,6 +469,17 @@
     // TODO: add this to willDisplayCell, because now it's not on the screen and animating wont work
 //    CommentsTableViewCell* cell = [_table_view cellForRowAtIndexPath:index_path];
 //    [cell highlightCell];
+}
+
+-(void)callDelegateDidGotPageAtIndex:(NSInteger)page_index {
+    if ([_delegate respondsToSelector:@selector(commentsTableView:didGotPageAtIndex:)]) {
+        [_delegate commentsTableView:_table_view didGotPageAtIndex:page_index];
+    }
+}
+-(void)callDelegateDidFailedPageAtIndex:(NSInteger)page_index {
+    if ([_delegate respondsToSelector:@selector(commentsTableView:didFailedPageAtIndex:)]) {
+        [_delegate commentsTableView:_table_view didFailedPageAtIndex:page_index];
+    }
 }
 
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
@@ -487,6 +512,7 @@
             [cell setOrigin:nil name:nil];
         }
     }
+    [cell setAdditionalContentInsets:_content_insets];
     
     return cell;
 }
@@ -597,16 +623,27 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [_table_view reloadData];
 }
 
+-(void)didReloadedForLoadableView:(LoadableView*)loadable_view {
+    [_loadable_view startLoading];
+    [_data_provider loadCurrentPage];
+}
+
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
     if (_is_first_loading) {
         _is_first_loading = NO;
         [_loadable_view endLoading];
     }
     [_table_view reloadData];
+    [self callDelegateDidGotPageAtIndex:page_index];
 }
 
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index {
-    // TODO
+    if (_is_first_loading) {
+        [_loadable_view endLoadingWithErrored:YES];
+    } else {
+        [_table_view reloadData];
+    }
+    [self callDelegateDidFailedPageAtIndex:page_index];
 }
 
 @end

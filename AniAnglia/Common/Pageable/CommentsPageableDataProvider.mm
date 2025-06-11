@@ -38,11 +38,15 @@
     return self;
 }
 
--(void)reset {
+-(void)clear {
     // TODO: load cancel
     _comments.clear();
     [self callDelegateDidUpdated];
 }
+-(void)reset {
+    [self loadPageAtIndex:0];
+}
+
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
     _comments.clear();
     _pages = std::move(pages);
@@ -72,18 +76,28 @@
 }
 
 -(void)appendItemsFromBlock:(std::vector<anixart::Comment::Ptr>(^)())block {
+    [self setItemsFromBlock:block isAppend:YES];
+}
+
+-(void)setItemsFromBlock:(std::vector<anixart::Comment::Ptr>(^)())block isAppend:(BOOL)is_append {
     if (!_pages) {
         return;
     }
     
-    [self.api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
-        /* todo: change to thread-safe */
-        auto new_items = block();
-//        [self->_lock lock];
-        self->_comments.insert(self->_comments.end(), new_items.begin(), new_items.end());
-//        [self->_lock unlock];
-        return YES;
-    } withUICompletion:^{
+    __block decltype(block()) new_items;
+    [self.api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        new_items = block();
+        return NO;
+    } completion:^(BOOL errored) {
+        if (errored) {
+            [self callDelegateDidFailedPageAtIndex:self->_pages->get_current_page()];
+            return;
+        }
+        if (is_append) {
+            self->_comments.insert(self->_comments.end(), new_items.begin(), new_items.end());
+        } else {
+            self->_comments = std::move(new_items);
+        }
         [self callDelegateDidLoadedPageAtIndex:self->_pages->get_current_page()];
     }];
 }
@@ -100,6 +114,12 @@
     [self appendItemsFromBlock:^() {
         return self->_pages->next();
     }];
+}
+-(void)loadPageAtIndex:(NSInteger)index {
+    __strong auto strong_self = self;
+    [self setItemsFromBlock:^() {
+        return strong_self->_pages->go(static_cast<int32_t>(index));
+    } isAppend:NO];
 }
 
 -(UIContextMenuConfiguration*)getContextMenuConfigurationForItemAtIndex:(NSInteger)index{

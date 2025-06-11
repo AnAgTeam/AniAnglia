@@ -28,6 +28,8 @@
 @optional
 -(void)commentsTableView:(UITableView*)table_view didGotPageAtIndex:(NSInteger)page_index;
 @optional
+-(void)commentsTableView:(UITableView*)table_view didFailedPageAtIndex:(NSInteger)page_index;
+@optional
 -(void)commentsTableView:(UITableView*)table_view didEditContextMenuSelected:(anixart::Comment::Ptr)comment;
 @end
 
@@ -57,10 +59,11 @@
 -(instancetype)initWithTableView:(UITableView*)table_view dataProvider:(CommentsPageableDataProvider*)data_provider;
 
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
+-(void)clear;
 -(void)reset;
--(void)refresh;
 
 -(void)setHeaderView:(UIView*)header_view;
+-(void)setContentInsets:(UIEdgeInsets)insets;
 -(CGPoint)getContentOffset;
 -(void)setContentOffset:(CGPoint)point;
 -(void)setKeyboardDismissMode:(UIScrollViewKeyboardDismissMode)dismiss_mode;

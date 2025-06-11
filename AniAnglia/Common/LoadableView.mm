@@ -68,13 +68,19 @@
     } else {
         [self addSubview:_error_label];
         [self addSubview:_error_button];
+        
         [NSLayoutConstraint activateConstraints:@[
+            [_error_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+            [_error_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+            [_error_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
             [_error_label.centerYAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
             [_error_label.centerXAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
+            
             [_error_button.topAnchor constraintEqualToAnchor:_error_label.bottomAnchor constant:10],
             [_error_button.centerXAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
             [_error_button.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
             [_error_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+            [_error_button.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
         ]];
         
         [_error_label sizeToFit];
