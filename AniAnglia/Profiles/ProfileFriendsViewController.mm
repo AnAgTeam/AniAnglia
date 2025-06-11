@@ -42,9 +42,11 @@ enum class ProfileFriendsSections {
     _is_my_profile = is_my_profile;
     _section_providers = [NSMutableArray arrayWithCapacity:3];
     
-    _friends_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().get_friends(_profile_id, 0)];
-    _requests_in_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().friend_requests_in(0)];
-    _requests_out_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().friend_requests_out(0)];
+    if (_is_my_profile) {
+        _requests_in_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().friend_requests_in(0)];
+        _requests_out_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().friend_requests_out(0)];
+    }
+        _friends_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().get_friends(_profile_id, 0)];
     
     _friends_data_provider.delegate = self;
     _requests_in_data_provider.delegate = self;

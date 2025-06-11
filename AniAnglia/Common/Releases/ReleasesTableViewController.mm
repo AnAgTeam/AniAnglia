@@ -17,6 +17,7 @@
 #import "ReleaseViewController.h"
 
 @interface ReleasesTableViewController () <UITableViewDataSource, UITableViewDelegate, UITableViewDataSourcePrefetching>
+@property(nonatomic) BOOL is_first_loading;
 @property(nonatomic, retain) ReleasesPageableDataProvider* data_provider;
 @property(nonatomic, retain) UITableView* table_view;
 @property(nonatomic, retain) LoadableView* loadable_view;
@@ -36,6 +37,7 @@
     _trailing_action_disabled = NO;
     _auto_page_load_disabled = NO;
     _is_container_view_controller = NO;
+    _is_first_loading = YES;
     
     [_data_provider loadCurrentPage];
     
@@ -49,6 +51,7 @@
     _trailing_action_disabled = NO;
     _auto_page_load_disabled = NO;
     _is_container_view_controller = NO;
+    _is_first_loading = NO;
     
     return self;
 }
@@ -72,6 +75,8 @@
     
     [self setup];
     [self setupLayout];
+    
+    [self tableViewDidLoaded];
 }
 
 -(void)setup {
@@ -100,6 +105,10 @@
         [_empty_label.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
         [_empty_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
     ]];
+    
+    if (_is_first_loading) {
+        [_loadable_view startLoading];
+    }
 }
 
 -(void)setupLayout {
@@ -109,6 +118,11 @@
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     [_data_provider setPages:std::move(pages)];
+}
+-(void)setReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider {
+    // TODO: test
+    _data_provider = releases_pageable_data_provider;
+    [self reloadData];
 }
 -(void)reset {
     /* TODO: */
@@ -176,6 +190,10 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
+-(void)tableViewDidLoaded {
+    
+}
+
 -(UISwipeActionsConfiguration*)tableView:(UITableView*)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath*)index_path {
     if (_trailing_action_disabled) {
         return nil;
@@ -211,6 +229,10 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 }
 
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+    if (_is_first_loading) {
+        _is_first_loading = NO;
+        [_loadable_view endLoading];
+    }
     // reload sections causes constraints errors
     [_table_view reloadData];
 }

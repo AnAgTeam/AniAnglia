@@ -32,12 +32,12 @@
     if (_my_profile) {
         completion_handler(_my_profile);
     } else {
-        [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
             auto [my_profile, is_my_profile] = api->profiles().get_profile([self->_app_data_controller getMyProfileID]);
             self->_my_profile = my_profile;
-            return YES;
-        } withUICompletion:^{
-            completion_handler(self->_my_profile);
+            return NO;
+        } completion:^(BOOL errored) {
+            completion_handler(!errored ? self->_my_profile : nullptr);
         }];
     }
 }

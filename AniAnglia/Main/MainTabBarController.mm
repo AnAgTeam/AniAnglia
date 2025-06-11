@@ -143,7 +143,6 @@
     return nil;
 }
 -(void)searchViewController:(SearchViewController*)search_view_controller didSearchWithQuery:(NSString*)query {
-    [_app_data_controller addSearchHistoryItem:query];
     anixart::requests::SearchRequest request;
     request.query = TO_STDSTRING(query);
 

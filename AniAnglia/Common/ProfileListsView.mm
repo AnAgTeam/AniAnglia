@@ -30,8 +30,6 @@
     int32_t _holdon_count;
     int32_t _dropped_count;
 }
-@property(nonatomic, retain) NSString* name;
-@property(nonatomic, retain) UILabel* me_label;
 @property(nonatomic, retain) UIView* total_indicator_view;
 @property(nonatomic, retain) UIView* watching_indicator_view;
 @property(nonatomic, retain) UIView* plan_indicator_view;
@@ -152,7 +150,7 @@
     return nil;
 }
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release name:(NSString*)name {
+-(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release {
     self = [super init];
     
     _watching_count = release->watching_count;
@@ -160,13 +158,13 @@
     _watched_count = release->watched_count;
     _holdon_count = release->hold_on_count;
     _dropped_count = release->dropped_count;
-    _name = name;
+    
     [self setup];
     [self setupLayout];
     
     return self;
 }
--(instancetype)initWithProfile:(anixart::Profile::Ptr)profile name:(NSString*)name {
+-(instancetype)initWithProfile:(anixart::Profile::Ptr)profile {
     self = [super init];
     
     _watching_count = profile->watching_count;
@@ -174,13 +172,13 @@
     _watched_count = profile->watched_count;
     _holdon_count = profile->hold_on_count;
     _dropped_count = profile->dropped_count;
-    _name = name;
+    
     [self setup];
     [self setupLayout];
     
     return self;
 }
--(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info name:(NSString*)name {
+-(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
     self = [super init];
     
     _watching_count = collection_get_info->watching_count;
@@ -188,7 +186,7 @@
     _watched_count = collection_get_info->watched_count;
     _holdon_count = collection_get_info->hold_on_count;
     _dropped_count = collection_get_info->dropped_count;
-    _name = name;
+    
     [self setup];
     [self setupLayout];
     
@@ -196,9 +194,6 @@
 }
 
 -(void)setup {
-    _me_label = [UILabel new];
-    _me_label.text = _name;
-    _me_label.font = [UIFont systemFontOfSize:22];
     _total_indicator_view = [UIView new];
     _total_indicator_view.layer.cornerRadius = 5;
     _total_indicator_view.clipsToBounds = YES;
@@ -215,7 +210,6 @@
     _dropped_legend_view = [[ProfileListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.profile.list_status.dropped.name", "") color:[ProfileListsView getColorForListStatus:(anixart::Profile::ListStatus::Dropped)] count:_dropped_count];
     double total_lists_count = _watching_count + _plan_count + _watched_count + _holdon_count + _dropped_count;
     
-    [self addSubview:_me_label];
     [self addSubview:_watching_indicator_view];
     [self addSubview:_total_indicator_view];
     [_total_indicator_view addSubview:_watching_indicator_view];
@@ -229,7 +223,6 @@
     [self addSubview:_holdon_legend_view];
     [self addSubview:_dropped_legend_view];
     
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
     _total_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
     _watching_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
     _watched_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -242,11 +235,7 @@
     _holdon_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
     _dropped_legend_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_total_indicator_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
+        [_total_indicator_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_total_indicator_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor constant:5],
         [_total_indicator_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor constant:-5],
         [_total_indicator_view.heightAnchor constraintEqualToConstant:20],
@@ -308,7 +297,6 @@
         ];
         [NSLayoutConstraint activateConstraints:_indicator_constraints];
     }
-    [_me_label sizeToFit];
 }
 -(void)setupLayout {
     _total_indicator_view.backgroundColor = [AppColorProvider foregroundColor1];

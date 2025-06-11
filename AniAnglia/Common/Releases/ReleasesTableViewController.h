@@ -23,6 +23,7 @@
 -(instancetype)initWithTableView:(UITableView*)table_view releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(void)setReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
 -(void)reset;
 
 -(void)reloadData;
@@ -30,6 +31,7 @@
 -(void)setHeaderView:(UIView*)header_view;
 
 // can override in derived classes to change cell display
+-(void)tableViewDidLoaded;
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path;
 -(__kindof UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path withRelease:(anixart::Release::Ptr)release;
 @end

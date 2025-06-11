@@ -7,11 +7,22 @@
 
 #import <UIKit/UIKit.h>
 
+@class LoadableView;
+
+@protocol LoadableViewDelegate <NSObject>
+
+-(void)didReloadedForLoadableView:(LoadableView*)loadableView;
+
+@end
+
 @interface LoadableView : UIView
+@property(nonatomic, weak) id<LoadableViewDelegate> delegate;
+
 -(void)startLoading;
 -(void)endLoading;
 -(void)endLoadingWithErrored:(BOOL)errored;
 -(void)setErrored:(BOOL)errored;
+
 @end
 
 @interface LoadableImageView : UIImageView

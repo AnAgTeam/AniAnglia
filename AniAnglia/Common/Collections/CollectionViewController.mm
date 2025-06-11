@@ -213,7 +213,7 @@
     [_description_label setText:TO_NSSTRING(_collection->description)];
     _description_label.delegate = self;
     
-    _lists_view = [[ProfileListsView alloc] initWithCollectionGetInfo:_collection_get_info name:NSLocalizedString(@"app.collection.lists.name", "")];
+    _lists_view = [[ProfileListsView alloc] initWithCollectionGetInfo:_collection_get_info];
     
     _random_button = [UIButton new];
     [_random_button setTitle:NSLocalizedString(@"app.collection.random.title", "") forState:UIControlStateNormal];

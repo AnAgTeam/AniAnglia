@@ -40,6 +40,7 @@
     
     _error_button = [UIButton new];
     [_error_button setTitle:NSLocalizedString(@"app.loadable.reload.title", "") forState:UIControlStateNormal];
+    [_error_button addTarget:self action:@selector(onRetryPressed:) forControlEvents:UIControlEventTouchUpInside];
     _error_button.layer.cornerRadius = 8;
     _error_button.contentEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8);
     
@@ -70,7 +71,7 @@
         [NSLayoutConstraint activateConstraints:@[
             [_error_label.centerYAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
             [_error_label.centerXAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
-            [_error_button.topAnchor constraintEqualToAnchor:_error_label.bottomAnchor constant:8],
+            [_error_button.topAnchor constraintEqualToAnchor:_error_label.bottomAnchor constant:10],
             [_error_button.centerXAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
             [_error_button.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
             [_error_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
@@ -82,6 +83,7 @@
 }
 
 -(void)startLoading {
+    [self setErrored:NO];
     [_act_ind_view startAnimating];
 }
 -(void)endLoading {
@@ -95,6 +97,10 @@
 
 -(void)setErrored:(BOOL)errored {
     [self setErrorHidden:!errored];
+}
+
+-(IBAction)onRetryPressed:(UIButton*)sender {
+    [_delegate didReloadedForLoadableView:self];
 }
 
 @end

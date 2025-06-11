@@ -1422,8 +1422,6 @@
 				EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */,
 				EF2330632DAD9192008B0A2A /* CommentRepliesViewController.h */,
 				EF2330642DAD91A6008B0A2A /* CommentRepliesViewController.mm */,
-				EFDE6BCB2DF8D30F00408CF0 /* CommentsPageableDataProvider.h */,
-				EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */,
 			);
 			path = Comments;
 			sourceTree = "<group>";
@@ -1508,6 +1506,8 @@
 				EF3568A62DA84F2A00086593 /* SharedRunningData.h */,
 				EF3568A42DA84F1D00086593 /* SharedRunningData.mm */,
 				EF15C91F2DF75B3A00335578 /* DataReloadable.h */,
+				EF4941032C72383500832A6C /* AppColor.h */,
+				EF4941052C7238B700832A6C /* AppColor.mm */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -3452,11 +3452,10 @@
 		EF7CD28B2DA03FE800F88227 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				EFDE6BD12DF8F3B800408CF0 /* Pageable */,
 				EF8C37502DB2B23E00ADDBD7 /* Collections */,
 				EFFA21DA2DB021C3007D8AD4 /* Releases */,
 				EF2330622DAD9171008B0A2A /* Comments */,
-				EF4941032C72383500832A6C /* AppColor.h */,
-				EF4941052C7238B700832A6C /* AppColor.mm */,
 				EFED8F552CE2985300C53C1C /* LoadableView.h */,
 				EFED8F562CE2986300C53C1C /* LoadableView.mm */,
 				EF3568A02DA5839A00086593 /* CustomTableViewCells.h */,
@@ -3473,8 +3472,6 @@
 				EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */,
 				EF15C9202DF8580D00335578 /* NamedSectionView.h */,
 				EF15C9212DF8582100335578 /* NamedSectionView.mm */,
-				EFDE6BCE2DF8D36900408CF0 /* PageableDataProvider.h */,
-				EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3490,8 +3487,6 @@
 				EFFA3C472DAD535200DE042A /* ProfileCommentsPageViewController.mm */,
 				EF17A2E12DB6AE06003429FC /* ProfilesTableViewController.h */,
 				EF17A2E22DB6AE19003429FC /* ProfilesTableViewController.mm */,
-				EF17A2E42DB6B245003429FC /* ProfilesPageableDataProvider.h */,
-				EF17A2E52DB6B259003429FC /* ProfilesPageableDataProvider.mm */,
 			);
 			path = Profiles;
 			sourceTree = "<group>";
@@ -3547,6 +3542,21 @@
 			path = Torrent;
 			sourceTree = "<group>";
 		};
+		EFDE6BD12DF8F3B800408CF0 /* Pageable */ = {
+			isa = PBXGroup;
+			children = (
+				EFDE6BCE2DF8D36900408CF0 /* PageableDataProvider.h */,
+				EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */,
+				EF1A7F0C2DB5C70A00E03494 /* ReleasesPageableDataProvider.h */,
+				EF1A7F0D2DB5C73600E03494 /* ReleasesPageableDataProvider.mm */,
+				EFDE6BCB2DF8D30F00408CF0 /* CommentsPageableDataProvider.h */,
+				EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */,
+				EF17A2E42DB6B245003429FC /* ProfilesPageableDataProvider.h */,
+				EF17A2E52DB6B259003429FC /* ProfilesPageableDataProvider.mm */,
+			);
+			path = Pageable;
+			sourceTree = "<group>";
+		};
 		EFFA21DA2DB021C3007D8AD4 /* Releases */ = {
 			isa = PBXGroup;
 			children = (
@@ -3558,8 +3568,6 @@
 				EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */,
 				EF9FE8612DB3194E00792D0D /* ReleasesViewController.h */,
 				EF9FE8622DB3196500792D0D /* ReleasesViewController.mm */,
-				EF1A7F0C2DB5C70A00E03494 /* ReleasesPageableDataProvider.h */,
-				EF1A7F0D2DB5C73600E03494 /* ReleasesPageableDataProvider.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";

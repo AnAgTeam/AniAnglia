@@ -99,18 +99,18 @@
 "app.release.general.author_info.author" = "автор";
 "app.release.general.author_info.director" = "режиссёр";
 
-"app.release.lists.title" = "В списках";
-"app.release.rating.title" = "Рейтинг";
+"app.release.lists" = "В списках";
+"app.release.rating" = "Рейтинг";
 "app.release.rating.vote_count.end" = "Голосов";
 
-"app.release.video_blocks.title" = "Видео";
+"app.release.video_blocks" = "Видео";
 "app.release.video_block.show_all_button.title" = "Показать все";
 
-"app.release.previews.title" = "Скриншоты";
+"app.release.previews" = "Скриншоты";
 
 "app.release.related" = "Связанное";
 
-"app.release.comments.title" = "Комментарии";
+"app.release.comments" = "Комментарии";
 "app.release.comments.show_all_button.title" = "Показать все";
 
 "app.release.episode_count.end" = "эп.";
@@ -180,7 +180,7 @@
 "app.profile.actions.accept_friend_request_button.title" = "Принять";
 "app.profile.actions.reject_friend_request_button.title" = "Отклонить";
 
-"app.profile.lists.title" = "Статистика";
+"app.profile.lists" = "Статистика";
 "app.profile.lists.total_watched.start" = "Просмотрено серий";
 "app.profile.lists.watched_time.start" = "Общее время просмотра";
 "app.profile.list_status.none.name" = "Не указано";
@@ -195,11 +195,11 @@
 "app.profile.lists.watched_time.minutes" = "минут";
 "app.profile.lists.watched_time.seconds" = "секунд";
 
-"app.profile.votes.title" = "Оценки релизов";
+"app.profile.votes" = "Оценки релизов";
 
-"app.profile.watch_dynamics.title" = "Динамика просмотра";
+"app.profile.watch_dynamics" = "Динамика просмотра";
 
-"app.profile.watched_recently.title" = "Просмотрено недавно";
+"app.profile.watched_recently" = "Просмотрено недавно";
 
 "app.profile.comments.release.segment" = "К релизам";
 "app.profile.comments.collection.segment" = "К коллекциям";

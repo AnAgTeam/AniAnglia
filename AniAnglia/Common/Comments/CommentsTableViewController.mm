@@ -246,8 +246,8 @@
 
 -(void)setBlurred:(BOOL)blurred {
     if (blurred) {
-        [_content_view addSubview:_blur_effect_view];
-        [_content_view addSubview:_spoiler_show_button];
+        [_content_container_view addSubview:_blur_effect_view];
+        [_content_container_view addSubview:_spoiler_show_button];
         
         [NSLayoutConstraint activateConstraints:@[
             [_blur_effect_view.topAnchor constraintEqualToAnchor:_content_container_view.topAnchor],
@@ -584,7 +584,9 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 }
 
 -(void)onEditSelectedForComment:(anixart::Comment::Ptr)comment {
-    [_delegate commentsTableView:_table_view didEditContextMenuSelected:comment];
+    if ([_delegate respondsToSelector:@selector(commentsTableView:didEditContextMenuSelected:)]) {
+        [_delegate commentsTableView:_table_view didEditContextMenuSelected:comment];
+    }
 }
 
 -(void)onReportSelectedForComment:(anixart::Comment::Ptr)comment {
