@@ -157,7 +157,7 @@
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_comment->author->avatar_url)];
     [_replied_comment_view setAvatarUrl:avatar_url];
     [_replied_comment_view setUsername:TO_NSSTRING(_comment->author->username)];
-    [_replied_comment_view setPublishDate:to_utc_yy_mm_dd_string_from_gmt(_comment->date)];
+    [_replied_comment_view setPublishDate:[NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_comment->date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     [_replied_comment_view setContent:TO_NSSTRING(_comment->message)];
     // hide 'show replies' button
     [_replied_comment_view setRepliesCount:0];

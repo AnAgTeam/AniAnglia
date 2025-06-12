@@ -22,6 +22,10 @@
 -(void)reset;
 
 -(void)setHeaderView:(UIView*)header_view;
+
+// can override in derived classes to change display
+-(__kindof UIViewController<PageableDataProviderDelegate>*)getTableViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider;
+-(__kindof UIViewController<PageableDataProviderDelegate>*)getCollectionViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider;
 @end
 
 #endif /* ReleasesViewController_h */

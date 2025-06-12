@@ -14,18 +14,12 @@
 #import "ReleasesPageableDataProvider.h"
 #import "DataReloadable.h"
 
-@interface ReleasesCollectionViewController (Reloadable) <DataReloadable>
-@end
-
-@interface ReleasesTableViewController (Reloadable) <DataReloadable>
-@end
-
 @interface ReleasesViewController ()
 @property(nonatomic, strong) AppSettingsDataController* settings_data_controller;
 @property(nonatomic, retain) ReleasesPageableDataProvider* data_provider;
 @property(nonatomic, retain) ReleasesTableViewController* table_view_controller;
 @property(nonatomic, retain) ReleasesCollectionViewController* collection_view_controller;
-@property(nonatomic, retain) UIViewController<PageableDataProviderDelegate, DataReloadable>* current_view_controller;
+@property(nonatomic, retain) UIViewController<PageableDataProviderDelegate>* current_view_controller;
 
 
 @end
@@ -60,7 +54,7 @@
     [_data_provider loadCurrentPage];
 }
 -(void)setup {
-    UIViewController<PageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
+    UIViewController<PageableDataProviderDelegate>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
     [self setContentViewController:view_controller];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
@@ -81,17 +75,15 @@
     // TODO
 }
 
--(UIViewController<PageableDataProviderDelegate, DataReloadable>*)getViewControllerForDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
+-(UIViewController<PageableDataProviderDelegate>*)getViewControllerForDisplayStyle:(app_settings::Appearance::DisplayStyle)display_style {
     switch (display_style) {
         case app_settings::Appearance::DisplayStyle::Table:
-            return [[ReleasesTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:_data_provider];
+            return [self getTableViewControllerWithDataProvider:_data_provider];
         case app_settings::Appearance::DisplayStyle::Cards:
-            ReleasesCollectionViewController* view_controller = [[ReleasesCollectionViewController alloc] initWithReleasesPageableDataProvider:_data_provider axis:UICollectionViewScrollDirectionVertical];
-            [view_controller setAxisItemCount:3];
-            return view_controller;
+            return [self getCollectionViewControllerWithDataProvider:_data_provider];
     }
 }
--(void)setContentViewController:(UIViewController<PageableDataProviderDelegate, DataReloadable>*)view_controller {
+-(void)setContentViewController:(UIViewController<PageableDataProviderDelegate>*)view_controller {
     if (_current_view_controller) {
         [_current_view_controller removeFromParentViewController];
         [_current_view_controller.view removeFromSuperview];
@@ -120,6 +112,15 @@
     }
 }
 
+-(UIViewController<PageableDataProviderDelegate>*)getTableViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider {
+    return [[ReleasesTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:_data_provider];
+}
+-(UIViewController<PageableDataProviderDelegate>*)getCollectionViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider {
+    ReleasesCollectionViewController* view_controller = [[ReleasesCollectionViewController alloc] initWithReleasesPageableDataProvider:_data_provider axis:UICollectionViewScrollDirectionVertical];
+    [view_controller setAxisItemCount:3];
+    return view_controller;
+}
+
 -(void)onSettingsValueChanged:(NSNotification*)notification {
     NSString* name = notification.userInfo[app_settings::notification_info_key];
     if (![name isEqualToString:(app_settings::Appearance::main_display_style)]) {
@@ -129,7 +130,7 @@
     NSNumber* value = notification.userInfo[app_settings::notification_info_value];
     app_settings::Appearance::DisplayStyle display_style = static_cast<app_settings::Appearance::DisplayStyle>([value integerValue]);
     
-    UIViewController<PageableDataProviderDelegate, DataReloadable>* view_controller = [self getViewControllerForDisplayStyle:display_style];
+    UIViewController<PageableDataProviderDelegate>* view_controller = [self getViewControllerForDisplayStyle:display_style];
     [self setContentViewController:view_controller];
 }
 

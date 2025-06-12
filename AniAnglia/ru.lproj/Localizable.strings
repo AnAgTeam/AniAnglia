@@ -156,6 +156,7 @@
 
 /* PROFILE */
 "app.profile.search.placeholder" = "Найти пользователя...";
+"app.profile.title" = "Профиль";
 
 "app.bookmarks.history.title" = "История";
 "app.bookmarks.favorites.title" = "Избранное";

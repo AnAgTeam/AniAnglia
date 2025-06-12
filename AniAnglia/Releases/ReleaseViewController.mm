@@ -903,6 +903,8 @@
     __weak auto weak_self = self;
     _named_sections = [NSMutableArray arrayWithCapacity:5];
     
+    self.navigationItem.title = TO_NSSTRING(_release->title_ru);
+    
     _content_stack_view = [UIStackView new];
     _content_stack_view.axis = UILayoutConstraintAxisVertical;
     _content_stack_view.distribution = UIStackViewDistributionEqualSpacing;

@@ -180,10 +180,10 @@
     _title_label.numberOfLines = 0;
     
     _created_date_label = [UILabel new];
-    _created_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.created.start", ""), to_utc_yy_mm_dd_string_from_gmt(_collection->creation_date)];
+    _created_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.created.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_collection->creation_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     
     _updated_date_label = [UILabel new];
-    _updated_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.updated.start", ""), to_utc_yy_mm_dd_string_from_gmt(_collection->last_update_date)];
+    _updated_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.updated.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_collection->last_update_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     
     _actions_stack_view = [UIStackView new];
     _actions_stack_view.axis = UILayoutConstraintAxisHorizontal;

@@ -76,7 +76,7 @@
     [self setup];
     [self setupLayout];
     
-    [self tableViewDidLoaded];
+    [self tableViewDidLoad];
 }
 
 -(void)setup {
@@ -190,7 +190,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
--(void)tableViewDidLoaded {
+-(void)tableViewDidLoad {
     
 }
 

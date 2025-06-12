@@ -16,7 +16,8 @@ inline std::string TO_STDSTRING(NSString* str) {
     return std::string([str UTF8String], [str lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
 }
 
-/* https://stackoverflow.com/questions/18267211/ios-convert-large-numbers-to-smaller-format
+/*
+ https://stackoverflow.com/questions/18267211/ios-convert-large-numbers-to-smaller-format
 */
 @interface AbbreviateNumberFormatter : NSNumberFormatter
 +(NSString*)stringFromNumber:(long long)num;

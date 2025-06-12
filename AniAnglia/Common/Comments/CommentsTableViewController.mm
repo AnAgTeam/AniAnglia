@@ -496,7 +496,7 @@
     cell.delegate = self;
     [cell setAvatarUrl:avatar_url];
     [cell setUsername:TO_NSSTRING(comment->author->username)];
-    [cell setPublishDate:to_utc_yy_mm_dd_string_from_gmt(comment->date)];
+    [cell setPublishDate:[NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(comment->date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     [cell setContent:TO_NSSTRING(comment->message)];
     [cell setRepliesCount:comment->reply_count];
     [cell setVoteCount:comment->vote_count];

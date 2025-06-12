@@ -6,11 +6,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ReleasesHistoryTableViewController.h"
+#import "ReleasesSearchHistoryTableViewController.h"
 #import "AppColor.h"
 #import "AppDataController.h"
 
-@interface ReleasesHistoryTableViewCell : UITableViewCell
+@interface ReleasesSearchHistoryTableViewCell : UITableViewCell
 @property(nonatomic, retain) UIImageView* magnifier_image_view;
 @property(nonatomic, retain) UILabel* history_item_label;
 
@@ -19,15 +19,15 @@
 -(NSString*)getHistoryText;
 @end
 
-@interface ReleasesHistoryTableViewController ()
+@interface ReleasesSearchHistoryTableViewController ()
 @property(nonatomic) AppDataController* app_data_controller;
 @property(nonatomic, retain) UITableView* table_view;
 @end
 
-@implementation ReleasesHistoryTableViewCell
+@implementation ReleasesSearchHistoryTableViewCell
 
 +(NSString*)getIdentifier {
-    return @"HistoryTableViewCell";
+    return @"ReleasesSearchHistoryTableViewCell";
 }
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier {
@@ -79,7 +79,7 @@
 @end
 
 
-@implementation ReleasesHistoryTableViewController
+@implementation ReleasesSearchHistoryTableViewController
 
 -(void)viewDidLoad {
     [super viewDidLoad];
@@ -94,7 +94,7 @@
     _table_view = [UITableView new];
     _table_view.delegate = self;
     _table_view.dataSource = self;
-    [_table_view registerClass:ReleasesHistoryTableViewCell.class forCellReuseIdentifier:[ReleasesHistoryTableViewCell getIdentifier]];
+    [_table_view registerClass:ReleasesSearchHistoryTableViewCell.class forCellReuseIdentifier:[ReleasesSearchHistoryTableViewCell getIdentifier]];
     
     [self.view addSubview:_table_view];
     
@@ -119,7 +119,7 @@
     return 40;
 }
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
-    ReleasesHistoryTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesHistoryTableViewCell getIdentifier] forIndexPath:index_path];
+    ReleasesSearchHistoryTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesSearchHistoryTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
     [cell setHistoryText:[_app_data_controller getSearchHistoryItemAtIndex:index]];
 
@@ -143,10 +143,10 @@
 
 -(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
-    ReleasesHistoryTableViewCell* cell = [table_view cellForRowAtIndexPath:index_path];
+    ReleasesSearchHistoryTableViewCell* cell = [table_view cellForRowAtIndexPath:index_path];
     
     [_app_data_controller addSearchHistoryItem:[cell getHistoryText]];
-    [_delegate releasesHistoryTableViewController:self didSelectHistoryItem:[cell getHistoryText]];
+    [_delegate releasesSearchHistoryTableViewController:self didSelectHistoryItem:[cell getHistoryText]];
 }
 
 -(void)onRemoveTrailingActionAtIndex:(NSInteger)index {

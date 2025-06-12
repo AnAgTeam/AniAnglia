@@ -199,7 +199,7 @@
     
     [cell setName:TO_NSSTRING(type->name)];
     [cell setEpCount:[NSString stringWithFormat:@"%lld %@", type->episodes_count, NSLocalizedString(@"app.type_select.cell.ep_count.name", "")]];
-    [cell setViewCount:[AbbreviateNumberFormatter stringFromNumber: type->view_count]];
+    [cell setViewCount:[AbbreviateNumberFormatter stringFromNumber:type->view_count]];
 
     return cell;
 }

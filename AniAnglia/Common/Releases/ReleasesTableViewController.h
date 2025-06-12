@@ -10,10 +10,6 @@
 #import "ReleasesPageableDataProvider.h"
 #import "ReleaseTableViewCell.h"
 
-@protocol ReleasesTableViewDataController
-
-@end
-
 @interface ReleasesTableViewController : UITableViewController <PageableDataProviderDelegate>
 @property(nonatomic) BOOL is_container_view_controller;
 @property(nonatomic) BOOL trailing_action_disabled;
@@ -31,7 +27,7 @@
 -(void)setHeaderView:(UIView*)header_view;
 
 // can override in derived classes to change cell display
--(void)tableViewDidLoaded;
+-(void)tableViewDidLoad;
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path;
 -(__kindof UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path withRelease:(anixart::Release::Ptr)release;
 @end

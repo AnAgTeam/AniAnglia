@@ -13,10 +13,15 @@
 #import "LibanixartApi.h"
 #import "ReleasesViewController.h"
 #import "AppDataController.h"
+#import "ReleasesHistoryTableViewController.h"
 
 anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Profile::ListStatus list) {
     return api->releases().my_profile_list(list, anixart::Profile::ListSort::Ascending, 0);
 }
+
+@interface BookmarksReleasesHistoryViewController : ReleasesViewController
+
+@end
 
 @interface BookmarksViewController () {
     anixart::ProfileID _my_profile_id;
@@ -24,6 +29,14 @@ anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Pr
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, strong) AppDataController* app_data_controller;
 @property(nonatomic, retain) SegmentedPageViewController* page_view_controller;
+@end
+
+@implementation BookmarksReleasesHistoryViewController
+
+-(UIViewController<PageableDataProviderDelegate>*)getTableViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider {
+    return [[ReleasesHistoryTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:data_provider];
+}
+
 @end
 
 @implementation BookmarksViewController
@@ -42,7 +55,7 @@ anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Pr
 -(void)setup {
     _page_view_controller = [SegmentedPageViewController new];
     [_page_view_controller setPageViewControllers:@[
-        [self makeHistoryViewController],
+        [[BookmarksReleasesHistoryViewController alloc] initWithPages:_api_proxy.api->releases().get_history(0)],
         [[ReleasesViewController alloc] initWithPages:_api_proxy.api->releases().profile_favorites(_my_profile_id, anixart::Profile::ListSort::Ascending, 0, 0)],
         [[ReleasesViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Watching)],
         [[ReleasesViewController alloc] initWithPages:create_list_pages(_api_proxy.api, anixart::Profile::ListStatus::Plan)],
@@ -74,10 +87,6 @@ anixart::ProfileListPages::UPtr create_list_pages(anixart::Api* api, anixart::Pr
 }
 -(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
-}
-
--(UIViewController*)makeHistoryViewController {
-    return [[ReleasesViewController alloc] initWithPages:_api_proxy.api->releases().get_history(0)];
 }
 
 @end

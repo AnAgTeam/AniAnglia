@@ -22,7 +22,7 @@
 #import "ReleasesViewController.h"
 #import "ProfilesTableViewController.h"
 
-@interface ReleasesSearchController : UIViewController <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesHistoryTableViewControllerDelegate>
+@interface ReleasesSearchController : UIViewController <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesSearchHistoryTableViewControllerDelegate>
 @property(nonatomic, strong) AppDataController* app_data_controller;
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, retain) SearchViewController* search_view_controller;
@@ -88,7 +88,7 @@
 }
 
 -(UIViewController*)inlineViewControllerForSearchViewController:(SearchViewController*)search_view_controller {
-    ReleasesHistoryTableViewController* view_controller = [ReleasesHistoryTableViewController new];
+    ReleasesSearchHistoryTableViewController* view_controller = [ReleasesSearchHistoryTableViewController new];
     view_controller.delegate = self;
     return view_controller;
 }
@@ -238,14 +238,14 @@
     if (search_view_controller == _main_search_view_controller) {
         _current_history_responder_nav_controller = _main_nav_controller;
         _current_history_responder_search_view_controller = _main_search_view_controller;
-        ReleasesHistoryTableViewController* view_controller = [ReleasesHistoryTableViewController new];
+        ReleasesSearchHistoryTableViewController* view_controller = [ReleasesSearchHistoryTableViewController new];
         view_controller.delegate = self;
         return view_controller;
     }
     if (search_view_controller == _discover_search_view_controller) {
         _current_history_responder_nav_controller = _discover_nav_controller;
         _current_history_responder_search_view_controller = _discover_search_view_controller;
-        ReleasesHistoryTableViewController* view_controller = [ReleasesHistoryTableViewController new];
+        ReleasesSearchHistoryTableViewController* view_controller = [ReleasesSearchHistoryTableViewController new];
         view_controller.delegate = self;
         return view_controller;
     }
@@ -295,7 +295,7 @@
         return;
     }
 }
--(void)releasesHistoryTableViewController:(ReleasesHistoryTableViewController*)history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
+-(void)releasesSearchHistoryTableViewController:(ReleasesSearchHistoryTableViewController*)search_history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
     [_current_history_responder_search_view_controller setSearchText:@""];
     [_current_history_responder_search_view_controller endSearching];
     

@@ -24,6 +24,8 @@
 #import "CollectionsCollectionViewController.h"
 #import "ReleasesTableViewController.h"
 #import "NamedSectionView.h"
+#import "ReleasesHistoryTableViewController.h"
+#import "CenteredCollectionViewFlowLayout.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -84,6 +86,7 @@
     anixart::Profile::Ptr _profile;
 }
 @property(nonatomic, retain) UICollectionView* roles_collection_view;
+@property(nonatomic) CGFloat cell_max_x;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
 @end
@@ -151,26 +154,6 @@
 -(void)setProfile:(anixart::Profile::Ptr)profile;
 @end
 
-@interface ProfileWatchedRecentlyViewTableViewCell : UITableViewCell
-@property(nonatomic, retain) LoadableImageView* image_view;
-@property(nonatomic, retain) UILabel* title_label;
-@property(nonatomic, retain) UILabel* episode_label;
-@property(nonatomic, retain) UILabel* time_label;
-
-+(NSString*)getIdentifier;
-
--(void)setImageUrl:(NSURL*)url;
--(void)setTitle:(NSString*)title;
--(void)setEpisode:(NSString*)episode;
--(void)setTime:(NSString*)time;
-@end
-
-@interface ProfileWatchedRecentlyViewController : ReleasesTableViewController
--(instancetype)initWithTableView:(UITableView*)table_view profile:(anixart::Profile::Ptr)profile;
-
--(void)setProfile:(anixart::Profile::Ptr)profile;
-@end
-
 @interface ProfileViewController () <ProfileStatsBlockViewDelegate, ProfileActionViewDelegate, CommentsTableViewControllerDelegate, LoadableViewDelegate> {
     anixart::ProfileID _profile_id;
     anixart::Profile::Ptr _profile;
@@ -195,7 +178,7 @@
 @property(nonatomic, retain) ProfileListsView* lists_view;
 @property(nonatomic, retain) ProfileVotesViewController* votes_view_controller;
 @property(nonatomic, retain) ProfileWatchDynamicsView* watch_dynamics_view;
-@property(nonatomic, retain) ProfileWatchedRecentlyViewController* watched_recently_view_controller;
+@property(nonatomic, retain) ReleasesHistoryTableViewController* watched_recently_view_controller;
 
 
 @end
@@ -387,7 +370,7 @@
     return self;
 }
 -(void)setup {
-    UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
+    CenteredCollectionViewFlowLayout* layout = [CenteredCollectionViewFlowLayout new];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
     layout.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize;
 //    layout.itemSize = UICollectionViewFlowLayoutAutomaticSize;
@@ -431,16 +414,10 @@
     return _profile->roles.size();
 }
 
+// this prevents warnings about cells size
 -(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
     return CGSizeMake(collection_view.bounds.size.width, collection_view.bounds.size.height);
 }
-//-(UIEdgeInsets)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewLayout *)collection_view_layout insetForSectionAtIndex:(NSInteger)section {
-//    [self layoutIfNeeded];
-//    CGFloat content_size = MIN(collection_view.bounds.size.width, collection_view.contentSize.width);
-//    CGFloat left_inset = (collection_view.bounds.size.width - content_size) / 2;
-//    CGFloat right_inset = left_inset;
-//    return UIEdgeInsetsMake(0, left_inset, 0, right_inset);
-//}
 
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     ProfileRolesViewCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[ProfileRolesViewCollectionViewCell getIdentifier] forIndexPath:index_path];
@@ -449,6 +426,7 @@
     
     [cell setColor:[self getRoleColorFromHEX:TO_NSSTRING(role->color)]];
     [cell setName:TO_NSSTRING(role->name)];
+    
     return cell;
 }
 
@@ -681,7 +659,7 @@
     [self setReleasesPageableDataProvider:data_provider];
 }
 
--(void)tableViewDidLoaded {
+-(void)tableViewDidLoad {
     [self.tableView registerClass:ProfileVotesViewTableViewCell.class forCellReuseIdentifier:[ProfileVotesViewTableViewCell getIdentifier]];
 }
 -(CGFloat)tableView:(UITableView *)table_view heightForRowAtIndexPath:(NSIndexPath *)index_path {
@@ -695,7 +673,7 @@
     [cell setImageUrl:image_url];
     [cell setTitle:TO_NSSTRING(release->title_ru)];
     [cell setStarsCount:release->my_vote];
-    [cell setVoteTime:to_utc_yy_mm_dd_string_from_gmt(release->voted_date)];
+    [cell setVoteTime:[NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(release->voted_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterNoStyle]];
     
     return cell;
 }
@@ -851,8 +829,11 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     NSInteger index = _profile->watch_dynamics.size() - 1 - [index_path item]; // we want to get from end
     anixart::ProfileWatchDynamic::Ptr watch_dynamic = _profile->watch_dynamics[index];
     
+    NSDateFormatter* date_formatter = [NSDateFormatter new];
+    date_formatter.dateFormat = @"dd.MM";
+    
     [cell setCount:watch_dynamic->watched_count totalCount:_max_dynamic_count];
-    [cell setTime:to_gmt_mm_dd_string_from_gmt(watch_dynamic->date)];
+    [cell setTime:[date_formatter stringFromDate:anix_time_point_to_nsdate(watch_dynamic->date)]];
     
     return cell;
 }
@@ -861,114 +842,6 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     return CGSizeMake(40, PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT);
 }
 @end
-
-@implementation ProfileWatchedRecentlyViewTableViewCell
-
-+(NSString*)getIdentifier {
-    return @"ProfileWatchedRecentlyViewTableViewCell";
-}
-
--(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier {
-    self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
-    
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _image_view = [LoadableImageView new];
-    _image_view.clipsToBounds = YES;
-    _image_view.layer.cornerRadius = 8;
-    _title_label = [UILabel new];
-    _episode_label = [UILabel new];
-    _time_label = [UILabel new];
-    
-    [self addSubview:_image_view];
-    [self addSubview:_title_label];
-    [self addSubview:_episode_label];
-    [self addSubview:_time_label];
-    
-    _image_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _title_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _episode_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _time_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_image_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_image_view.heightAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor],
-        [_image_view.widthAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:(9. / 16)],
-        [_image_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-        
-        [_title_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:5],
-        [_title_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_episode_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
-        [_episode_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
-        
-        [_time_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
-        [_time_label.leadingAnchor constraintEqualToAnchor:_episode_label.trailingAnchor constant:5],
-        [_time_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor]
-    ]];
-}
--(void)setupLayout {
-    _image_view.backgroundColor = [AppColorProvider foregroundColor1];
-    _title_label.textColor = [AppColorProvider textColor];
-    _episode_label.textColor = [AppColorProvider textSecondaryColor];
-    _time_label.textColor = [AppColorProvider textSecondaryColor];
-}
-
--(void)setImageUrl:(NSURL*)url {
-    [_image_view tryLoadImageWithURL:url];
-}
--(void)setEpisode:(NSString*)episode {
-    _episode_label.text = episode;
-}
--(void)setTitle:(NSString*)title {
-    _title_label.text = title;
-}
--(void)setTime:(NSString*)time {
-    _time_label.text = time;
-}
-@end
-
-@implementation ProfileWatchedRecentlyViewController
-
--(instancetype)initWithTableView:(UITableView*)table_view profile:(anixart::Profile::Ptr)profile {
-    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:profile->history];
-    self = [super initWithTableView:table_view releasesPageableDataProvider:data_provider];
-    
-    return self;
-}
-
--(void)setProfile:(anixart::Profile::Ptr)profile {
-    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:profile->history];
-    [self setReleasesPageableDataProvider:data_provider];
-}
-
--(void)tableViewDidLoaded {
-    [self.tableView registerClass:ProfileWatchedRecentlyViewTableViewCell.class forCellReuseIdentifier:[ProfileWatchedRecentlyViewTableViewCell getIdentifier]];
-}
--(CGFloat)tableView:(UITableView *)table_view heightForRowAtIndexPath:(NSIndexPath *)index_path {
-    return 120;
-}
--(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path withRelease:(anixart::Release::Ptr)release {
-    ProfileWatchedRecentlyViewTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ProfileWatchedRecentlyViewTableViewCell getIdentifier] forIndexPath:index_path];
-
-    NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(release->image_url)];
-    NSString* time = [NSString stringWithFormat:@"%@ %@", to_gmt_yy_mm_dd_string_from_gmt(release->last_view_date), to_gmt_hh_mm_string_from_gmt(release->last_view_date)];
-    
-    [cell setImageUrl:image_url];
-    [cell setTitle:TO_NSSTRING(release->title_ru)];
-    [cell setEpisode:TO_NSSTRING(release->last_view_episode->name)];
-    [cell setTime:time];
-    
-    return cell;
-}
-
-@end
-    
 
 @implementation ProfileViewController
 
@@ -1034,6 +907,8 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     __weak auto weak_self = self;
     _named_sections = [NSMutableArray arrayWithCapacity:4];
     
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"app.profile.title", ""), TO_NSSTRING(_profile->username)];
+    
     _scroll_view = [UIScrollView new];
     _scroll_view.refreshControl = [UIRefreshControl new];
     [_scroll_view.refreshControl addTarget:self action:@selector(onRefresh:) forControlEvents:UIControlEventValueChanged];
@@ -1063,7 +938,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     if (_profile->is_online) {
         _status_label.text = NSLocalizedString(@"app.profile.status.online.name", "");
     } else {
-        _status_label.text = [NSString stringWithFormat:@"%@: %@ %@", NSLocalizedString(@"app.profile.status.offline.start", ""), to_gmt_yy_mm_dd_string_from_gmt(_profile->last_activity_time), to_gmt_hh_mm_string_from_gmt(_profile->last_activity_time)];
+        _status_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.profile.status.offline.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_profile->last_activity_time) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     }
     
     if (!_profile->roles.empty()) {
@@ -1106,7 +981,8 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [_named_sections addObject:watch_dynamics_section_view];
     
     if (!_profile->history.empty()) {
-        _watched_recently_view_controller = [[ProfileWatchedRecentlyViewController alloc] initWithTableView:[DynamicTableView new] profile:_profile];
+        ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->history];
+        _watched_recently_view_controller = [[ReleasesHistoryTableViewController alloc] initWithTableView:[DynamicTableView new] releasesPageableDataProvider:data_provider];
         _watched_recently_view_controller.is_container_view_controller = YES;
         [self addChildViewController:_watched_recently_view_controller];
         
@@ -1191,14 +1067,15 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     if (_profile->is_online) {
         _status_label.text = NSLocalizedString(@"app.profile.status.online.name", "");
     } else {
-        _status_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.profile.status.offline.start", ""), to_gmt_yy_mm_dd_string_from_gmt(_profile->last_activity_time)];
+        _status_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.profile.status.offline.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_profile->last_activity_time) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     }
     [_stats_view setProfile:_profile];
     [_actions_view setProfile:_profile];
     [_lists_view setProfile:_profile];
     [_votes_view_controller setProfile:_profile];
     [_watch_dynamics_view setProfile:_profile];
-    [_watched_recently_view_controller setProfile:_profile];
+    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->history];
+    [_watched_recently_view_controller setReleasesPageableDataProvider:data_provider];
 }
 -(void)loadProfile {
     [_loading_view startLoading];
