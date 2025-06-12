@@ -26,6 +26,8 @@
 #import "NamedSectionView.h"
 #import "ReleasesHistoryTableViewController.h"
 #import "CenteredCollectionViewFlowLayout.h"
+#import "ReleasesVotesTableViewController.h"
+#import "ReleasesViewController.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -107,25 +109,7 @@
 -(void)updateActions;
 @end
 
-@interface ProfileVotesViewTableViewCell : UITableViewCell
-@property(nonatomic, retain) LoadableImageView* image_view;
-@property(nonatomic, retain) UILabel* title_label;
-@property(nonatomic, retain) NSArray<UIImageView*>* star_views;
-@property(nonatomic, retain) UIStackView* stars_stack_view;
-@property(nonatomic, retain) UILabel* vote_time_label;
-
-+(NSString*)getIdentifier;
-
--(void)setImageUrl:(NSURL*)url;
--(void)setTitle:(NSString*)title;
--(void)setStarsCount:(NSInteger)stars_count;
--(void)setVoteTime:(NSString*)vote_time;
-@end
-
-@interface ProfileVotesViewController : ReleasesTableViewController
--(instancetype)initWithTableView:(UITableView*)table_view profile:(anixart::Profile::Ptr)profile;
-
--(void)setProfile:(anixart::Profile::Ptr)profile;
+@interface ReleasesVotesViewController : ReleasesViewController
 
 @end
 
@@ -176,7 +160,7 @@
 @property(nonatomic, retain) ProfileStatsBlockView* stats_view;
 @property(nonatomic, retain) ProfileActionsView* actions_view;
 @property(nonatomic, retain) ProfileListsView* lists_view;
-@property(nonatomic, retain) ProfileVotesViewController* votes_view_controller;
+@property(nonatomic, retain) ReleasesVotesTableViewController* votes_view_controller;
 @property(nonatomic, retain) ProfileWatchDynamicsView* watch_dynamics_view;
 @property(nonatomic, retain) ReleasesHistoryTableViewController* watched_recently_view_controller;
 
@@ -554,128 +538,10 @@
 }
 @end
 
-@implementation ProfileVotesViewTableViewCell
+@implementation ReleasesVotesViewController
 
-+(NSString*)getIdentifier {
-    return @"ProfileVotesViewTableViewCell";
-}
-
--(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuse_identifier {
-    self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
-    
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _image_view = [LoadableImageView new];
-    _image_view.clipsToBounds = YES;
-    _image_view.layer.cornerRadius = 8;
-    
-    _title_label = [UILabel new];
-    _stars_stack_view = [UIStackView new];
-    _stars_stack_view.axis = UILayoutConstraintAxisHorizontal;
-    _stars_stack_view.distribution = UIStackViewDistributionEqualSpacing;
-    _stars_stack_view.alignment = UIStackViewAlignmentCenter;
-    
-    _vote_time_label = [UILabel new];
-    
-    _star_views = @[
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]]
-    ];
-    
-    [self addSubview:_image_view];
-    [self addSubview:_title_label];
-    [self addSubview:_stars_stack_view];
-    [self addSubview:_vote_time_label];
-    for (UIImageView* star_view : _star_views) {
-        [_stars_stack_view addArrangedSubview:star_view];
-    }
-    
-    _image_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _title_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _stars_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _vote_time_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_image_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_image_view.heightAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor],
-        [_image_view.widthAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:(9. / 16)],
-        [_image_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-        
-        [_title_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:8],
-        [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_stars_stack_view.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
-        [_stars_stack_view.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
-        [_stars_stack_view.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
-        
-        [_vote_time_label.topAnchor constraintEqualToAnchor:_stars_stack_view.topAnchor],
-        [_vote_time_label.leadingAnchor constraintEqualToAnchor:_stars_stack_view.trailingAnchor constant:5],
-        [_vote_time_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-    ]];
-    [_title_label sizeToFit];
-    [_vote_time_label sizeToFit];
-}
--(void)setupLayout {
-    _image_view.backgroundColor = [AppColorProvider foregroundColor1];
-    _title_label.textColor = [AppColorProvider textColor];
-    _vote_time_label.textColor = [AppColorProvider textSecondaryColor];
-}
-
--(void)setImageUrl:(NSURL*)url {
-    [_image_view tryLoadImageWithURL:url];
-}
--(void)setTitle:(NSString*)title {
-    _title_label.text = title;
-}
--(void)setStarsCount:(NSInteger)stars_count {
-    for (NSInteger i = 0; i < 5; ++i) {
-        _star_views[i].image = [UIImage systemImageNamed:(i < stars_count) ? @"star.fill" : @"star"];
-    }
-}
--(void)setVoteTime:(NSString*)vote_time {
-    _vote_time_label.text = vote_time;
-}
-@end
-
-@implementation ProfileVotesViewController
-
--(instancetype)initWithTableView:(UITableView*)table_view profile:(anixart::Profile::Ptr)profile {
-    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:profile->votes];
-    self = [super initWithTableView:table_view releasesPageableDataProvider:data_provider];
-    
-    return self;
-}
-
--(void)setProfile:(anixart::Profile::Ptr)profile {
-    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:profile->votes];
-    [self setReleasesPageableDataProvider:data_provider];
-}
-
--(void)tableViewDidLoad {
-    [self.tableView registerClass:ProfileVotesViewTableViewCell.class forCellReuseIdentifier:[ProfileVotesViewTableViewCell getIdentifier]];
-}
--(CGFloat)tableView:(UITableView *)table_view heightForRowAtIndexPath:(NSIndexPath *)index_path {
-    return 100;
-}
--(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path withRelease:(anixart::Release::Ptr)release {
-    ProfileVotesViewTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ProfileVotesViewTableViewCell getIdentifier] forIndexPath:index_path];
-    
-    NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(release->image_url)];
-    
-    [cell setImageUrl:image_url];
-    [cell setTitle:TO_NSSTRING(release->title_ru)];
-    [cell setStarsCount:release->my_vote];
-    [cell setVoteTime:[NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(release->voted_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterNoStyle]];
-    
-    return cell;
+-(UIViewController<PageableDataProviderDelegate>*)getTableViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider {
+    return [[ReleasesVotesTableViewController alloc] initWithTableView:[UITableView new] releasesPageableDataProvider:data_provider];
 }
 
 @end
@@ -959,10 +825,15 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _lists_view = [[ProfileListsView alloc] initWithProfile:_profile];
     
     NamedSectionView* lists_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.profile.lists", "") view:_lists_view];
+    [lists_section_view setShowAllButtonEnabled:!_is_my_profile];
+    [lists_section_view setShowAllHandler:^{
+        [weak_self onListsShowAllPressed];
+    }];
     [_named_sections addObject:lists_section_view];
     
     if (!_profile->votes.empty()) {
-        _votes_view_controller = [[ProfileVotesViewController alloc] initWithTableView:[DynamicTableView new] profile:_profile];
+        ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->votes];
+        _votes_view_controller = [[ReleasesVotesTableViewController alloc] initWithTableView:[DynamicTableView new] releasesPageableDataProvider:data_provider];
         _votes_view_controller.is_container_view_controller = YES;
         [self addChildViewController:_votes_view_controller];
         
@@ -987,10 +858,6 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
         [self addChildViewController:_watched_recently_view_controller];
         
         NamedSectionView* watched_recently_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.profile.watched_recently", "") view:_watched_recently_view_controller.view];
-        [watched_recently_section_view setShowAllButtonEnabled:YES];
-        [watched_recently_section_view setShowAllHandler:^{
-            [weak_self onWatchedRecentlyShowAllPressed];
-        }];
         [_named_sections addObject:watched_recently_section_view];
     }
     
@@ -1072,10 +939,11 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [_stats_view setProfile:_profile];
     [_actions_view setProfile:_profile];
     [_lists_view setProfile:_profile];
-    [_votes_view_controller setProfile:_profile];
+    ReleasesPageableDataProvider* votes_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->votes];
+    [_votes_view_controller setReleasesPageableDataProvider:votes_data_provider];
     [_watch_dynamics_view setProfile:_profile];
-    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->history];
-    [_watched_recently_view_controller setReleasesPageableDataProvider:data_provider];
+    ReleasesPageableDataProvider* history_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->history];
+    [_watched_recently_view_controller setReleasesPageableDataProvider:history_data_provider];
 }
 -(void)loadProfile {
     [_loading_view startLoading];
@@ -1219,8 +1087,11 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 
 -(void)onVotesShowAllPressed {
     // TODO
+//    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:_api_proxy.api->releases().profile_voted_releases(_profile->id, Release::ByVoteSort::Descending, 0)];
+//    ReleasesVotesViewController
 }
--(void)onWatchedRecentlyShowAllPressed {
+
+-(void)onListsShowAllPressed {
     // TODO
 }
 

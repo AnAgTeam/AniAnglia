@@ -135,17 +135,17 @@
 +(NSString*)getListStatusName:(anixart::Profile::ListStatus)list_status {
     switch (list_status) {
         case anixart::Profile::ListStatus::Watching:
-            return NSLocalizedString(@"app.profile.list_status.watching.name", "");
+            return NSLocalizedString(@"app.profile.list_status.watching", "");
         case anixart::Profile::ListStatus::Plan:
-            return NSLocalizedString(@"app.profile.list_status.plan.name", "");
+            return NSLocalizedString(@"app.profile.list_status.plan", "");
         case anixart::Profile::ListStatus::Watched:
-            return NSLocalizedString(@"app.profile.list_status.watched.name", "");
+            return NSLocalizedString(@"app.profile.list_status.watched", "");
         case anixart::Profile::ListStatus::HoldOn:
-            return NSLocalizedString(@"app.profile.list_status.holdon.name", "");
+            return NSLocalizedString(@"app.profile.list_status.holdon", "");
         case anixart::Profile::ListStatus::Dropped:
-            return NSLocalizedString(@"app.profile.list_status.dropped.name", "");
+            return NSLocalizedString(@"app.profile.list_status.dropped", "");
         case anixart::Profile::ListStatus::NotWatching:
-            return NSLocalizedString(@"app.profile.list_status.none.name", "");
+            return NSLocalizedString(@"app.profile.list_status.none", "");
     }
     return nil;
 }
@@ -197,17 +197,18 @@
     _total_indicator_view = [UIView new];
     _total_indicator_view.layer.cornerRadius = 5;
     _total_indicator_view.clipsToBounds = YES;
+    
     _watching_indicator_view = [UIView new];
     _plan_indicator_view = [UIView new];
     _watched_indicator_view = [UIView new];
     _holdon_indicator_view = [UIView new];
     _dropped_indicator_view = [UIView new];
     
-    _watching_legend_view = [[ProfileListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.profile.list_status.watching.name", "") color:[ProfileListsView getColorForListStatus:(anixart::Profile::ListStatus::Watching)] count:_watching_count];
-    _plan_legend_view = [[ProfileListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.profile.list_status.plan.name", "") color:[ProfileListsView getColorForListStatus:(anixart::Profile::ListStatus::Plan)] count:_plan_count];
-    _watched_legend_view = [[ProfileListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.profile.list_status.watched.name", "") color:[ProfileListsView getColorForListStatus:(anixart::Profile::ListStatus::Watched)] count:_watched_count];
-    _holdon_legend_view = [[ProfileListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.profile.list_status.holdon.name", "") color:[ProfileListsView getColorForListStatus:(anixart::Profile::ListStatus::HoldOn)] count:_holdon_count];
-    _dropped_legend_view = [[ProfileListLegendView alloc] initWithLegendName:NSLocalizedString(@"app.profile.list_status.dropped.name", "") color:[ProfileListsView getColorForListStatus:(anixart::Profile::ListStatus::Dropped)] count:_dropped_count];
+    _watching_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::Watching count:_watching_count];
+    _plan_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::Plan count:_plan_count];
+    _watched_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::Watched count:_watched_count];
+    _holdon_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::HoldOn count:_holdon_count];
+    _dropped_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::Dropped count:_dropped_count];
     double total_lists_count = _watching_count + _plan_count + _watched_count + _holdon_count + _dropped_count;
     
     [self addSubview:_watching_indicator_view];
@@ -305,6 +306,10 @@
     _watched_indicator_view.backgroundColor = [UIColor systemGreenColor];
     _holdon_indicator_view.backgroundColor = [UIColor systemPurpleColor];
     _dropped_indicator_view.backgroundColor = [UIColor systemRedColor];
+}
+
+-(ProfileListLegendView*)makeListLegendWithList:(anixart::Profile::ListStatus)list count:(int64_t)count {
+    return [[ProfileListLegendView alloc] initWithLegendName:[self.class getListStatusName:list] color:[self.class getColorForListStatus:list] count:count];
 }
 
 -(void)updateIndicators {

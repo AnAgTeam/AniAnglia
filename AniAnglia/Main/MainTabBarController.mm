@@ -9,7 +9,7 @@
 #import "MainTabBarController.h"
 #import "MainViewController.h"
 #import "DiscoverViewController.h"
-#import "BookmarksViewController.h"
+#import "ProfileListsPageViewController.h"
 #import "ProfileViewController.h"
 #import "AppColor.h"
 #import "SearchViewController.h"
@@ -190,7 +190,7 @@
     _discover_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.release.search.placeholder", "");
     _discover_search_view_controller.right_bar_button = _discover_filter_bar_button;
     
-    _bookmarks_search_view_controller = [[SearchViewController alloc] initWithContentViewController:[BookmarksViewController new]];
+    _bookmarks_search_view_controller = [[SearchViewController alloc] initWithContentViewController:[[ProfileListsPageViewController alloc] initWithMyProfileID]];
     _bookmarks_search_view_controller.data_source = self;
     _bookmarks_search_view_controller.delegate = self;
     _bookmarks_search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.bookmarks.search_bar.placeholder", "");

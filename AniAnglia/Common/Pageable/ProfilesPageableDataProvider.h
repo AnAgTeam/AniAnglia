@@ -9,21 +9,18 @@
 #define ProfilesPageableDataProvider_h
 
 #import <UIKit/UIKit.h>
-#import "LibanixartApi.h"
+#import "PageableDataprovider.h"
 
-@class ProfilesPageableDataProvider;
-
-@protocol ProfilesPageableDataProviderDelegate <NSObject>
--(void)didUpdatedDataForProfilesPageableDataProvider:(ProfilesPageableDataProvider*)profiles_pageable_data_provider;
-@end
-
-@interface ProfilesPageableDataProvider : NSObject
-@property(nonatomic, weak) id<ProfilesPageableDataProviderDelegate> delegate;
-
+@interface ProfilesPageableDataProvider : PageableDataProvider
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Profile>::UPtr)pages;
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Profile>::UPtr)pages initialProfiles:(std::vector<anixart::Profile::Ptr>)profiles;
 
--(void)setPages:(anixart::Pageable<anixart::Profile>::UPtr)pages;
+// clear all the data without reload
+-(void)clear;
+// reload, then reassign data
 -(void)reset;
+// clear all the data, set pages and load first
+-(void)setPages:(anixart::Pageable<anixart::Profile>::UPtr)pages;
 
 -(BOOL)isEnd;
 -(size_t)getItemsCount;
@@ -31,6 +28,8 @@
 
 -(void)loadCurrentPage;
 -(void)loadNextPage;
+
+-(UIContextMenuConfiguration*)getContextMenuConfigurationForItemAtIndex:(NSInteger)index;
 
 @end
 

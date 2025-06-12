@@ -12,7 +12,7 @@
 #import "LibanixartApi.h"
 #import "ProfilesPageableDataProvider.h"
 
-@interface ProfileFriendsViewController : UIViewController <ProfilesPageableDataProviderDelegate>
+@interface ProfileFriendsViewController : UIViewController <PageableDataProviderDelegate>
 
 -(instancetype)initWithProfileID:(anixart::ProfileID)profile_id isMyProfile:(BOOL)is_my_profile;
 @end

@@ -158,14 +158,6 @@
 "app.profile.search.placeholder" = "Найти пользователя...";
 "app.profile.title" = "Профиль";
 
-"app.bookmarks.history.title" = "История";
-"app.bookmarks.favorites.title" = "Избранное";
-"app.bookmarks.watching.title" = "Смотрю";
-"app.bookmarks.plan.title" = "В планах";
-"app.bookmarks.watched.title" = "Просмотрено";
-"app.bookmarks.holdon.title" = "Отложено";
-"app.bookmarks.dropped.title" = "Брошено";
-
 "app.profile.status.online.name" = "Онлайн";
 "app.profile.status.offline.start" = "Был(а) в сети";
 
@@ -184,12 +176,14 @@
 "app.profile.lists" = "Статистика";
 "app.profile.lists.total_watched.start" = "Просмотрено серий";
 "app.profile.lists.watched_time.start" = "Общее время просмотра";
-"app.profile.list_status.none.name" = "Не указано";
-"app.profile.list_status.watching.name" = "Смотрю";
-"app.profile.list_status.plan.name" = "В планах";
-"app.profile.list_status.watched.name" = "Просмотрено";
-"app.profile.list_status.holdon.name" = "Отложено";
-"app.profile.list_status.dropped.name" = "Брошено";
+"app.profile.lists.history" = "История";
+"app.profile.lists.favorite" = "Избранное";
+"app.profile.list_status.none" = "Не указано";
+"app.profile.list_status.watching" = "Смотрю";
+"app.profile.list_status.plan" = "В планах";
+"app.profile.list_status.watched" = "Просмотрено";
+"app.profile.list_status.holdon" = "Отложено";
+"app.profile.list_status.dropped" = "Брошено";
 
 "app.profile.lists.watched_time.days" = "дней";
 "app.profile.lists.watched_time.hours" = "часов";
@@ -204,6 +198,8 @@
 
 "app.profile.comments.release.segment" = "К релизам";
 "app.profile.comments.collection.segment" = "К коллекциям";
+
+"app.profile.copy_username" = "Скопировать ник";
 
 /* PROFILE FRIENDS */
 "app.profile_friends.title" = "Друзья";

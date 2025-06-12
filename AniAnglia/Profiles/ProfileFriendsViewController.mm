@@ -11,7 +11,7 @@
 #import "AppColor.h"
 #import "StringCvt.h"
 #import "ProfileViewController.h"
-#import "ProfilesTableViewController.h"
+#import "ProfileTableViewCell.h"
 
 enum class ProfileFriendsSections {
     RequestsIn = 1,
@@ -46,7 +46,7 @@ enum class ProfileFriendsSections {
         _requests_in_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().friend_requests_in(0)];
         _requests_out_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().friend_requests_out(0)];
     }
-        _friends_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().get_friends(_profile_id, 0)];
+    _friends_data_provider = [[ProfilesPageableDataProvider alloc] initWithPages:_api_proxy.api->profiles().get_friends(_profile_id, 0)];
     
     _friends_data_provider.delegate = self;
     _requests_in_data_provider.delegate = self;
@@ -148,6 +148,12 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     }
 }
 
+-(UIContextMenuConfiguration *)tableView:(UITableView *)table_view contextMenuConfigurationForRowAtIndexPath:(NSIndexPath *)index_path point:(CGPoint)point {
+    NSInteger section = index_path.section;
+    NSInteger index = index_path.row;
+    return [_section_providers[section] getContextMenuConfigurationForItemAtIndex:index];
+}
+
 -(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     NSInteger section = index_path.section;
@@ -161,21 +167,28 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [self.navigationController pushViewController:[[ProfileViewController alloc] initWithProfileID:profile->id] animated:YES];
 }
 
--(void)didUpdatedDataForProfilesPageableDataProvider:(ProfilesPageableDataProvider*)profiles_pageable_data_provider {
-    if ([profiles_pageable_data_provider getItemsCount] == 0) {
+-(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
+    [_table_view reloadData];
+}
+
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+    if (![pageable_data_provider isKindOfClass:ProfilesPageableDataProvider.class]) {
         return;
     }
     
-    if (![_section_providers containsObject:profiles_pageable_data_provider]) {
-        if (profiles_pageable_data_provider == _requests_in_data_provider ) {
-            [_section_providers insertObject:profiles_pageable_data_provider atIndex:0];
-        } else if (profiles_pageable_data_provider == _requests_out_data_provider) {
-            NSInteger index = [_section_providers containsObject:_requests_in_data_provider] ? 1 : 0;
-            [_section_providers insertObject:profiles_pageable_data_provider atIndex:index];
-        } else if (profiles_pageable_data_provider == _friends_data_provider) {
-            [_section_providers addObject:profiles_pageable_data_provider];
-        }
+    ProfilesPageableDataProvider* profiles_data_provider = static_cast<ProfilesPageableDataProvider*>(pageable_data_provider);
+    if ([_section_providers containsObject:profiles_data_provider] || [profiles_data_provider getItemsCount] == 0) {
+        return;
     }
+    if (profiles_data_provider == _requests_in_data_provider) {
+        [_section_providers insertObject:profiles_data_provider atIndex:0];
+    } else if (profiles_data_provider == _requests_out_data_provider) {
+        NSInteger index = [_section_providers containsObject:_requests_in_data_provider] ? 1 : 0;
+        [_section_providers insertObject:profiles_data_provider atIndex:index];
+    } else if (profiles_data_provider == _friends_data_provider) {
+        [_section_providers addObject:profiles_data_provider];
+    }
+    
     [_table_view reloadData];
 }
 
