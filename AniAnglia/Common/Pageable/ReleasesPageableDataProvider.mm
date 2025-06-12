@@ -61,22 +61,31 @@
 }
 
 -(void)appendItemsFromBlock:(std::vector<anixart::Release::Ptr>(^)())block {
+    [self setItemsFromBlock:block isAppend:YES];
+}
+
+-(void)setItemsFromBlock:(std::vector<anixart::Release::Ptr>(^)())block isAppend:(BOOL)is_append {
     if (!_pages) {
         return;
     }
     
-    [self.api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
-        /* todo: change to thread-safe */
-        auto new_items = block();
-//        [self->_lock lock];
-        self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
-//        [self->_lock unlock];
-        return YES;
-    } withUICompletion:^{
+    __block decltype(block()) new_items;
+    [self.api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        new_items = block();
+        return NO;
+    } completion:^(BOOL errored) {
+        if (errored) {
+            [self callDelegateDidFailedPageAtIndex:self->_pages->get_current_page()];
+            return;
+        }
+        if (is_append) {
+            self->_releases.insert(self->_releases.end(), new_items.begin(), new_items.end());
+        } else {
+            self->_releases = std::move(new_items);
+        }
         [self callDelegateDidLoadedPageAtIndex:self->_pages->get_current_page()];
     }];
 }
-
 -(void)loadCurrentPage {
     [self appendItemsFromBlock:^() {
         return self->_pages->get();

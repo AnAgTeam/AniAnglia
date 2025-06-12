@@ -34,7 +34,6 @@
     _table_view = table_view;
     _data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:std::move(pages)];
     _data_provider.delegate = self;
-    _trailing_action_disabled = NO;
     _auto_page_load_disabled = NO;
     _is_container_view_controller = NO;
     _is_first_loading = YES;
@@ -48,7 +47,6 @@
     
     _table_view = table_view;
     _data_provider = releases_pageable_data_provider;
-    _trailing_action_disabled = NO;
     _auto_page_load_disabled = NO;
     _is_container_view_controller = NO;
     _is_first_loading = NO;
@@ -194,38 +192,8 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     
 }
 
--(UISwipeActionsConfiguration*)tableView:(UITableView*)table_view trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath*)index_path {
-    if (_trailing_action_disabled) {
-        return nil;
-    }
-    
-    UIContextualAction* bookmark_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL action_performed)) {
-        [self onAddToBookmarkTrailingActionAtindexPath:index_path];
-        completion_handler(YES);
-    }];
-    bookmark_action.backgroundColor = [UIColor systemYellowColor];
-    bookmark_action.image = [UIImage systemImageNamed:@"bookmark"];
-    
-    UIContextualAction* add_to_list_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL action_performed)){
-        [self onAddToListTrailingActionAtindexPath:index_path];
-        completion_handler(YES);
-    }];
-    add_to_list_action.image = [UIImage systemImageNamed:@"line.3.horizontal"];
-    
-    return [UISwipeActionsConfiguration configurationWithActions:@[
-        bookmark_action,
-        add_to_list_action
-    ]];
-}
 -(UIContextMenuConfiguration *)tableView:(UITableView *)table_view contextMenuConfigurationForRowAtIndexPath:(NSIndexPath *)index_path point:(CGPoint)point {
     return [_data_provider getContextMenuConfigurationForItemAtIndex:index_path.row];
-}
-
--(void)onAddToBookmarkTrailingActionAtindexPath:(NSIndexPath*)index_path {
-    // TODO
-}
--(void)onAddToListTrailingActionAtindexPath:(NSIndexPath*)index_path  {
-    // TODO
 }
 
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
