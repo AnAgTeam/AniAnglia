@@ -11,12 +11,12 @@
 #import "AppColor.h"
 #import "StringCvt.h"
 #import "TimeCvt.h"
+#import "StarsVoteView.h"
 
 @interface ReleasesVotesTableViewCell : UITableViewCell
 @property(nonatomic, retain) LoadableImageView* image_view;
 @property(nonatomic, retain) UILabel* title_label;
-@property(nonatomic, retain) NSArray<UIImageView*>* star_views;
-@property(nonatomic, retain) UIStackView* stars_stack_view;
+@property(nonatomic, retain) StarsVoteView* stars_view;
 @property(nonatomic, retain) UILabel* vote_time_label;
 
 +(NSString*)getIdentifier;
@@ -50,33 +50,20 @@
     _image_view.layer.cornerRadius = 8;
     
     _title_label = [UILabel new];
-    _stars_stack_view = [UIStackView new];
-    _stars_stack_view.axis = UILayoutConstraintAxisHorizontal;
-    _stars_stack_view.distribution = UIStackViewDistributionEqualSpacing;
-    _stars_stack_view.alignment = UIStackViewAlignmentCenter;
     
     _vote_time_label = [UILabel new];
     
-    _star_views = @[
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]],
-        [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"star"]]
-    ];
+    _stars_view = [StarsVoteView new];
     
     [self addSubview:_image_view];
     [self addSubview:_title_label];
-    [self addSubview:_stars_stack_view];
     [self addSubview:_vote_time_label];
-    for (UIImageView* star_view : _star_views) {
-        [_stars_stack_view addArrangedSubview:star_view];
-    }
+    [self addSubview:_stars_view];
     
     _image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _title_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _stars_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
     _vote_time_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _stars_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_image_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
@@ -88,16 +75,14 @@
         [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:8],
         [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         
-        [_stars_stack_view.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
-        [_stars_stack_view.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
-        [_stars_stack_view.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
+        [_stars_view.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:5],
+        [_stars_view.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
+        [_stars_view.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.centerXAnchor],
         
-        [_vote_time_label.topAnchor constraintEqualToAnchor:_stars_stack_view.topAnchor],
-        [_vote_time_label.leadingAnchor constraintEqualToAnchor:_stars_stack_view.trailingAnchor constant:5],
+        [_vote_time_label.topAnchor constraintEqualToAnchor:_stars_view.topAnchor],
+        [_vote_time_label.leadingAnchor constraintEqualToAnchor:_stars_view.trailingAnchor constant:5],
         [_vote_time_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
     ]];
-    [_title_label sizeToFit];
-    [_vote_time_label sizeToFit];
 }
 -(void)setupLayout {
     _image_view.backgroundColor = [AppColorProvider foregroundColor1];
@@ -112,9 +97,7 @@
     _title_label.text = title;
 }
 -(void)setStarsCount:(NSInteger)stars_count {
-    for (NSInteger i = 0; i < 5; ++i) {
-        _star_views[i].image = [UIImage systemImageNamed:(i < stars_count) ? @"star.fill" : @"star"];
-    }
+    [_stars_view setFilledStarCount:stars_count];
 }
 -(void)setVoteTime:(NSString*)vote_time {
     _vote_time_label.text = vote_time;

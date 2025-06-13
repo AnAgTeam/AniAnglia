@@ -110,9 +110,6 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
         [_rating_label.widthAnchor constraintEqualToAnchor:_rating_label.heightAnchor],
         [_rating_label.bottomAnchor constraintEqualToAnchor:_image_view.bottomAnchor],
     ]];
-    [_title_label sizeToFit];
-    [_ep_count_label sizeToFit];
-    [_description_label sizeToFit];
 }
 
 -(void)setupLayout {

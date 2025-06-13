@@ -56,6 +56,7 @@
 		EF8C37532DB2B28900ADDBD7 /* CollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */; };
 		EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */; };
 		EF928F362DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF928F352DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm */; };
+		EF928F392DFCAACB00A5CD85 /* StarsVoteView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF928F382DFCAACB00A5CD85 /* StarsVoteView.m */; };
 		EF9DAC982DFA2FEF0020C182 /* ReleasesHistoryTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9DAC972DFA2FEF0020C182 /* ReleasesHistoryTableViewController.mm */; };
 		EF9DACA02DFA34820020C182 /* ReleasesHistoryTableViewCells.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9DAC9F2DFA34820020C182 /* ReleasesHistoryTableViewCells.mm */; };
 		EF9FE8632DB3196500792D0D /* ReleasesViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9FE8622DB3196500792D0D /* ReleasesViewController.mm */; };
@@ -1349,6 +1350,8 @@
 		EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ExpandableLabel.mm; sourceTree = "<group>"; };
 		EF928F342DFC720E00A5CD85 /* ReleaseRelatedTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseRelatedTableViewController.h; sourceTree = "<group>"; };
 		EF928F352DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseRelatedTableViewController.mm; sourceTree = "<group>"; };
+		EF928F372DFCAAB500A5CD85 /* StarsVoteView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StarsVoteView.h; sourceTree = "<group>"; };
+		EF928F382DFCAACB00A5CD85 /* StarsVoteView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StarsVoteView.m; sourceTree = "<group>"; };
 		EF9DAC962DFA2F510020C182 /* ReleasesHistoryTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesHistoryTableViewController.h; sourceTree = "<group>"; };
 		EF9DAC972DFA2FEF0020C182 /* ReleasesHistoryTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesHistoryTableViewController.mm; sourceTree = "<group>"; };
 		EF9DAC9E2DFA346F0020C182 /* ReleaseHistoryTableViewCells.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseHistoryTableViewCells.h; sourceTree = "<group>"; };
@@ -3491,6 +3494,8 @@
 				EF15C9212DF8582100335578 /* NamedSectionView.mm */,
 				EFCE61162DFB2523008431CA /* CenteredCollectionViewFlowLayout.h */,
 				EFCE61172DFB2538008431CA /* CenteredCollectionViewFlowLayout.mm */,
+				EF928F372DFCAAB500A5CD85 /* StarsVoteView.h */,
+				EF928F382DFCAACB00A5CD85 /* StarsVoteView.m */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3728,6 +3733,7 @@
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
 				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,
 				EF2330682DAD9293008B0A2A /* TextEnterView.mm in Sources */,
+				EF928F392DFCAACB00A5CD85 /* StarsVoteView.m in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,

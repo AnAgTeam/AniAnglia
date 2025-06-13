@@ -842,8 +842,9 @@
     _content_stack_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(0, 10, 0, 10);
     
     _release_image_view = [LoadableImageView new];
-    _release_image_view.layer.cornerRadius = 8.0;
+    _release_image_view.layer.cornerRadius = 13.0;
     _release_image_view.layer.masksToBounds = YES;
+    _release_image_view.contentMode = UIViewContentModeScaleAspectFill;
 
     _title_label = [UILabel new];
     _title_label.numberOfLines = 0;
@@ -864,12 +865,12 @@
     [_add_list_button setMenu:[self makeAddListButtonMenu]];
     _add_list_button.showsMenuAsPrimaryAction = YES;
     _add_list_button.layer.cornerRadius = 8.0;
-    _add_list_button.contentEdgeInsets = UIEdgeInsetsMake(0, 3, 0, 3);
+    _add_list_button.contentEdgeInsets = UIEdgeInsetsMake(0, 6, 0, 6);
     
     _bookmark_button = [UIButton new];
     [_bookmark_button addTarget:self action:@selector(onBookmarkButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _bookmark_button.layer.cornerRadius = 8.0;
-    _bookmark_button.contentEdgeInsets = UIEdgeInsetsMake(0, 3, 0, 3);
+    _bookmark_button.contentEdgeInsets = UIEdgeInsetsMake(0, 6, 0, 6);
     
     _play_button = [UIButton new];
     [_play_button setTitle:NSLocalizedString(@"app.release.play_button.title", "") forState:UIControlStateNormal];
