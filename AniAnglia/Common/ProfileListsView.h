@@ -21,12 +21,14 @@
 +(UIColor*)getColorForListStatus:(anixart::Profile::ListStatus)list_status;
 +(NSString*)getListStatusName:(anixart::Profile::ListStatus)list_status;
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release;
+-(instancetype)initWithRelease:(anixart::Release::Ptr)release;
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
 -(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info;
 
--(void)setReleaseInfo:(anixart::Release::Ptr)release;
--(void)setProfile:(anixart::Profile::Ptr)profile;
+-(void)setFromRelease:(anixart::Release::Ptr)release;
+-(void)setFromProfile:(anixart::Profile::Ptr)profile;
+-(void)setFromCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info;
+
 @end
 
 #endif /* ProfileListsView_h */

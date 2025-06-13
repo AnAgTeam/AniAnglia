@@ -150,42 +150,32 @@
     return nil;
 }
 
--(instancetype)initWithReleaseInfo:(anixart::Release::Ptr)release {
+-(instancetype)initWithRelease:(anixart::Release::Ptr)release {
     self = [super init];
     
-    _watching_count = release->watching_count;
-    _plan_count = release->plan_count;
-    _watched_count = release->watched_count;
-    _holdon_count = release->hold_on_count;
-    _dropped_count = release->dropped_count;
+    [self setFromRelease:release];
     
     [self setup];
     [self setupLayout];
     
     return self;
 }
+
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile {
     self = [super init];
     
-    _watching_count = profile->watching_count;
-    _plan_count = profile->plan_count;
-    _watched_count = profile->watched_count;
-    _holdon_count = profile->hold_on_count;
-    _dropped_count = profile->dropped_count;
+    [self setFromProfile:profile];
     
     [self setup];
     [self setupLayout];
     
     return self;
 }
+
 -(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
     self = [super init];
     
-    _watching_count = collection_get_info->watching_count;
-    _plan_count = collection_get_info->plan_count;
-    _watched_count = collection_get_info->watched_count;
-    _holdon_count = collection_get_info->hold_on_count;
-    _dropped_count = collection_get_info->dropped_count;
+    [self setFromCollectionGetInfo:collection_get_info];
     
     [self setup];
     [self setupLayout];
@@ -336,20 +326,40 @@
     [_dropped_legend_view setCount:_dropped_count];
 }
 
--(void)setReleaseInfo:(anixart::Release::Ptr)release {
+-(void)setFromRelease:(anixart::Release::Ptr)release {
     _watching_count = release->watching_count;
     _plan_count = release->plan_count;
     _watched_count = release->watched_count;
     _holdon_count = release->hold_on_count;
     _dropped_count = release->dropped_count;
-    [self updateIndicators];
+    
+    if (_total_indicator_view) {
+        [self updateIndicators];
+    }
 }
--(void)setProfile:(anixart::Profile::Ptr)profile {
+
+-(void)setFromProfile:(anixart::Profile::Ptr)profile {
     _watching_count = profile->watching_count;
     _plan_count = profile->plan_count;
     _watched_count = profile->watched_count;
     _holdon_count = profile->hold_on_count;
     _dropped_count = profile->dropped_count;
-    [self updateIndicators];
+    
+    if (_total_indicator_view) {
+        [self updateIndicators];
+    }
 }
+
+-(void)setFromCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
+    _watching_count = collection_get_info->watching_count;
+    _plan_count = collection_get_info->plan_count;
+    _watched_count = collection_get_info->watched_count;
+    _holdon_count = collection_get_info->hold_on_count;
+    _dropped_count = collection_get_info->dropped_count;
+    
+    if (_total_indicator_view) {
+        [self updateIndicators];
+    }
+}
+
 @end

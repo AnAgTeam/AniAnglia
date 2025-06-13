@@ -43,7 +43,13 @@
     _comments.clear();
     [self callDelegateDidUpdated];
 }
--(void)reset {
+
+-(void)reload {
+    _comments.clear();
+    [self loadPageAtIndex:0];
+}
+
+-(void)refresh {
     [self loadPageAtIndex:0];
 }
 

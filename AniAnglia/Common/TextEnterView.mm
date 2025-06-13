@@ -36,6 +36,7 @@
 @property(nonatomic, retain) NSLayoutConstraint* text_view_height_constraint;
 @property(nonatomic, retain) TextEnterCustomEditingHeaderView* custom_editing_header;
 @property(nonatomic, retain) NSArray<NSLayoutConstraint*>* custom_editing_header_bind_constraints;
+@property(nonatomic) UIEdgeInsets text_view_insets;
 
 @end
 
@@ -129,7 +130,7 @@
     _text_view = [UITextView new];
     _text_view.delegate = self;
     _text_view.font = [UIFont systemFontOfSize:16];
-//    CGSize text_view_one_line_size = [@" " boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName: _text_view.font} context:nil].size;
+    _text_view_insets = _text_view.textContainerInset;
     
     _placeholder_label = [UILabel new];
     _placeholder_label.text = _placeholder;
@@ -147,7 +148,7 @@
     
     [self addSubview:_inner_view];
     [_inner_view addSubview:_text_view];
-    [_inner_view addSubview:_spoiler_button];
+    [_text_view addSubview:_spoiler_button];
     [_text_view addSubview:_placeholder_label];
     [self addSubview:_send_button];
     
@@ -170,17 +171,17 @@
         
         [_text_view.topAnchor constraintEqualToAnchor:_inner_view.layoutMarginsGuide.topAnchor],
         [_text_view.leadingAnchor constraintEqualToAnchor:_inner_view.layoutMarginsGuide.leadingAnchor],
+        [_text_view.trailingAnchor constraintEqualToAnchor:_inner_view.layoutMarginsGuide.trailingAnchor],
         _text_view_height_constraint,
         [_text_view.bottomAnchor constraintEqualToAnchor:_inner_view.layoutMarginsGuide.bottomAnchor],
         
         [_placeholder_label.topAnchor constraintEqualToAnchor:_text_view.layoutMarginsGuide.topAnchor],
-        [_placeholder_label.leadingAnchor constraintEqualToAnchor:_text_view.layoutMarginsGuide.leadingAnchor],
+        [_placeholder_label.leadingAnchor constraintEqualToAnchor:_text_view.leadingAnchor constant:3],
         [_placeholder_label.trailingAnchor constraintEqualToAnchor:_text_view.layoutMarginsGuide.trailingAnchor],
         [_placeholder_label.bottomAnchor constraintLessThanOrEqualToAnchor:_text_view.layoutMarginsGuide.bottomAnchor],
         
         [_spoiler_button.topAnchor constraintGreaterThanOrEqualToAnchor:_inner_view.layoutMarginsGuide.topAnchor],
-        [_spoiler_button.leadingAnchor constraintEqualToAnchor:_text_view.trailingAnchor constant:5],
-        [_spoiler_button.trailingAnchor constraintEqualToAnchor:_inner_view.layoutMarginsGuide.trailingAnchor],
+        [_spoiler_button.trailingAnchor constraintEqualToAnchor:_text_view.layoutMarginsGuide.trailingAnchor],
 //        [_spoiler_button.widthAnchor constraintEqualToConstant:50],
         [_spoiler_button.heightAnchor constraintEqualToConstant:33],
         [_spoiler_button.bottomAnchor constraintEqualToAnchor:_inner_view.bottomAnchor],
@@ -205,6 +206,14 @@
     _send_button.backgroundColor = [AppColorProvider primaryColor];
     _send_button.tintColor = [AppColorProvider textColor];
 }
+
+-(void)layoutSubviews {
+    [super layoutSubviews];
+    UIEdgeInsets new_text_view_insets = _text_view_insets;
+    new_text_view_insets.right += _spoiler_button.bounds.size.width;
+    _text_view.textContainerInset = new_text_view_insets;
+}
+
 -(void)updateSpoilerState {
     if (_is_spoiler) {
         [_spoiler_button setImage:[UIImage systemImageNamed:@"eye.slash.fill"] forState:UIControlStateNormal];

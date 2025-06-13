@@ -360,23 +360,27 @@
 }
 -(void)setup {
     _blur_effect_view = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleRegular]];
-    _blur_effect_view.alpha = 0.92;
+    
     _content_view = [UIView new];
     _content_view.layoutMargins = UIEdgeInsetsMake(12, 12, 12, 12);
     _content_view.layer.cornerRadius = 12;
+    
     _title_label = [UILabel new];
     _title_label.numberOfLines = 1;
     _title_label.text = _modal_title;
+    
     _actions_table_view = [UITableView new];
     _actions_table_view.delegate = self;
     _actions_table_view.dataSource = self;
     [_actions_table_view registerClass:MultiSelectMenuModalTableViewCell.class forCellReuseIdentifier:[MultiSelectMenuModalTableViewCell getIdentifier]];
     _actions_table_view.layer.cornerRadius = 8;
+    
     _select_all_button = [UIButton new];
     [_select_all_button addTarget:self action:@selector(onSelectAllPressed:) forControlEvents:UIControlEventTouchUpInside];
     [_select_all_button setImage:[UIImage systemImageNamed:@"square"] forState:UIControlStateNormal];
     _select_all_button.contentVerticalAlignment = UIControlContentVerticalAlignmentFill;
     _select_all_button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentFill;
+    
     _done_button = [UIButton new];
     [_done_button addTarget:self action:@selector(onDoneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [_done_button setTitle:NSLocalizedString(@"app.filter.multi_select._modal.done_button.title", "") forState:UIControlStateNormal];

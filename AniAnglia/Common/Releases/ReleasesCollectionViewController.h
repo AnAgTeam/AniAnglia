@@ -30,7 +30,9 @@
 -(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider axis:(UICollectionViewScrollDirection)axis;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
--(void)reset;
+
+-(void)reload;
+-(void)refresh;
 
 -(void)reloadData;
 

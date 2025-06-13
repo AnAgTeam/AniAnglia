@@ -1,11 +1,13 @@
 #pragma once
 #include <anixart/ApiSession.hpp>
 #include <anixart/ApiTypes.hpp>
+#include <anixart/ApiRequestsAuth.hpp>
 
 #include <memory>
 #include <string>
 
 namespace anixart {
+#ifdef LIBANIXART_AUTH_PRESENTED
 	class ApiAuthPending {
 	public:
 		using UPtr = std::unique_ptr<ApiAuthPending>;
@@ -64,5 +66,6 @@ namespace anixart {
 	private:
 		const ApiSession& _session;
 	};
+#endif
 }
 

@@ -53,7 +53,7 @@
         [_image_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_image_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
         [_image_view.heightAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor],
-        [_image_view.widthAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:(9. / 16)],
+        [_image_view.widthAnchor constraintEqualToAnchor:self.layoutMarginsGuide.heightAnchor multiplier:(10. / 16)],
         [_image_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
         
         [_title_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],

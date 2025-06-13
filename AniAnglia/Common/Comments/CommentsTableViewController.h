@@ -43,7 +43,8 @@
 -(void)setPublishDate:(NSString*)publish_date;
 -(void)setContent:(NSString*)content;
 -(void)setVoteCount:(NSInteger)vote_count;
--(void)setIsSpoiler:(BOOL)spoiler;
+-(void)setIsSpoiler:(BOOL)is_spoiler;
+-(void)setIsEdited:(BOOL)is_edited;
 
 -(void)setOrigin:(NSString*)origin name:(NSString*)name;
 -(void)setRepliesCount:(NSInteger)replies_count;
@@ -59,8 +60,10 @@
 -(instancetype)initWithTableView:(UITableView*)table_view dataProvider:(CommentsPageableDataProvider*)data_provider;
 
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
+-(void)setDataProvider:(CommentsPageableDataProvider*)data_provider;
 -(void)clear;
--(void)reset;
+-(void)reload;
+-(void)refresh;
 
 -(void)setHeaderView:(UIView*)header_view;
 -(void)setContentInsets:(UIEdgeInsets)insets;

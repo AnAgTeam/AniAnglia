@@ -38,7 +38,7 @@ namespace anixart {
 			Should call get() after initialization
 		*/
 		Paginator(const int32_t page) :
-			_previous_page(page),
+			_previous_page(-1),
 			_current_page(page),
 			_total_page_count(-1),
 			_total_count(-1)
@@ -48,27 +48,22 @@ namespace anixart {
 			assert(_total_page_count >= 0);
 			_previous_page = _current_page;
 			if (_current_page >= _total_page_count) {
-				_current_page = 0;
+				return {};
 			}
-			else {
-				++_current_page;
-			}
+			++_current_page;
 			return parse_request();
 		}
 		std::vector<ValueType> prev() override {
 			assert(_total_page_count >= 0);
 			_previous_page = _current_page;
 			if (_current_page <= 0) {
-				_current_page = _total_page_count;
+				return {};
 			}
-			else {
-				--_current_page;
-			}
+			--_current_page;
 			return parse_request();
 		}
 		std::vector<ValueType> go(const int32_t page) override {
-			assert(_total_page_count >= 0);
-			if (page < 0 || page > _total_page_count) {
+			if (page < 0 || (_total_page_count != -1 && page >= _total_page_count)) {
 				return {};
 			}
 			_previous_page = _current_page;
@@ -125,23 +120,21 @@ namespace anixart {
 			assert(_previous_page >= 0);
 			_previous_page = _current_page;
 			if (_is_end) {
-				_current_page = 0;
+				return {};
 			}
-			else {
-				++_current_page;
-			}
+			++_current_page;
 			return parse_request();
 		}
 		std::vector<ValueType> prev() override {
 			assert(_previous_page >= 0);
 			_previous_page = _current_page;
-			if (_current_page > 0) {
-				--_current_page;
+			if (_current_page <= 0) {
+				return {};
 			}
+			--_current_page;
 			return parse_request();
 		}
 		std::vector<ValueType> go(const int32_t page) override {
-			assert(_previous_page >= 0);
 			if (page < 0) {
 				return {};
 			}

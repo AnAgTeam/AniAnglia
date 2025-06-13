@@ -26,7 +26,7 @@
     _api = new anixart::Api("ru_RU", "AniAnglia", TO_STDSTRING(app_version));
     _api->set_verbose(false, false);
     _api->set_token(TO_STDSTRING([_app_data_controller getToken]));
-    _api->get_session().switch_base_url([[_app_data_controller getSettingsController] getAlternativeConnection]);
+    [self setIsAlternativeConnection:[[_app_data_controller getSettingsController] getAlternativeConnection]];
     _parsers = new anixart::parsers::Parsers();
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
@@ -97,7 +97,7 @@
 }
 
 -(void)setIsAlternativeConnection:(BOOL)is_alternative_connection {
-    _api->get_session().switch_base_url(is_alternative_connection);
+    _api->get_session().set_base_url(!is_alternative_connection ? std::string(anixart::requests::base_url) : std::string(anixart::requests::base_url_alt));
 }
 
 -(NSArray<NSString*>*)getGenresArray {

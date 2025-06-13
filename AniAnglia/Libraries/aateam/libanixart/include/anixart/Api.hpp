@@ -18,7 +18,9 @@ namespace anixart {
 
 		ApiSession& get_session();
 		const ApiSession& get_session() const;
+#ifdef LIBANIXART_AUTH_PRESENTED
 		ApiAuth& auth();
+#endif
 		ApiSearch& search();
 		ApiEpisodes& episodes();
 		ApiProfiles& profiles();
@@ -28,7 +30,9 @@ namespace anixart {
 	private:
 		std::string _token;
 		ApiSession _session;
+#ifdef LIBANIXART_AUTH_PRESENTED
 		ApiAuth _auth;
+#endif
 		ApiSearch _search;
 		ApiEpisodes _episodes;
 		ApiProfiles _profiles;

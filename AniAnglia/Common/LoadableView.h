@@ -11,7 +11,7 @@
 
 @protocol LoadableViewDelegate <NSObject>
 
--(void)didReloadedForLoadableView:(LoadableView*)loadableView;
+-(void)didReloadForLoadableView:(LoadableView*)loadableView;
 
 @end
 

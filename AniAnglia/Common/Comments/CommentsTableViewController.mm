@@ -24,6 +24,7 @@
 @property(nonatomic, retain) LoadableImageView* avatar_image_view;
 @property(nonatomic, retain) UILabel* username_label;
 @property(nonatomic, retain) UILabel* origin_label;
+@property(nonatomic, retain) UIImageView* edited_image_view;
 @property(nonatomic, retain) UILabel* publish_date_label;
 @property(nonatomic, retain) UILabel* origin_name_label;
 @property(nonatomic, retain) UILabel* content_label;
@@ -51,6 +52,7 @@
 @property(nonatomic, retain) NSLock* lock;
 @property(nonatomic, retain) UITableView* table_view;
 @property(nonatomic, retain) LoadableView* loadable_view;
+@property(nonatomic) NSInteger highlight_cell_index;
 
 -(void)setHeaderView:(UIView*)header_view;
 @end
@@ -86,13 +88,16 @@
     _publish_date_label = [UILabel new];
     _origin_name_label = [UILabel new];
     
+    _edited_image_view = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"pencil"]];
+    _edited_image_view.hidden = YES;
+    
     _content_container_view = [UIView new];
     _content_container_view.layoutMargins = UIEdgeInsetsMake(4, 0, 4, 0);
     _content_container_view.clipsToBounds = YES;
     
     _content_label = [UILabel new];
     _content_label.numberOfLines = 0;
-    _content_label.textAlignment = NSTextAlignmentJustified;
+//    _content_label.textAlignment = NSTextAlignmentJustified;
     
     _reply_button = [UIButton new];
     [_reply_button setTitle:NSLocalizedString(@"app.comments.reply_button.title", "") forState:UIControlStateNormal];
@@ -126,6 +131,7 @@
     [_avatar_button addSubview:_avatar_image_view];
     [_content_view addSubview:_username_label];
     [_content_view addSubview:_origin_label];
+    [_content_view addSubview:_edited_image_view];
     [_content_view addSubview:_publish_date_label];
     [_content_view addSubview:_origin_name_label];
     [_content_view addSubview:_content_container_view];
@@ -141,6 +147,7 @@
     _avatar_image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _username_label.translatesAutoresizingMaskIntoConstraints = NO;
     _origin_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _edited_image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _publish_date_label.translatesAutoresizingMaskIntoConstraints = NO;
     _origin_name_label.translatesAutoresizingMaskIntoConstraints = NO;
     _content_container_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -203,6 +210,11 @@
         [_content_label.trailingAnchor constraintEqualToAnchor:_content_container_view.layoutMarginsGuide.trailingAnchor],
         [_content_label.bottomAnchor constraintEqualToAnchor:_content_container_view.layoutMarginsGuide.bottomAnchor],
         
+        [_edited_image_view.topAnchor constraintEqualToAnchor:_reply_button.topAnchor],
+        [_edited_image_view.leadingAnchor constraintGreaterThanOrEqualToAnchor:_content_view.layoutMarginsGuide.leadingAnchor],
+        [_edited_image_view.trailingAnchor constraintEqualToAnchor:_reply_button.leadingAnchor constant:-5],
+        [_edited_image_view.bottomAnchor constraintEqualToAnchor:_reply_button.bottomAnchor],
+        
         [_reply_button.topAnchor constraintEqualToAnchor:_content_container_view.bottomAnchor constant:5],
         [_reply_button.leadingAnchor constraintEqualToAnchor:_content_container_view.leadingAnchor],
         [_reply_button.heightAnchor constraintLessThanOrEqualToConstant:20],
@@ -234,6 +246,7 @@
     _avatar_image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _username_label.textColor = [AppColorProvider textSecondaryColor];
     _origin_label.textColor = [AppColorProvider textShyColor];
+    _edited_image_view.tintColor = [AppColorProvider textShyColor];
     _publish_date_label.textColor = [AppColorProvider textShyColor];
     _origin_name_label.textColor = [AppColorProvider textShyColor];
     [_reply_button setTitleColor:[AppColorProvider textSecondaryColor] forState:UIControlStateNormal];
@@ -305,8 +318,11 @@
     _show_replies_button_height_constraint.constant = replies_count != 0 ? 35 : 0;
     // TODO: add replies count to button
 }
--(void)setIsSpoiler:(BOOL)spoiler {
-    [self setBlurred:spoiler];
+-(void)setIsSpoiler:(BOOL)is_spoiler {
+    [self setBlurred:is_spoiler];
+}
+-(void)setIsEdited:(BOOL)is_edited {
+    _edited_image_view.hidden = !is_edited;
 }
 
 -(void)highlightCell {
@@ -352,6 +368,7 @@
     _enable_origin_reference = NO;
     _is_first_loading = YES;
     _content_insets = UIEdgeInsetsZero;
+    _highlight_cell_index = -1;
     
     __weak auto weak_self = self;
     
@@ -376,6 +393,7 @@
     _enable_origin_reference = NO;
     _is_first_loading = NO;
     _content_insets = UIEdgeInsetsZero;
+    _highlight_cell_index = -1;
     
     return self;
 }
@@ -433,11 +451,22 @@
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages {
     [_data_provider setPages:std::move(pages)];
 }
+
+-(void)setDataProvider:(CommentsPageableDataProvider*)data_provider {
+    _data_provider = data_provider;
+    [_data_provider loadCurrentPage];
+}
+
 -(void)clear {
     [_data_provider clear];
 }
--(void)reset {
-    [_data_provider reset];
+
+-(void)refresh {
+    [_data_provider refresh];
+}
+
+-(void)reload {
+    [_data_provider reload];
 }
 
 -(void)setHeaderView:(UIView*)header_view {
@@ -466,9 +495,7 @@
     NSIndexPath* index_path = [NSIndexPath indexPathForRow:comment_index inSection:0];
     [_table_view scrollToRowAtIndexPath:index_path atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     
-    // TODO: add this to willDisplayCell, because now it's not on the screen and animating wont work
-//    CommentsTableViewCell* cell = [_table_view cellForRowAtIndexPath:index_path];
-//    [cell highlightCell];
+    _highlight_cell_index = comment_index;
 }
 
 -(void)callDelegateDidGotPageAtIndex:(NSInteger)page_index {
@@ -486,6 +513,26 @@
     return [_data_provider getItemsCount];
 }
 
+-(void)tableView:(UITableView*)table_view willDisplayCell:(UITableViewCell*)cell forRowAtIndexPath:(NSIndexPath*)index_path {
+    if (_highlight_cell_index < 0) {
+        return;
+    }
+    NSInteger index = index_path.row;
+    if (index != _highlight_cell_index) {
+        return;
+    }
+    _highlight_cell_index = -1;
+    
+    [UIView animateKeyframesWithDuration:1.2 delay:0 options:UIViewAnimationCurveEaseOut animations:^{
+        [UIView addKeyframeWithRelativeStartTime:0 relativeDuration:0.5 animations:^{
+            cell.backgroundColor = [AppColorProvider foregroundColor2];
+        }];
+        [UIView addKeyframeWithRelativeStartTime:0.5 relativeDuration:0.5 animations:^{
+            cell.backgroundColor = [AppColorProvider backgroundColor];
+        }];
+    } completion:nil];
+}
+
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     CommentsTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[CommentsTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = index_path.row;
@@ -501,6 +548,7 @@
     [cell setRepliesCount:comment->reply_count];
     [cell setVoteCount:comment->vote_count];
     [cell setIsSpoiler:comment->is_spoiler];
+    [cell setIsEdited:comment->is_edited];
     if (_enable_origin_reference) {
         if (comment->collection) {
             [cell setOrigin:NSLocalizedString(@"app.comments.origin.collection", "") name:TO_NSSTRING(comment->collection->title)];
@@ -623,7 +671,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [_table_view reloadData];
 }
 
--(void)didReloadedForLoadableView:(LoadableView*)loadable_view {
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
     [_loadable_view startLoading];
     [_data_provider loadCurrentPage];
 }

@@ -106,7 +106,7 @@
 }
 
 -(IBAction)onRetryPressed:(UIButton*)sender {
-    [_delegate didReloadedForLoadableView:self];
+    [_delegate didReloadForLoadableView:self];
 }
 
 @end

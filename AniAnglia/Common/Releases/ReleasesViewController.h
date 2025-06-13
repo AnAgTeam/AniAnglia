@@ -19,7 +19,9 @@
 -(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
--(void)reset;
+
+-(void)reload;
+-(void)refresh;
 
 -(void)setHeaderView:(UIView*)header_view;
 

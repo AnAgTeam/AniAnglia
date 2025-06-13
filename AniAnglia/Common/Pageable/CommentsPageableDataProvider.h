@@ -21,8 +21,10 @@
 
 // clear all the data without reload
 -(void)clear;
+// clear all the data and reload
+-(void)reload;
 // reload, then reassign data
--(void)reset;
+-(void)refresh;
 // clear all the data, set pages and load first
 -(void)setPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
 

@@ -11,7 +11,7 @@ static const char abbrev[] = {'K', 'M', 'B'};
 
 @implementation AbbreviateNumberFormatter
 
-+(NSString *) stringFromNumber:(long long)num
++(NSString*)stringFromNumber:(long long)num
 {
     NSString *abbrevNum;
     float number = (float)num;
@@ -43,21 +43,30 @@ static const char abbrev[] = {'K', 'M', 'B'};
     return abbrevNum;
 }
 
-+(NSString *) floatToString:(float) val {
++(NSString *)floatToString:(float) val {
     NSString *ret = [NSString stringWithFormat:@"%.1f", val];
     unichar c = [ret characterAtIndex:[ret length] - 1];
 
-    while (c == 48) { // 0
+    while (c == '0') {
         ret = [ret substringToIndex:[ret length] - 1];
         c = [ret characterAtIndex:[ret length] - 1];
 
-        //After finding the "." we know that everything left is the decimal number, so get a substring excluding the "."
-        if(c == 46) { // .
+        //After finding the "." or "," we know that everything left is the decimal number, so get a substring excluding the "."
+        if(c == '.' || c == ',') {
             ret = [ret substringToIndex:[ret length] - 1];
     }
 }
 
     return ret;
+}
+
+@end
+
+@implementation HTMLStyleFormatter
+
++(NSString*)stringFromString:(NSString*)string {
+    NSString* out_string = [string stringByReplacingOccurrencesOfString:@"<br>" withString:@"\n"];
+    return out_string;
 }
 
 @end

@@ -16,13 +16,14 @@ namespace anixart {
 		struct InterestingIDTag {};
 		struct CommentIDTag {};
 		struct ReleaseVideoIDTag {};
+		struct ReleaseRelatedIDTag {};
 		struct LoginChangeIDTag {};
 		struct ReleaseStreamingPlatformIDTag {};
 		struct ReleaseVideoCategoryIDTag {};
 		struct ReleaseVideoHostingIDTag {};
 		struct ProfileWatchDynamicIDTag {};
 		struct RoleIDTag {};
-		namespace experimental {
+		namespace beta {
 			struct BadgeIDTag {};
 		};
 	};
@@ -36,6 +37,7 @@ namespace anixart {
 	using InterestingID = aux::StrongTypedef<int64_t, aux::InterestingIDTag>;
 	using CommentID = aux::StrongTypedef<int64_t, aux::CommentIDTag>;
 	using ReleaseVideoID = aux::StrongTypedef<int64_t, aux::ReleaseVideoIDTag>;
+	using ReleaseRelatedID = aux::StrongTypedef<int64_t, aux::ReleaseRelatedIDTag>;
 	using LoginChangeID = aux::StrongTypedef<int64_t, aux::LoginChangeIDTag>;
 	using ReleaseStreamingPlatformID = aux::StrongTypedef<int64_t, aux::ReleaseStreamingPlatformIDTag>;
 	using ReleaseVideoCategoryID = aux::StrongTypedef<int64_t, aux::ReleaseVideoCategoryIDTag>;
@@ -47,15 +49,16 @@ namespace anixart {
 	using TimestampDuration = std::chrono::seconds;
 	using TimestampPoint = std::chrono::time_point<std::chrono::system_clock, TimestampDuration>;
 
-	namespace experimental {
-		using BadgeID = aux::StrongTypedef<int64_t, aux::experimental::BadgeIDTag>;
+	namespace beta {
+		using BadgeID = aux::StrongTypedef<int64_t, aux::beta::BadgeIDTag>;
+
 		class Bagde {
 		public:
 			BadgeID id;
 			int64_t type;
 			std::string name;
 			TimestampPoint date;
-			std::string image_url; // actually a JSON file url. Probably vector graphics
+			std::string image_url; // lottie animations file url
 		};
 	}
 
@@ -289,9 +292,11 @@ namespace anixart {
 	public:
 		using Ptr = std::shared_ptr<ReleaseRelated>;
 
+		static constexpr ReleaseRelatedID invalid_id = ReleaseRelatedID(1);
+
 		ReleaseRelated(json::CachingJsonObject& object);
 
-		ReleaseID id;
+		ReleaseRelatedID id;
 		std::string name;
 		std::string name_ru;
 		std::string description;
@@ -324,7 +329,7 @@ namespace anixart {
 		using Ptr = std::shared_ptr<Comment>;
 		Comment(json::CachingJsonObject& object);
 
-		static constexpr CommentID INVALID_ID = CommentID(0);
+		static constexpr CommentID invalid_id = CommentID(0);
 
 		enum class FilterBy {
 			All = 1,
@@ -591,13 +596,6 @@ namespace anixart {
 	public:
 		using Ptr = std::shared_ptr<Category>;
 		Category(json::CachingJsonObject& object);
-
-		// not implemented
-	};
-	class Related {
-	public:
-		using Ptr = std::shared_ptr<Related>;
-		Related(json::CachingJsonObject& object);
 
 		// not implemented
 	};

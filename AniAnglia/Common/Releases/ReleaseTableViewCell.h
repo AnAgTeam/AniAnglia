@@ -23,7 +23,7 @@
 -(void)setDescription:(NSString*)description;
 -(void)setAccesibilityView:(UIView*)accesibility_view;
 -(void)setRating:(double)rating;
--(void)setEpCount:(NSUInteger)ep_count;
+-(void)setEpCount:(NSUInteger)ep_count totalEpCount:(NSUInteger)total_ep_count;
 
 @end
 

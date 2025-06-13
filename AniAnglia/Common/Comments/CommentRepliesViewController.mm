@@ -52,7 +52,7 @@
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
-    if (comment->parent_comment_id != anixart::Comment::INVALID_ID) {
+    if (comment->parent_comment_id != anixart::Comment::invalid_id) {
         _comment_id = comment->parent_comment_id;
     } else {
         _comment_id = comment->id;
@@ -163,6 +163,7 @@
     [_replied_comment_view setRepliesCount:0];
     [_replied_comment_view setVoteCount:_comment->vote_count];
     [_replied_comment_view setIsSpoiler:_comment->is_spoiler];
+    [_replied_comment_view setIsEdited:_comment->is_edited];
     
     [_comments_table_view_controller setHeaderView:_replied_comment_view.contentView];
     
@@ -245,7 +246,7 @@
         }
         return YES;
     } withUICompletion:^{
-        [self->_comments_table_view_controller reset];
+        [self->_comments_table_view_controller refresh];
         [self->_text_enter_view setText:@""];
     }];
 }
@@ -270,7 +271,7 @@
         }
         return YES;
     } withUICompletion:^{
-        [self->_comments_table_view_controller reset];
+        [self->_comments_table_view_controller refresh];
         [self->_text_enter_view setText:@""];
     }];
 }
@@ -358,7 +359,7 @@
 
 -(IBAction)onRefreshBarButtonPressed:(UIBarButtonItem*)sender {
     [self setRefreshButtonEnabled:NO errored:NO];
-    [_comments_table_view_controller reset];
+    [_comments_table_view_controller refresh];
 }
 
 -(void)commentsTableView:(UITableView*)table_view didEditContextMenuSelected:(anixart::Comment::Ptr)comment {

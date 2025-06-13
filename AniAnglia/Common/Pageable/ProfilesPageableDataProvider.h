@@ -9,16 +9,19 @@
 #define ProfilesPageableDataProvider_h
 
 #import <UIKit/UIKit.h>
-#import "PageableDataprovider.h"
+#import "PageableDataProvider.h"
 
 @interface ProfilesPageableDataProvider : PageableDataProvider
+
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Profile>::UPtr)pages;
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Profile>::UPtr)pages initialProfiles:(std::vector<anixart::Profile::Ptr>)profiles;
 
 // clear all the data without reload
 -(void)clear;
+// clear all the data and reload
+-(void)reload;
 // reload, then reassign data
--(void)reset;
+-(void)refresh;
 // clear all the data, set pages and load first
 -(void)setPages:(anixart::Pageable<anixart::Profile>::UPtr)pages;
 

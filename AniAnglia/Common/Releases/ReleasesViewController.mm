@@ -12,7 +12,6 @@
 #import "AppColor.h"
 #import "AppDataController.h"
 #import "ReleasesPageableDataProvider.h"
-#import "DataReloadable.h"
 
 @interface ReleasesViewController ()
 @property(nonatomic, strong) AppSettingsDataController* settings_data_controller;
@@ -20,7 +19,6 @@
 @property(nonatomic, retain) ReleasesTableViewController* table_view_controller;
 @property(nonatomic, retain) ReleasesCollectionViewController* collection_view_controller;
 @property(nonatomic, retain) UIViewController<PageableDataProviderDelegate>* current_view_controller;
-
 
 @end
 
@@ -51,7 +49,6 @@
     
     [self setup];
     [self setupLayout];
-    [_data_provider loadCurrentPage];
 }
 -(void)setup {
     UIViewController<PageableDataProviderDelegate>* view_controller = [self getViewControllerForDisplayStyle:[_settings_data_controller getMainDisplayStyle]];
@@ -66,9 +63,13 @@
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     [_data_provider setPages:std::move(pages)];
 }
--(void)reset {
-    // TODO: change
-    [_data_provider reset];
+
+-(void)reload {
+    [_data_provider reload];
+}
+
+-(void)refresh {
+    [_data_provider refresh];
 }
 
 -(void)setHeaderView:(UIView*)header_view {

@@ -18,6 +18,8 @@
 -(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider;
 
 @optional
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didBeginLoadingPageAtIndex:(NSInteger)page_index;
+@optional
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index;
 @optional
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index;

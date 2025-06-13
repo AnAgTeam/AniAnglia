@@ -55,6 +55,7 @@
 		EF8B01B62C7015A300423ECD /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8B01B32C7015A300423ECD /* main.mm */; };
 		EF8C37532DB2B28900ADDBD7 /* CollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */; };
 		EF8C37562DB2C78400ADDBD7 /* ExpandableLabel.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */; };
+		EF928F362DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF928F352DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm */; };
 		EF9DAC982DFA2FEF0020C182 /* ReleasesHistoryTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9DAC972DFA2FEF0020C182 /* ReleasesHistoryTableViewController.mm */; };
 		EF9DACA02DFA34820020C182 /* ReleasesHistoryTableViewCells.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9DAC9F2DFA34820020C182 /* ReleasesHistoryTableViewCells.mm */; };
 		EF9FE8632DB3196500792D0D /* ReleasesViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF9FE8622DB3196500792D0D /* ReleasesViewController.mm */; };
@@ -1346,6 +1347,8 @@
 		EF8C37522DB2B28900ADDBD7 /* CollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionViewController.mm; sourceTree = "<group>"; };
 		EF8C37542DB2C6B000ADDBD7 /* ExpandableLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExpandableLabel.h; sourceTree = "<group>"; };
 		EF8C37552DB2C78400ADDBD7 /* ExpandableLabel.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ExpandableLabel.mm; sourceTree = "<group>"; };
+		EF928F342DFC720E00A5CD85 /* ReleaseRelatedTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseRelatedTableViewController.h; sourceTree = "<group>"; };
+		EF928F352DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseRelatedTableViewController.mm; sourceTree = "<group>"; };
 		EF9DAC962DFA2F510020C182 /* ReleasesHistoryTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesHistoryTableViewController.h; sourceTree = "<group>"; };
 		EF9DAC972DFA2FEF0020C182 /* ReleasesHistoryTableViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesHistoryTableViewController.mm; sourceTree = "<group>"; };
 		EF9DAC9E2DFA346F0020C182 /* ReleaseHistoryTableViewCells.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseHistoryTableViewCells.h; sourceTree = "<group>"; };
@@ -3601,6 +3604,8 @@
 				EFCE611A2DFB2E12008431CA /* ReleasesVotesTableViewController.mm */,
 				EFCE61212DFB3600008431CA /* ProfileListsPageViewController.h */,
 				EFCE61222DFB3614008431CA /* ProfileListsPageViewController.mm */,
+				EF928F342DFC720E00A5CD85 /* ReleaseRelatedTableViewController.h */,
+				EF928F352DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";
@@ -3687,6 +3692,7 @@
 				EFBE9D842DFB4781002B6B49 /* ProfileTableViewCell.mm in Sources */,
 				EF5A3CB92C7F9BEC00B4F637 /* MainTabBarController.mm in Sources */,
 				EF65E3462D82059D00114102 /* ReleasesTableViewController.mm in Sources */,
+				EF928F362DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm in Sources */,
 				EF35689C2DA3124C00086593 /* SettingsViewController.mm in Sources */,
 				EFCE61182DFB2538008431CA /* CenteredCollectionViewFlowLayout.mm in Sources */,
 				EFFA21DD2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm in Sources */,

@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <exception>
-
+#include <curlpp/Form.hpp>
 #pragma warning(push, 0)
 #include <boost/json.hpp>
 #pragma warning(pop)
@@ -52,5 +52,11 @@ namespace network {
 	}
 
 	extern JsonObject parse_json(std::string_view from);
+	
+	using MultipartPart = utilspp::clone_ptr<curlpp::FormPart>;
+	using MultipartFilePart = curlpp::FormParts::File;
+	using MultipartContentPart = curlpp::FormParts::Content;
+	/* This class must contain pointer and auto delete them */
+	using MultipartForms = curlpp::Forms;
 };
 

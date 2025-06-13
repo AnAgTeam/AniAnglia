@@ -22,3 +22,7 @@ inline std::string TO_STDSTRING(NSString* str) {
 @interface AbbreviateNumberFormatter : NSNumberFormatter
 +(NSString*)stringFromNumber:(long long)num;
 @end
+
+@interface HTMLStyleFormatter : NSFormatter
++(NSString*)stringFromString:(NSString*)string;
+@end

@@ -36,12 +36,20 @@
 }
 
 -(void)clear {
+    // TODO: load cancel
     _profiles.clear();
     [self callDelegateDidUpdated];
 }
--(void)reset {
+
+-(void)reload {
+    _profiles.clear();
     [self loadPageAtIndex:0];
 }
+
+-(void)refresh {
+    [self loadPageAtIndex:0];
+}
+
 -(void)setPages:(anixart::Pageable<anixart::Profile>::UPtr)pages {
     _profiles.clear();
     _pages = std::move(pages);
@@ -52,9 +60,11 @@
 -(BOOL)isEnd {
     return _pages->is_end();
 }
+
 -(size_t)getItemsCount {
     return _profiles.size();
 }
+
 -(anixart::Profile::Ptr)getProfileAtIndex:(NSInteger)index {
     if (index >= _profiles.size()) {
         // wtf

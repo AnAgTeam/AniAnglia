@@ -28,6 +28,7 @@
 #import "CenteredCollectionViewFlowLayout.h"
 #import "ReleasesVotesTableViewController.h"
 #import "ReleasesViewController.h"
+#import "ProfileListsPageViewController.h"
 
 @class ProfileStatsBlockView;
 @class ProfileActionsView;
@@ -917,15 +918,18 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_profile->avatar_url)];
     [_avatar_image_view tryLoadImageWithURL:avatar_url];
 }
+
 -(void)preSetupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
+
 -(void)setupLayout {
     _avatar_image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _username_label.textColor = [AppColorProvider textColor];
     _custom_status_label.textColor = [AppColorProvider textColor];
     _status_label.textColor = [AppColorProvider textSecondaryColor];
 }
+
 -(void)refresh {
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_profile->avatar_url)];
     [_avatar_image_view tryLoadImageWithURL:avatar_url];
@@ -938,13 +942,14 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     }
     [_stats_view setProfile:_profile];
     [_actions_view setProfile:_profile];
-    [_lists_view setProfile:_profile];
+    [_lists_view setFromProfile:_profile];
     ReleasesPageableDataProvider* votes_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->votes];
     [_votes_view_controller setReleasesPageableDataProvider:votes_data_provider];
     [_watch_dynamics_view setProfile:_profile];
     ReleasesPageableDataProvider* history_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->history];
     [_watched_recently_view_controller setReleasesPageableDataProvider:history_data_provider];
 }
+
 -(void)loadProfile {
     [_loading_view startLoading];
     if (_is_my_profile) {
@@ -965,6 +970,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
         }
     }];
 }
+
 -(void)loadAsyncMyProfile {
     [[SharedRunningData sharedInstance] asyncGetMyProfile:^(anixart::Profile::Ptr profile) {
         [self->_loading_view endLoadingWithErrored:!profile];
@@ -1086,16 +1092,16 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)onVotesShowAllPressed {
-    // TODO
-//    ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:_api_proxy.api->releases().profile_voted_releases(_profile->id, Release::ByVoteSort::Descending, 0)];
-//    ReleasesVotesViewController
+    [self.navigationController pushViewController:[[ReleasesVotesViewController alloc] initWithPages:_api_proxy.api->releases().profile_voted_releases(_profile->id, anixart::Release::ByVoteSort::Descending, 0)] animated:YES];
 }
 
 -(void)onListsShowAllPressed {
-    // TODO
+    ProfileListsPageViewController* view_controller = [[ProfileListsPageViewController alloc] initWithProfileID:_profile->id];
+    view_controller.title = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"app.profile.lists_pages", ""), TO_NSSTRING(_profile->username)];
+    [self.navigationController pushViewController:view_controller animated:YES];
 }
 
--(void)didReloadedForLoadableView:(LoadableView*)loadableView {
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
     if (!_profile) {
         [self loadProfile];
     } else {

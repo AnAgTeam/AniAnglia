@@ -292,9 +292,9 @@ namespace anixart {
         const std::string& _token;
     };
 
-    class AllReleaseVotedPages : public Paginator<Release> {
+    class ProfileVotedReleasesPages : public EmptyContentPaginator<Release> {
     public:
-        AllReleaseVotedPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Release::ByVoteSort sort);
+        ProfileVotedReleasesPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Release::ByVoteSort sort);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -303,6 +303,18 @@ namespace anixart {
         const std::string& _token;
         ProfileID _profile_id;
         Release::ByVoteSort _sort;
+    };
+    
+    class ReleaseRelatedPages : public EmptyContentPaginator<Release> {
+    public:
+        ReleaseRelatedPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseRelatedID related_id);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ReleaseRelatedID _related_id;
     };
 
     class ReleaseCommentsPages : public Paginator<Comment> {

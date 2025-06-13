@@ -19,7 +19,9 @@
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(void)setReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
--(void)reset;
+
+-(void)reload;
+-(void)refresh;
 
 -(void)reloadData;
 

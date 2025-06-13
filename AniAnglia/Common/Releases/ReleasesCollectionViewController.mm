@@ -160,6 +160,8 @@
     _axis = axis;
     _axis_item_count = 1;
     
+    [_data_provider loadCurrentPage];
+    
     return self;
 }
 
@@ -222,8 +224,12 @@
     [_data_provider setPages:std::move(pages)];
 }
 
--(void)reset {
-    [_data_provider reset];
+-(void)reload {
+    [_data_provider reload];
+}
+
+-(void)refresh {
+    [_data_provider refresh];
 }
 
 -(void)reloadData {

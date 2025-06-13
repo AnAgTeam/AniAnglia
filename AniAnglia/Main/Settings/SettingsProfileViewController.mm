@@ -144,12 +144,6 @@
     return 50;
 }
 -(NSString *)tableView:(UITableView *)table_view titleForFooterInSection:(NSInteger)section {
-    if (section == 0) {
-        return NSLocalizedString(@"app.settings.profile.username.footer", "");
-    }
-    if (section == 1) {
-        return NSLocalizedString(@"app.settings.profile.custom_status.footer", "");
-    }
     if (section == 2) {
         return NSLocalizedString(@"app.settings.profile.socials.footer", "");
     }
@@ -158,6 +152,17 @@
     }
     return nil;
 }
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    if (section == 0) {
+        return NSLocalizedString(@"app.settings.profile.username", "");
+    }
+    if (section == 1) {
+        return NSLocalizedString(@"app.settings.profile.custom_status", "");
+    }
+    return nil;
+}
+
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
     if (section == 3) {
         return 140;
@@ -172,7 +177,7 @@
         
         cell.delegate = self;
         [cell disableAutocapitalizationAndCorrection];
-        [cell setPlaceholder:NSLocalizedString(@"app.settings.profile.username.placeholder", "")];
+        [cell setPlaceholder:NSLocalizedString(@"app.settings.profile.username", "")];
         [cell setText:TO_NSSTRING(_profile->username)];
         return cell;
     }
@@ -181,7 +186,7 @@
         
         cell.delegate = self;
         [cell disableAutocapitalizationAndCorrection];;
-        [cell setPlaceholder:NSLocalizedString(@"app.settings.profile.custom_status.placeholder", "")];
+        [cell setPlaceholder:NSLocalizedString(@"app.settings.profile.custom_status", "")];
         [cell setText:TO_NSSTRING(_profile->status)];
         return cell;
     }

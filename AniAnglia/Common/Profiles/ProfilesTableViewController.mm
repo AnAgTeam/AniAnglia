@@ -120,10 +120,13 @@
     _data_provider = data_provider;
     [self reloadData];
 }
--(void)reset {
-    /* TODO: */
-    [_data_provider reset];
-    [_table_view reloadData];
+
+-(void)reload {
+    [_data_provider reload];
+}
+
+-(void)refresh {
+    [_data_provider refresh];
 }
 
 -(void)reloadData {
