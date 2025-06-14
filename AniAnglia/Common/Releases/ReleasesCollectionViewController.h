@@ -23,13 +23,16 @@
 -(void)setListStatus:(anixart::Profile::ListStatus)list_status;
 @end
 
+// Always automatically sets delegate for "PageableDataProviderDelegate"
 @interface ReleasesCollectionViewController : UIViewController <PageableDataProviderDelegate>
 @property(nonatomic) BOOL is_container_view_controller;
 
+-(instancetype)initWithAxis:(UICollectionViewScrollDirection)axis;
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages axis:(UICollectionViewScrollDirection)axis;
 -(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider axis:(UICollectionViewScrollDirection)axis;
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
+-(void)setReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
 
 -(void)reload;
 -(void)refresh;
@@ -38,6 +41,7 @@
 
 -(void)setHeaderView:(UIView*)header_view;
 
+// Vertical not supported
 -(void)setAxisItemCount:(NSInteger)axis_item_count;
 @end
 

@@ -111,6 +111,8 @@
     [_comments_table_view_controller setKeyboardDismissMode:UIScrollViewKeyboardDismissModeOnDrag];
     _comments_table_view_controller.delegate = self;
     [_comments_table_view_controller setContentInsets:UIEdgeInsetsMake(0, 20, 0, 0)];
+    // enable navigationBar transparency
+    _comments_table_view_controller.view.clipsToBounds = NO;
     
     _text_enter_view = [TextEnterView new];
     _text_enter_view.delegate = self;
@@ -131,6 +133,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onKeyboardShow:) name:UIKeyboardWillShowNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onKeyboardHide:) name:UIKeyboardWillHideNotification object:nil];
     }
+
     [NSLayoutConstraint activateConstraints:@[
         [_comments_table_view_controller.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
         [_comments_table_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
@@ -143,9 +146,11 @@
         _text_enter_view_bottom_constraint
     ]];
 }
+
 -(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
+
 -(void)initParentComment {
     __weak auto weak_self = self;
     _replied_comment_data_provider = [[CommentsPageableDataProvider alloc] initWithPages:nullptr initialComments:{_comment}];
@@ -168,10 +173,9 @@
     [_comments_table_view_controller setHeaderView:_replied_comment_view.contentView];
     
     NSArray<NSLayoutConstraint*>* constraints = @[
-//        [_replied_comment_view.contentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_replied_comment_view.contentView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_replied_comment_view.contentView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_replied_comment_view.contentView.widthAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor],
+        [_replied_comment_view.contentView.leadingAnchor constraintEqualToAnchor:_comments_table_view_controller.view.leadingAnchor],
+        [_replied_comment_view.contentView.trailingAnchor constraintEqualToAnchor:_comments_table_view_controller.view.trailingAnchor],
+        [_replied_comment_view.contentView.widthAnchor constraintEqualToAnchor:_comments_table_view_controller.view.widthAnchor],
     ];
     for (NSLayoutConstraint* constr : constraints) {
         constr.priority = 800;

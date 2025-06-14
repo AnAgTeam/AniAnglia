@@ -150,35 +150,35 @@
     return nil;
 }
 
--(instancetype)initWithRelease:(anixart::Release::Ptr)release {
+-(instancetype)init {
     self = [super init];
-    
-    [self setFromRelease:release];
     
     [self setup];
     [self setupLayout];
+    
+    return self;
+}
+
+-(instancetype)initWithRelease:(anixart::Release::Ptr)release {
+    self = [self init];
+    
+    [self setFromRelease:release];
     
     return self;
 }
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile {
-    self = [super init];
+    self = [self init];
     
     [self setFromProfile:profile];
-    
-    [self setup];
-    [self setupLayout];
     
     return self;
 }
 
 -(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
-    self = [super init];
+    self = [self init];
     
     [self setFromCollectionGetInfo:collection_get_info];
-    
-    [self setup];
-    [self setupLayout];
     
     return self;
 }
@@ -199,7 +199,6 @@
     _watched_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::Watched count:_watched_count];
     _holdon_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::HoldOn count:_holdon_count];
     _dropped_legend_view = [self makeListLegendWithList:anixart::Profile::ListStatus::Dropped count:_dropped_count];
-    double total_lists_count = _watching_count + _plan_count + _watched_count + _holdon_count + _dropped_count;
     
     [self addSubview:_watching_indicator_view];
     [self addSubview:_total_indicator_view];
@@ -278,16 +277,6 @@
         [_dropped_legend_view.heightAnchor constraintEqualToConstant:40],
         [_dropped_legend_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
     ]];
-    if (total_lists_count != 0) {
-        _indicator_constraints = @[
-            [_watching_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
-            [_plan_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
-            [_watched_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
-            [_holdon_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
-            [_dropped_indicator_view.trailingAnchor constraintEqualToAnchor:_total_indicator_view.trailingAnchor]
-        ];
-        [NSLayoutConstraint activateConstraints:_indicator_constraints];
-    }
 }
 -(void)setupLayout {
     _total_indicator_view.backgroundColor = [AppColorProvider foregroundColor1];
@@ -310,10 +299,10 @@
     }
     if (total_lists_count != 0) {
         _indicator_constraints = @[
-            [_watching_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
-            [_plan_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
-            [_watched_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
-            [_holdon_indicator_view.widthAnchor constraintEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
+            [_watching_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watching_count / total_lists_count)],
+            [_plan_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_plan_count / total_lists_count)],
+            [_watched_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_watched_count / total_lists_count)],
+            [_holdon_indicator_view.widthAnchor constraintLessThanOrEqualToAnchor:_total_indicator_view.widthAnchor multiplier:(_holdon_count / total_lists_count)],
             [_dropped_indicator_view.trailingAnchor constraintEqualToAnchor:_total_indicator_view.trailingAnchor]
         ];
         [NSLayoutConstraint activateConstraints:_indicator_constraints];

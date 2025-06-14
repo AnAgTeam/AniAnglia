@@ -57,7 +57,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingsValueChanged:) name:(app_settings::notification_name) object:nil];
 }
 -(void)setupLayout {
-
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
 
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
@@ -90,27 +90,19 @@
         [_current_view_controller.view removeFromSuperview];
     }
     _current_view_controller = view_controller;
-    _data_provider.delegate = _current_view_controller;
     
     [self addChildViewController:_current_view_controller];
     [self.view addSubview:_current_view_controller.view];
     
     _current_view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
-    if (_is_container_view_controller) {
-        [NSLayoutConstraint activateConstraints:@[
-            [_current_view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [_current_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-            [_current_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-            [_current_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-        ]];
-    } else {
-        [NSLayoutConstraint activateConstraints:@[
-            [_current_view_controller.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [_current_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [_current_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [_current_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        ]];
-    }
+    [NSLayoutConstraint activateConstraints:@[
+        [_current_view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_current_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_current_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_current_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    ]];
+    
+    [_current_view_controller didMoveToParentViewController:self];
 }
 
 -(UIViewController<PageableDataProviderDelegate>*)getTableViewControllerWithDataProvider:(ReleasesPageableDataProvider*)data_provider {

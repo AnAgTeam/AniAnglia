@@ -10,10 +10,12 @@
 #import "ReleasesPageableDataProvider.h"
 #import "ReleaseTableViewCell.h"
 
+// Always automatically sets delegate for "PageableDataProviderDelegate"
 @interface ReleasesTableViewController : UITableViewController <PageableDataProviderDelegate>
 @property(nonatomic) BOOL is_container_view_controller;
 @property(nonatomic) BOOL auto_page_load_disabled;
 
+-(instancetype)initWithTableView:(UITableView*)table_view;
 -(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(instancetype)initWithTableView:(UITableView*)table_view releasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider;
 

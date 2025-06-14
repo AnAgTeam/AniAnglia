@@ -75,8 +75,10 @@
 /* RELEASES */
 "app.release.play_button.title" = "Смотреть";
 "app.release.add_list_button.menu.title" = "В список";
-"app.release.copy_title" = "Скопировать название";
-"app.release.copy_orig_title" = "Скопировать ориг. название";
+"app.release.copy" = "Скопировать...";
+"app.release.copy_title" = "Название";
+"app.release.copy_orig_title" = "Оригинальное название";
+"app.release.copy_alt_title" = "Альтернативное название";
 
 "app.release.season.unknown" = "Неизвестно";
 "app.release.season.winter" = "Зима";
@@ -202,7 +204,7 @@
 
 "app.profile.watch_dynamics" = "Динамика просмотра";
 
-"app.profile.watched_recently" = "Просмотрено недавно";
+"app.profile.history" = "Просмотрено недавно";
 
 "app.profile.comments.release.segment" = "К релизам";
 "app.profile.comments.collection.segment" = "К коллекциям";

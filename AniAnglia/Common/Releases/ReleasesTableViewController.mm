@@ -29,6 +29,17 @@
 
 @implementation ReleasesTableViewController
 
+-(instancetype)initWithTableView:(UITableView*)table_view {
+    self = [super init];
+    
+    _table_view = table_view;
+    _auto_page_load_disabled = NO;
+    _is_container_view_controller = NO;
+    _is_first_loading = YES;
+    
+    return self;
+}
+
 -(instancetype)initWithTableView:(UITableView*)table_view pages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     self = [super init];
     
@@ -48,6 +59,7 @@
     
     _table_view = table_view;
     _data_provider = releases_pageable_data_provider;
+    _data_provider.delegate = self;
     _auto_page_load_disabled = NO;
     _is_container_view_controller = NO;
     _is_first_loading = YES;
@@ -77,15 +89,17 @@
     [self setupLayout];
     
     [self tableViewDidLoad];
-    if (_is_first_loading && _data_provider.is_needed_first_load) {
+    if (_is_first_loading && _data_provider) {
         [_loadable_view startLoading];
-        [_data_provider loadCurrentPage];
+        [_data_provider loadCurrentPageIfNeeded];
     }
 }
 
 -(void)setup {
     [_table_view registerClass:ReleaseTableViewCell.class forCellReuseIdentifier:[ReleaseTableViewCell getIdentifier]];
     _table_view.tableHeaderView = _header_view;
+    // enabled navigation bar transparency
+    _table_view.clipsToBounds = NO;
     
     _refresh_control = [UIRefreshControl new];
     [_refresh_control addTarget:self action:@selector(onRefresh:) forControlEvents:UIControlEventValueChanged];
@@ -121,9 +135,12 @@
 }
 
 -(void)setReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider {
-    // TODO: test
     _data_provider = releases_pageable_data_provider;
-    [self reloadData];
+    if (_data_provider) {
+        _data_provider.delegate = self;
+        [_data_provider loadCurrentPageIfNeeded];
+        [self reloadData];
+    }
 }
 
 -(void)reload {
@@ -135,6 +152,7 @@
 }
 
 -(void)reloadData {
+    // reload sections causes constraints errors
     [_table_view reloadData];
 }
 
@@ -150,6 +168,9 @@
 }
 
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
+    if (!_data_provider) {
+        return 0;
+    }
     return [_data_provider getItemsCount];
 }
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path {
@@ -178,7 +199,10 @@
 
 -(void)tableView:(UITableView*)table_view
 prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
-    if ([_data_provider isEnd] || _auto_page_load_disabled) {
+    if (!_data_provider || _auto_page_load_disabled) {
+        return;
+    }
+    if ([_data_provider isEnd]) {
         return;
     }
     NSUInteger item_count = [_table_view numberOfRowsInSection:0];
@@ -207,9 +231,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 }
 
 -(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
-    // TODO: check if pages is changed
-    // reload sections causes constraints errors
-    [_table_view reloadData];
+    [self reloadData];
 }
 
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
@@ -222,8 +244,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     if ([_data_provider getItemsCount] == 0) {
         [self setIsEmpty:YES];
     }
-    // reload sections causes constraints errors
-    [_table_view reloadData];
+    [self reloadData];
 }
 
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index {

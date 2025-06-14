@@ -13,8 +13,6 @@
 #import "PageableDataProvider.h"
 
 @interface ReleasesPageableDataProvider : PageableDataProvider
-// Setted to YES when initialized, then to NO when called 'loadCurrentPage'
-@property(nonatomic, readonly) BOOL is_needed_first_load;
 
 +(NSString*)getSeasonNameFor:(anixart::Release::Season)category;
 +(NSString*)getCategoryNameFor:(anixart::Release::Category)category;
@@ -36,6 +34,7 @@
 -(anixart::Release::Ptr)getReleaseAtIndex:(NSInteger)index;
 
 -(void)loadCurrentPage;
+-(void)loadCurrentPageIfNeeded;
 -(void)loadNextPage;
 
 -(UIContextMenuConfiguration*)getContextMenuConfigurationForItemAtIndex:(NSInteger)index;

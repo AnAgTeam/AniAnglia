@@ -817,7 +817,7 @@
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
     _loading_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
         [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
@@ -1202,9 +1202,7 @@
         [_refresh_control endRefreshing];
     }
     
-    if (_is_ui_inited) {
-        _scroll_view.hidden = errored;
-    }
+    _scroll_view.hidden = errored;
     if (errored) {
         _scroll_view.refreshControl = nil;
         return;

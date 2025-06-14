@@ -21,14 +21,21 @@
 
 @implementation NamedSectionView
 
--(instancetype)initWithName:(NSString*)name view:(UIView*)view {
+-(instancetype)initWithName:(NSString *)name {
     self = [super init];
     
     _name = name;
-    _view = view;
 
     [self setup];
     [self setupLayout];
+    
+    return self;
+}
+
+-(instancetype)initWithName:(NSString*)name view:(UIView*)view {
+    self = [self initWithName:name];
+    
+    [self setView:view];
     
     return self;
 }
@@ -47,26 +54,19 @@
     
     [self addSubview:_name_label];
     [self addSubview:_show_all_button];
-    [self addSubview:_view];
     
     _name_label.translatesAutoresizingMaskIntoConstraints = NO;
     _show_all_button.translatesAutoresizingMaskIntoConstraints = NO;
-    _view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_name_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_name_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor constant:10],
+        [_name_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor constant:14],
         [_name_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         [_name_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
         
         [_show_all_button.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_show_all_button.leadingAnchor constraintGreaterThanOrEqualToAnchor:_name_label.trailingAnchor constant:-10],
+        [_show_all_button.leadingAnchor constraintGreaterThanOrEqualToAnchor:_name_label.trailingAnchor constant:-14],
         [_show_all_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.trailingAnchor constant:-8],
         [_show_all_button.bottomAnchor constraintEqualToAnchor:_name_label.bottomAnchor],
-        
-        [_view.topAnchor constraintEqualToAnchor:_name_label.bottomAnchor constant:8],
-        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
     ]];
     
     _show_all_button.hidden = YES;
@@ -80,6 +80,23 @@
 
 -(void)setupShowAllButtonLayout {
     
+}
+
+-(void)setView:(UIView*)view {
+    if (_view) {
+        [_view removeFromSuperview];
+    }
+    _view = view;
+    
+    [self addSubview:_view];
+    
+    _view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_view.topAnchor constraintEqualToAnchor:_name_label.bottomAnchor constant:8],
+        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+    ]];
 }
 
 -(void)setShowAllButtonEnabled:(BOOL)enabled {

@@ -54,12 +54,12 @@
     
     _content_view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_content_view_controller.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_content_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_content_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_content_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        [_content_view_controller.view.widthAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor],
-        [_content_view_controller.view.heightAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.heightAnchor]
+        [_content_view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_content_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_content_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_content_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [_content_view_controller.view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+        [_content_view_controller.view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
     ]];
     
     [_content_view_controller didMoveToParentViewController:self];
@@ -90,17 +90,17 @@
     view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
     if (@available(iOS 15.0, *)) {
         _inline_view_controller_constraints = @[
-            [view_controller.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+            [view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+            [view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+            [view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
         ];
     } else {
         _inline_view_controller_constraints = @[
-            [view_controller.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+            [view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+            [view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+            [view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
         ];
     }
     [NSLayoutConstraint activateConstraints:_inline_view_controller_constraints];

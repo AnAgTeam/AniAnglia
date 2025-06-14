@@ -14,6 +14,7 @@
     anixart::Pageable<anixart::Release>::UPtr _pages;
     std::vector<anixart::Release::Ptr> _releases;
 }
+@property(nonatomic, readonly) BOOL is_needed_first_load;
 
 @end
 
@@ -101,6 +102,9 @@
 }
 
 -(BOOL)isEnd {
+    if (!_pages) {
+        return true;
+    }
     return _pages->is_end();
 }
 -(size_t)getItemsCount {
@@ -146,6 +150,12 @@
     [self appendItemsFromBlock:^() {
         return self->_pages->get();
     }];
+}
+
+-(void)loadCurrentPageIfNeeded {
+    if (_is_needed_first_load) {
+        [self loadCurrentPage];
+    }
 }
 
 -(void)loadNextPage {
@@ -196,19 +206,23 @@
         }];
     }
     
-    UIAction* copy_title_action = [UIAction actionWithTitle:NSLocalizedString(@"app.release.copy_title", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
-        [self onCopyTitleContextMenuWithRelease:release];
-    }];
-    UIAction* copy_orig_title_action = [UIAction actionWithTitle:NSLocalizedString(@"app.release.copy_orig_title", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
-        [self onCopyOrigTitleContextMenuWithRelease:release];
-    }];
+    UIMenu* copy_menu = [UIMenu menuWithTitle:NSLocalizedString(@"app.release.copy", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil options:0 children:@[
+        [UIAction actionWithTitle:NSLocalizedString(@"app.release.copy_title", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
+            [self onCopyTitleContextMenuWithRelease:release];
+        }],
+        [UIAction actionWithTitle:NSLocalizedString(@"app.release.copy_orig_title", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
+            [self onCopyOrigTitleContextMenuWithRelease:release];
+        }],
+        [UIAction actionWithTitle:NSLocalizedString(@"app.release.copy_alt_title", "") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
+            [self onCopyAltTitleContextMenuWithRelease:release];
+        }],
+    ]];
     
     return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^(NSArray* suggested_actions) {
         return [UIMenu menuWithChildren:@[
-            copy_title_action,
-            copy_orig_title_action,
             bookmark_action,
-            list_menu
+            list_menu,
+            copy_menu
         ]];
     }];
 }
@@ -247,6 +261,11 @@
 -(void)onCopyOrigTitleContextMenuWithRelease:(anixart::Release::Ptr)release {
     UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
     pasteboard.string = TO_NSSTRING(release->title_original);
+}
+
+-(void)onCopyAltTitleContextMenuWithRelease:(anixart::Release::Ptr)release {
+    UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = TO_NSSTRING(release->title_alt);
 }
 
 

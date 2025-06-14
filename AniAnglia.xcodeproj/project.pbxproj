@@ -66,6 +66,7 @@
 		EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */; };
 		EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */; };
 		EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA4D6712D59146B00005139 /* libnetsess.xcframework */; };
+		EFA7322F2DFE25A900FBC12C /* NamedSectionsStackView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */; };
 		EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */; };
 		EFBE9D842DFB4781002B6B49 /* ProfileTableViewCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFBE9D832DFB4781002B6B49 /* ProfileTableViewCell.mm */; };
 		EFC6077B2C76169500BA8B44 /* TextErrorField.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFC6077A2C76169500BA8B44 /* TextErrorField.mm */; };
@@ -1366,6 +1367,8 @@
 		EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		EFA4D6712D59146B00005139 /* libnetsess.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libnetsess.xcframework; path = AniAnglia/Libraries/aateam/libnetsess/libnetsess.xcframework; sourceTree = "<group>"; };
+		EFA7322D2DFE259600FBC12C /* NamedSectionsStackView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NamedSectionsStackView.h; sourceTree = "<group>"; };
+		EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NamedSectionsStackView.mm; sourceTree = "<group>"; };
 		EFB158A92C80F6460070E833 /* ReleaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseViewController.h; sourceTree = "<group>"; };
 		EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseViewController.mm; sourceTree = "<group>"; };
 		EFBE9D822DFB4771002B6B49 /* ProfileTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileTableViewCell.h; sourceTree = "<group>"; };
@@ -3496,6 +3499,8 @@
 				EFCE61172DFB2538008431CA /* CenteredCollectionViewFlowLayout.mm */,
 				EF928F372DFCAAB500A5CD85 /* StarsVoteView.h */,
 				EF928F382DFCAACB00A5CD85 /* StarsVoteView.m */,
+				EFA7322D2DFE259600FBC12C /* NamedSectionsStackView.h */,
+				EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -3747,6 +3752,7 @@
 				EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */,
 				EFFA3C482DAD535200DE042A /* ProfileCommentsPageViewController.mm in Sources */,
 				EFA1F93B2CB4301B00555A26 /* EpisodeSelectViewController.mm in Sources */,
+				EFA7322F2DFE25A900FBC12C /* NamedSectionsStackView.mm in Sources */,
 				EF8B01B52C7015A300423ECD /* AuthViewController.mm in Sources */,
 				EF17A2E62DB6B259003429FC /* ProfilesPageableDataProvider.mm in Sources */,
 			);

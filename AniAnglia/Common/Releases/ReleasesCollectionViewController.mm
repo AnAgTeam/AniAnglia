@@ -141,6 +141,15 @@
 
 @implementation ReleasesCollectionViewController
 
+-(instancetype)initWithAxis:(UICollectionViewScrollDirection)axis {
+    self = [super init];
+    
+    _axis = axis;
+    _axis_item_count = 1;
+    
+    return self;
+}
+
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages axis:(UICollectionViewScrollDirection)axis {
     self = [super init];
     
@@ -149,18 +158,16 @@
     _axis = axis;
     _axis_item_count = 1;
     
-    [_data_provider loadCurrentPage];
-    
     return self;
 }
+
 -(instancetype)initWithReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider axis:(UICollectionViewScrollDirection)axis {
     self = [super init];
     
     _data_provider = releases_pageable_data_provider;
+    _data_provider.delegate = self;
     _axis = axis;
     _axis_item_count = 1;
-    
-    [_data_provider loadCurrentPage];
     
     return self;
 }
@@ -170,6 +177,11 @@
     
     [self setup];
     [self setupLayout];
+    
+    if (_data_provider) {
+        [_loadable_view startLoading];
+        [_data_provider loadCurrentPageIfNeeded];
+    }
 }
 -(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
@@ -224,6 +236,15 @@
     [_data_provider setPages:std::move(pages)];
 }
 
+-(void)setReleasesPageableDataProvider:(ReleasesPageableDataProvider*)releases_pageable_data_provider {
+    _data_provider = releases_pageable_data_provider;
+    if (_data_provider) {
+        _data_provider.delegate = self;
+        [_data_provider loadCurrentPageIfNeeded];
+        [self reloadData];
+    }
+}
+
 -(void)reload {
     [_data_provider reload];
 }
@@ -233,6 +254,7 @@
 }
 
 -(void)reloadData {
+    // reload section causes constraints errors
     [_collection_view reloadData];
 }
 
@@ -259,8 +281,12 @@
 }
 
 -(NSInteger)collectionView:(UICollectionView *)collection_view numberOfItemsInSection:(NSInteger)section {
+    if (!_data_provider) {
+        return 0;
+    }
     return [_data_provider getItemsCount];
 }
+
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     ReleaseCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[ReleaseCollectionViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = index_path.row;
@@ -300,12 +326,11 @@
 }
 
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
-    // reload section causes constraints errors
-    [_collection_view reloadData];
+    [self reloadData];
 }
+
 -(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
-    // reload section causes constraints errors
-    [_collection_view reloadData];
+    [self reloadData];
 }
 
 @end

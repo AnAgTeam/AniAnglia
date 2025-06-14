@@ -12,11 +12,14 @@
 
 @interface NamedSectionView : UIView
 
+-(instancetype)initWithName:(NSString*)name;
 -(instancetype)initWithName:(NSString*)name view:(UIView*)view;
 -(instancetype)initWithName:(NSString*)name viewController:(UIViewController*)view_controller;
 
 -(void)setShowAllButtonEnabled:(BOOL)enabled;
 -(void)setShowAllHandler:(void(^)(void))handler;
+
+-(void)setView:(UIView*)view;
 
 @end
 

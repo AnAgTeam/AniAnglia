@@ -118,7 +118,7 @@
     [_downvote_button addTarget:self action:@selector(onDownvoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _vote_count_label = [UILabel new];
     
-    _blur_effect_view = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+    _blur_effect_view = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleRegular]];
     _blur_effect_view.layer.cornerRadius = 8;
     _blur_effect_view.clipsToBounds = YES;
     

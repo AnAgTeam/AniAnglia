@@ -258,7 +258,7 @@
     }
     else {
         [NSLayoutConstraint activateConstraints:@[
-            [_collection_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+            [_collection_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
             [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
             [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
             [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
