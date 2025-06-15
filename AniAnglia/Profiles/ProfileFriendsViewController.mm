@@ -95,9 +95,11 @@ enum class ProfileFriendsSections {
 -(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
     return [_section_providers[section] getItemsCount];
 }
+
 -(CGFloat)tableView:(UITableView*)table_view heightForRowAtIndexPath:(NSIndexPath*)index_path {
     return 80;
 }
+
 -(NSString *)tableView:(UITableView *)table_view titleForHeaderInSection:(NSInteger)section {
     ProfilesPageableDataProvider* data_provider = _section_providers[section];
     if (data_provider == _requests_in_data_provider) {
@@ -109,6 +111,7 @@ enum class ProfileFriendsSections {
     }
     return nil;
 }
+
 -(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
     ProfileTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ProfileTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger section = index_path.section;
@@ -167,11 +170,11 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [self.navigationController pushViewController:[[ProfileViewController alloc] initWithProfileID:profile->id] animated:YES];
 }
 
--(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     [_table_view reloadData];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index {
     if (![pageable_data_provider isKindOfClass:ProfilesPageableDataProvider.class]) {
         return;
     }

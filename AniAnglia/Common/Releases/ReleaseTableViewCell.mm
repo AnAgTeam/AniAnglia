@@ -66,7 +66,6 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     _ep_count_label = [UILabel new];
     
     _description_label = [UILabel new];
-    _description_label.textAlignment = NSTextAlignmentJustified;
     _description_label.numberOfLines = -1;
     
     _rating_label = [UILabel new];

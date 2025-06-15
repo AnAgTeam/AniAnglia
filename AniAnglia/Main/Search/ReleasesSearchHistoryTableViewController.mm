@@ -101,11 +101,15 @@
     _table_view.translatesAutoresizingMaskIntoConstraints = NO;
 
     [NSLayoutConstraint activateConstraints:@[
-        [_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [_table_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [_table_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+        [_table_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
     ]];
+    if (@available(iOS 15.0, *)) {
+        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.keyboardLayoutGuide.topAnchor].active = YES;
+    } else {
+        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor].active = YES;
+    }
 }
 
 -(void)setupLayout {
@@ -115,9 +119,11 @@
 -(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
     return [_app_data_controller getSearchHistoryLength];
 }
+
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 40;
 }
+
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
     ReleasesSearchHistoryTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[ReleasesSearchHistoryTableViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];

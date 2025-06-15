@@ -958,6 +958,8 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
 }
 
 -(void)refresh {
+    __weak auto weak_self = self;
+    
     self.navigationItem.title = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"app.profile.title", ""), TO_NSSTRING(_profile->username)];
     
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_profile->avatar_url)];
@@ -992,6 +994,10 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
             _votes_section_view = [[RelativeNamedSectionView alloc] initWithName:NSLocalizedString(@"app.profile.votes", "") view:_votes_view_controller.view];
             _votes_section_view.relative_index = 2;
             _votes_section_view.layoutMargins = UIEdgeInsetsMake(0, 0, 0, 0);
+            [_votes_section_view setShowAllButtonEnabled:YES];
+            [_votes_section_view setShowAllHandler:^{
+                [weak_self onVotesShowAllPressed];
+            }];
         }
         ReleasesPageableDataProvider* data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:nullptr initialReleases:_profile->votes];
         [_votes_view_controller setReleasesPageableDataProvider:data_provider];

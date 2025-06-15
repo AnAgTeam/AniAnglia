@@ -68,6 +68,8 @@
 		EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA4D6712D59146B00005139 /* libnetsess.xcframework */; };
 		EFA7322F2DFE25A900FBC12C /* NamedSectionsStackView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */; };
 		EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */; };
+		EFB856722DFEF23600FCD712 /* ReleasesOnePageDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB856712DFEF23600FCD712 /* ReleasesOnePageDataProvider.mm */; };
+		EFB856752DFF104800FCD712 /* CollectionsPageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB856742DFF104800FCD712 /* CollectionsPageableDataProvider.mm */; };
 		EFBE9D842DFB4781002B6B49 /* ProfileTableViewCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFBE9D832DFB4781002B6B49 /* ProfileTableViewCell.mm */; };
 		EFC6077B2C76169500BA8B44 /* TextErrorField.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFC6077A2C76169500BA8B44 /* TextErrorField.mm */; };
 		EFCBC3A52D54F6C600080866 /* TorrentAVAsset.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFCBC3A42D54F6C600080866 /* TorrentAVAsset.mm */; };
@@ -1371,6 +1373,10 @@
 		EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NamedSectionsStackView.mm; sourceTree = "<group>"; };
 		EFB158A92C80F6460070E833 /* ReleaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseViewController.h; sourceTree = "<group>"; };
 		EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleaseViewController.mm; sourceTree = "<group>"; };
+		EFB856702DFEF1EA00FCD712 /* ReleasesOnePageDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesOnePageDataProvider.h; sourceTree = "<group>"; };
+		EFB856712DFEF23600FCD712 /* ReleasesOnePageDataProvider.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesOnePageDataProvider.mm; sourceTree = "<group>"; };
+		EFB856732DFF103300FCD712 /* CollectionsPageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionsPageableDataProvider.h; sourceTree = "<group>"; };
+		EFB856742DFF104800FCD712 /* CollectionsPageableDataProvider.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CollectionsPageableDataProvider.mm; sourceTree = "<group>"; };
 		EFBE9D822DFB4771002B6B49 /* ProfileTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileTableViewCell.h; sourceTree = "<group>"; };
 		EFBE9D832DFB4781002B6B49 /* ProfileTableViewCell.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ProfileTableViewCell.mm; sourceTree = "<group>"; };
 		EFC6077A2C76169500BA8B44 /* TextErrorField.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TextErrorField.mm; sourceTree = "<group>"; };
@@ -3591,6 +3597,10 @@
 				EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */,
 				EF17A2E42DB6B245003429FC /* ProfilesPageableDataProvider.h */,
 				EF17A2E52DB6B259003429FC /* ProfilesPageableDataProvider.mm */,
+				EFB856702DFEF1EA00FCD712 /* ReleasesOnePageDataProvider.h */,
+				EFB856712DFEF23600FCD712 /* ReleasesOnePageDataProvider.mm */,
+				EFB856732DFF103300FCD712 /* CollectionsPageableDataProvider.h */,
+				EFB856742DFF104800FCD712 /* CollectionsPageableDataProvider.mm */,
 			);
 			path = Pageable;
 			sourceTree = "<group>";
@@ -3734,6 +3744,7 @@
 				EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */,
 				EFD7F7B02DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm in Sources */,
 				EF3568A52DA84F1D00086593 /* SharedRunningData.mm in Sources */,
+				EFB856722DFEF23600FCD712 /* ReleasesOnePageDataProvider.mm in Sources */,
 				EF7CD28E2DA0400F00F88227 /* DynamicTableView.mm in Sources */,
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
 				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,
@@ -3744,6 +3755,7 @@
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
 				EF9DACA02DFA34820020C182 /* ReleasesHistoryTableViewCells.mm in Sources */,
 				EF3568AC2DA94D8D00086593 /* SettingsTableViewController.m in Sources */,
+				EFB856752DFF104800FCD712 /* CollectionsPageableDataProvider.mm in Sources */,
 				EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */,
 				EF4941042C72383500832A6C /* AppColor.h in Sources */,
 				EF8B01B42C7015A300423ECD /* SceneDelegate.mm in Sources */,

@@ -98,8 +98,8 @@
 -(void)setup {
     [_table_view registerClass:ReleaseTableViewCell.class forCellReuseIdentifier:[ReleaseTableViewCell getIdentifier]];
     _table_view.tableHeaderView = _header_view;
-    // enabled navigation bar transparency
-    _table_view.clipsToBounds = NO;
+//    // enabled navigation bar transparency
+//    _table_view.clipsToBounds = NO;
     
     _refresh_control = [UIRefreshControl new];
     [_refresh_control addTarget:self action:@selector(onRefresh:) forControlEvents:UIControlEventValueChanged];
@@ -230,11 +230,11 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     return [_data_provider getContextMenuConfigurationForItemAtIndex:index_path.row];
 }
 
--(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     [self reloadData];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index {
     [_loadable_view endLoading];
     _table_view.refreshControl = _refresh_control;
     
@@ -247,7 +247,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [self reloadData];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailPageAtIndex:(NSInteger)page_index {
     if (_refresh_control.refreshing) {
         [_data_provider clear];
         [_refresh_control endRefreshing];
@@ -258,11 +258,11 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
 
 -(void)didReloadForLoadableView:(LoadableView*)loadable_view {
     [loadable_view startLoading];
-    [_data_provider reload];
+    [self reload];
 }
 
 -(IBAction)onRefresh:(UIRefreshControl*)sender {
-    [_data_provider refresh];
+    [self refresh];
 }
 
 @end

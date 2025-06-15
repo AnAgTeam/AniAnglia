@@ -792,12 +792,9 @@
     [self preSetupLayout];
     
     if (_release) {
-        [self setup];
-        [self setupLayout];
+        [self onReleaseLoaded:NO];
     }
-    else if (_release_getter) {
-        [self loadWithReleaseGetter];
-    } else {
+    else {
         [self loadRelease];
     }
 }
@@ -831,8 +828,6 @@
 -(void)setup {
     __weak auto weak_self = self;
     _named_sections = [NSMutableArray arrayWithCapacity:5];
-    
-    self.navigationItem.title = TO_NSSTRING(_release->title_ru);
     
     _content_stack_view = [UIStackView new];
     _content_stack_view.axis = UILayoutConstraintAxisVertical;
@@ -1055,6 +1050,11 @@
         [_loading_view startLoading];
     }
     
+    if (_release_getter) {
+        [self loadWithReleaseGetter];
+        return;
+    }
+    
     [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
         self->_release = self->_api_proxy.api->releases().get_release(self->_release_id);
         return NO;
@@ -1064,8 +1064,6 @@
 }
 
 -(void)loadWithReleaseGetter {
-    [_loading_view startLoading];
-    
     [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
         self->_release = self->_release_getter(api);
         return NO;
@@ -1075,6 +1073,8 @@
 }
 
 -(void)refresh {
+    self.navigationItem.title = TO_NSSTRING(_release->title_ru);
+    
     _title_label.text = TO_NSSTRING(_release->title_ru);
     _orig_title_label.text = TO_NSSTRING(_release->title_original);
     
@@ -1255,6 +1255,7 @@
 
 -(void)onCommentsShowAllPresed {
     CommentsTableViewController* view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::FilterBy::All)];
+    view_controller.delegate = self;
     [self.navigationController pushViewController:view_controller animated:YES];
 }
 

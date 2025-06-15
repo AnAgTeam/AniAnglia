@@ -80,21 +80,18 @@
         [_title_label.leadingAnchor constraintEqualToAnchor:_image_view.trailingAnchor constant:10],
         [_title_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
         
-        [_year_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor],
+        [_year_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor constant:8],
         [_year_label.leadingAnchor constraintEqualToAnchor:_title_label.leadingAnchor],
-
-        [_rating_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor],
-        [_rating_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_year_label.trailingAnchor constant:8],
         
-        [_rating_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor],
+        [_rating_label.topAnchor constraintEqualToAnchor:_year_label.topAnchor],
         [_rating_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:_year_label.trailingAnchor constant:8],
         [_rating_label.bottomAnchor constraintGreaterThanOrEqualToAnchor:_title_label.bottomAnchor],
         
-        [_star_image_view.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor],
+        [_star_image_view.topAnchor constraintEqualToAnchor:_rating_label.topAnchor],
         [_star_image_view.leadingAnchor constraintGreaterThanOrEqualToAnchor:_rating_label.trailingAnchor constant:8],
         [_star_image_view.bottomAnchor constraintGreaterThanOrEqualToAnchor:_title_label.bottomAnchor],
 
-        [_category_label.topAnchor constraintEqualToAnchor:_title_label.bottomAnchor],
+        [_category_label.topAnchor constraintEqualToAnchor:_rating_label.topAnchor],
         [_category_label.leadingAnchor constraintEqualToAnchor:_star_image_view.trailingAnchor constant:8],
         [_category_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor]
     ]];

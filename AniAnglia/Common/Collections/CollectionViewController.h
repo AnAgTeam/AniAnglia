@@ -14,6 +14,7 @@
 @interface CollectionViewController : UIViewController
 
 -(instancetype)initWithCollectionID:(anixart::CollectionID)collection_id;
+
 @end
 
 

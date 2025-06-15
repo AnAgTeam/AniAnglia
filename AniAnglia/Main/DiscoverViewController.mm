@@ -20,6 +20,7 @@
 #import "CommentRepliesViewController.h"
 #import "ReleasesTableViewController.h"
 #import "SegmentedPageViewController.h"
+#import "NamedSectionView.h"
 
 @class DiscoverInterestingView;
 @class DiscoverOptionsView;
@@ -56,9 +57,11 @@
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UICollectionView* collection_view;
-@property(nonatomic, retain) NSCache<NSNumber*, UIImage*>* image_cache;
 
 -(instancetype)init;
+
+-(void)refresh;
+
 @end
 
 @interface DiscoverOptionsCollectionViewCell : UICollectionViewCell
@@ -79,55 +82,23 @@
 -(instancetype)init;
 @end
 
-@interface DiscoverRecomendedView : UIView
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UITableView* table_view;
-
-@end
-
-@interface DiscoverDiscussingView : UIView
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UIView* view;
-
--(instancetype)initWithView:(UIView*)view;
-@end
-
-@interface DiscoverWatchingView : UIView
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UIView* view;
-
--(instancetype)initWithView:(UIView*)view;
-@end
-
-@interface DiscoverWeekCollectionsView : UIView
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UIView* view;
-
--(instancetype)initWithView:(UIView*)view;
-@end
-
-@interface DiscoverWeekCommentsView : UIView
-@property(nonatomic, retain) UILabel* me_label;
-@property(nonatomic, retain) UIView* view;
-
--(instancetype)initWithView:(UIView*)view;
-@end
-
 @interface DiscoverViewController () <DiscoverInterestingViewDelegate, DiscoverOptionsViewDelegate, CommentsTableViewControllerDelegate>
 @property(nonatomic) LibanixartApi* api_proxy;
 @property(nonatomic, retain) UIScrollView* scroll_view;
 @property(nonatomic, retain) UIStackView* content_stack_view;
+
 @property(nonatomic, retain) DiscoverInterestingView* interesting_view;
 @property(nonatomic, retain) DiscoverOptionsView* options_view;
-@property(nonatomic, retain) DiscoverRecomendedView* recomended_view;
-@property(nonatomic, retain) ReleasesTableViewController* discussing_table_view_controller;
-@property(nonatomic, retain) DiscoverDiscussingView* discussing_view;
+@property(nonatomic, retain) ReleasesCollectionViewController* recomended_view_controller;
+@property(nonatomic, retain) NamedSectionView* recomended_section_view;
+@property(nonatomic, retain) ReleasesCollectionViewController* discussing_view_controller;
+@property(nonatomic, retain) NamedSectionView* discussing_section_view;
 @property(nonatomic, retain) ReleasesCollectionViewController* watching_view_controller;
-@property(nonatomic, retain) DiscoverWatchingView* watching_view;
+@property(nonatomic, retain) NamedSectionView* watching_section_view;
 @property(nonatomic, retain) CollectionsCollectionViewController* collections_view_controller;
-@property(nonatomic, retain) DiscoverWeekCollectionsView* collections_view;
+@property(nonatomic, retain) NamedSectionView* collections_section_view;
 @property(nonatomic, retain) CommentsTableViewController* comments_view_controller;
-@property(nonatomic, retain) DiscoverWeekCommentsView* comments_view;
+@property(nonatomic, retain) NamedSectionView* comments_section_view;
 
 @end
 
@@ -217,29 +188,16 @@
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
-    _image_cache = [NSCache new];
-    [self preSetup];
-    [self preSetupLayout];
-    [self tryLoad];
+    
+    [self setup];
+    [self setupLayout];
+    [self refresh];
     
     return self;
 }
-
--(void)preSetup {
+-(void)setup {
     _loadable_view = [LoadableView new];
     
-    [self addSubview:_loadable_view];
-    
-    _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_loadable_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_loadable_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_loadable_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_loadable_view.heightAnchor constraintEqualToConstant:200],
-        [_loadable_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
-    ]];
-}
--(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
     _collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
@@ -248,38 +206,46 @@
     _collection_view.delegate = self;
     _collection_view.showsHorizontalScrollIndicator = NO;
 
+    [self addSubview:_loadable_view];
     [self addSubview:_collection_view];
     
+    _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
     _collection_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_collection_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
         [_collection_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
+        [_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+        
+        [_loadable_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+        [_loadable_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+        [_loadable_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+        [_loadable_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
     ]];
 }
--(void)preSetupLayout {
+
+-(void)setupLayout {
     self.backgroundColor = [AppColorProvider backgroundColor];
 }
--(void)setupLayout {
-    _collection_view.backgroundColor = [UIColor clearColor];
-}
 
--(void)tryLoad {
+-(void)refresh {
     [_loadable_view startLoading];
+    
+    __block std::vector<anixart::Interesting::Ptr> new_items;
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        self->_interesting_arr = api->search().interesting()->get();
+        new_items = api->search().interesting()->get();
         return YES;
     } withUICompletion:^{
+        self->_interesting_arr = std::move(new_items);
         [self->_loadable_view endLoading];
-        [self setup];
-        [self setupLayout];
+        [self->_collection_view reloadData];
     }];
 }
 
 -(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return _interesting_arr.size();
 }
+
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     DiscoverInterestingViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[DiscoverInterestingViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = [index_path item];
@@ -479,214 +445,22 @@
 
 @end
 
-@implementation DiscoverRecomendedView
+@implementation DiscoverViewController
 
 -(instancetype)init {
     self = [super init];
     
-    [self setup];
-    [self setupLayout];
+    _api_proxy = [LibanixartApi sharedInstance];
     
     return self;
 }
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _me_label.text = NSLocalizedString(@"app.discover.recomended.title", "");
-    
-    // TODO
-    UILabel* _placeholder_label = [UILabel new];
-    _placeholder_label.text = @"Птички летят, бомбить поросят";
-    
-    [self addSubview:_me_label];
-    [self addSubview:_placeholder_label];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _placeholder_label.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_me_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-        
-        [_placeholder_label.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_placeholder_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_placeholder_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_placeholder_label.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
-    ]];
-}
--(void)setupLayout {
-    _me_label.textColor = [AppColorProvider textColor];
-}
-
-@end
-
-@implementation DiscoverDiscussingView
-
--(instancetype)initWithView:(UIView*)view {
-    self = [super init];
-    
-    _view = view;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _me_label.text = NSLocalizedString(@"app.discover.discussing.title", "");
-    
-    [self addSubview:_me_label];
-    [self addSubview:_view];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_me_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-        
-        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-    ]];
-    [_me_label sizeToFit];
-}
--(void)setupLayout {
-    _me_label.textColor = [AppColorProvider textColor];
-}
-
-
-@end
-
-@implementation DiscoverWatchingView
-
--(instancetype)initWithView:(UIView*)view {
-    self = [super init];
-    
-    _view = view;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _me_label.text = NSLocalizedString(@"app.discover.watching.title", "");
-    
-    [self addSubview:_me_label];
-    [self addSubview:_view];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_view.heightAnchor constraintEqualToConstant:250],
-        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-    ]];
-}
--(void)setupLayout {
-    _me_label.textColor = [AppColorProvider textColor];
-}
-
-@end
-
-@implementation DiscoverWeekCollectionsView
-
--(instancetype)initWithView:(UIView*)view {
-    self = [super init];
-    
-    _view = view;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _me_label.text = NSLocalizedString(@"app.discover.week_collections.title", "");
-    
-    [self addSubview:_me_label];
-    [self addSubview:_view];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_view.heightAnchor constraintEqualToConstant:200],
-        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-    ]];
-}
--(void)setupLayout {
-    _me_label.textColor = [AppColorProvider textColor];
-}
-
-@end
-
-@implementation DiscoverWeekCommentsView
-
--(instancetype)initWithView:(UIView*)view {
-    self = [super init];
-    
-    _view = view;
-    [self setup];
-    [self setupLayout];
-    
-    return self;
-}
--(void)setup {
-    _me_label = [UILabel new];
-    _me_label.font = [UIFont systemFontOfSize:22];
-    _me_label.text = NSLocalizedString(@"app.discover.weak_comments.title", "");
-    
-    [self addSubview:_me_label];
-    [self addSubview:_view];
-    
-    _me_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_me_label.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_me_label.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_me_label.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        
-        [_view.topAnchor constraintEqualToAnchor:_me_label.bottomAnchor constant:5],
-        [_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-        [_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor]
-    ]];
-}
--(void)setupLayout {
-    _me_label.textColor = [AppColorProvider textColor];
-}
-
-@end
-
-@implementation DiscoverViewController
 
 -(void)viewDidLoad {
     [super viewDidLoad];
-    
-    _api_proxy = [LibanixartApi sharedInstance];
 
     [self setup];
     [self setupLayout];
+    [self refresh];
 }
 
 -(void)setup {
@@ -697,8 +471,6 @@
     _content_stack_view.distribution = UIStackViewDistributionEqualSpacing;
     _content_stack_view.alignment = UIStackViewAlignmentCenter;
     _content_stack_view.spacing = 7;
-    _content_stack_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(0, 10, 0, 10);
-//    _content_stack_view.layoutMargins = UIEdgeInsetsMake(0, 0, 0, 0);
     
     _interesting_view = [DiscoverInterestingView new];
     _interesting_view.delegate = self;
@@ -706,29 +478,33 @@
     _options_view = [DiscoverOptionsView new];
     _options_view.delegate = self;
     
-    _recomended_view = [DiscoverRecomendedView new];
-    _recomended_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    _recomended_view_controller = [[ReleasesCollectionViewController alloc] initWithAxis:UICollectionViewScrollDirectionHorizontal];
+    _recomended_view_controller.is_container_view_controller = YES;
+    [self addChildViewController:_recomended_view_controller];
     
-    _discussing_table_view_controller = [[ReleasesTableViewController alloc] initWithTableView:[DynamicTableView new] pages:_api_proxy.api->search().discussing()];
-    _discussing_table_view_controller.is_container_view_controller = YES;
-    [self addChildViewController:_discussing_table_view_controller];
+    _recomended_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.discover.recomended", "") view:_recomended_view_controller.view];
+    _recomended_section_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     
-    _discussing_view = [[DiscoverDiscussingView alloc] initWithView:_discussing_table_view_controller.view];
-    _discussing_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    _discussing_view_controller = [[ReleasesCollectionViewController alloc] initWithAxis:UICollectionViewScrollDirectionHorizontal];
+    _discussing_view_controller.is_container_view_controller = YES;
+    [self addChildViewController:_discussing_view_controller];
     
-    _watching_view_controller = [[ReleasesCollectionViewController alloc] initWithPages:_api_proxy.api->search().currently_watching(0) axis:UICollectionViewScrollDirectionHorizontal];
+    _discussing_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.discover.discussing", "") view:_discussing_view_controller.view];
+    _discussing_section_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    
+    _watching_view_controller = [[ReleasesCollectionViewController alloc] initWithAxis:UICollectionViewScrollDirectionHorizontal];
     _watching_view_controller.is_container_view_controller = YES;
     [self addChildViewController:_watching_view_controller];
     
-    _watching_view = [[DiscoverWatchingView alloc] initWithView:_watching_view_controller.view];
-    _watching_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    _watching_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.discover.watching", "") view:_watching_view_controller.view];
+    _watching_section_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     
-    _collections_view_controller = [[CollectionsCollectionViewController alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::WeekPopular, 2, 0) axis:UICollectionViewScrollDirectionHorizontal];
+    _collections_view_controller = [[CollectionsCollectionViewController alloc] initWithAxis:UICollectionViewScrollDirectionHorizontal];
     _collections_view_controller.is_container_view_controller = YES;
     [self addChildViewController:_collections_view_controller];
     
-    _collections_view = [[DiscoverWeekCollectionsView alloc] initWithView:_collections_view_controller.view];
-    _collections_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    _collections_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.discover.week_collections", "") view:_collections_view_controller.view];
+    _collections_section_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
     
     _comments_view_controller = [[CommentsTableViewController alloc] initWithTableView:[DynamicTableView new] pages:_api_proxy.api->search().comments_week()];
     _comments_view_controller.enable_origin_reference = YES;
@@ -736,28 +512,28 @@
     _comments_view_controller.delegate = self;
     [self addChildViewController:_comments_view_controller];
     
-    _comments_view = [[DiscoverWeekCommentsView alloc] initWithView:_comments_view_controller.view];
-    _comments_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
+    _comments_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.discover.week_comments", "") view:_comments_view_controller.view];
+    _comments_section_view.layoutMargins = UIEdgeInsetsMake(10, 0, 0, 0);
 
     [self.view addSubview:_scroll_view];
     [_scroll_view addSubview:_content_stack_view];
     [_content_stack_view addArrangedSubview:_interesting_view];
     [_content_stack_view addArrangedSubview:_options_view];
-    [_content_stack_view addArrangedSubview:_recomended_view];
-    [_content_stack_view addArrangedSubview:_discussing_view];
-    [_content_stack_view addArrangedSubview:_watching_view];
-    [_content_stack_view addArrangedSubview:_collections_view];
-    [_content_stack_view addArrangedSubview:_comments_view];
+    [_content_stack_view addArrangedSubview:_recomended_section_view];
+    [_content_stack_view addArrangedSubview:_discussing_section_view];
+    [_content_stack_view addArrangedSubview:_watching_section_view];
+    [_content_stack_view addArrangedSubview:_collections_section_view];
+    [_content_stack_view addArrangedSubview:_comments_section_view];
     
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
     _content_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
     _interesting_view.translatesAutoresizingMaskIntoConstraints = NO;
     _options_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _recomended_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _discussing_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _watching_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _collections_view.translatesAutoresizingMaskIntoConstraints = NO;
-    _comments_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _recomended_section_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _discussing_section_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _watching_section_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _collections_section_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _comments_section_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
         [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
@@ -770,14 +546,39 @@
         [_content_stack_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
         [_content_stack_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor],
         
-        [_interesting_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
+        [_interesting_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_interesting_view.heightAnchor constraintEqualToConstant:200],
         [_options_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_recomended_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_discussing_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_watching_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_collections_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
-        [_comments_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor]
+        [_recomended_section_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_recomended_section_view.heightAnchor constraintEqualToConstant:290],
+        [_discussing_section_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_discussing_section_view.heightAnchor constraintEqualToConstant:290],
+        [_watching_section_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_watching_section_view.heightAnchor constraintEqualToConstant:290],
+        [_collections_section_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_collections_section_view.heightAnchor constraintEqualToConstant:250],
+        [_comments_section_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_comments_section_view.heightAnchor constraintGreaterThanOrEqualToConstant:200],
     ]];
+}
+
+-(void)refresh {
+    [_interesting_view refresh];
+    
+    ReleasesPageableDataProvider* recomended_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:_api_proxy.api->search().recomendations(0)];
+    [_recomended_view_controller setReleasesPageableDataProvider:recomended_data_provider];
+    
+    ReleasesPageableDataProvider* discussing_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:_api_proxy.api->search().discussing()];
+    [_discussing_view_controller setReleasesPageableDataProvider:discussing_data_provider];
+    
+    ReleasesPageableDataProvider* watching_data_provider = [[ReleasesPageableDataProvider alloc] initWithPages:_api_proxy.api->search().currently_watching(0)];
+    [_watching_view_controller setReleasesPageableDataProvider:watching_data_provider];
+    
+    CollectionsPageableDataProvider* week_collections_data_provider = [[CollectionsPageableDataProvider alloc] initWithPages:_api_proxy.api->collections().all_collections(anixart::Collection::Sort::WeekPopular, 2, 0)];
+    [_collections_view_controller setDataProvider:week_collections_data_provider];
+    
+    CommentsPageableDataProvider* comments_data_provider = [[CommentsPageableDataProvider alloc] initWithPages:_api_proxy.api->search().comments_week()];
+    [_comments_view_controller setDataProvider:comments_data_provider];
 }
 
 -(void)setupLayout {
@@ -806,9 +607,7 @@
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithRandomRelease] animated:YES];
 }
 
--(void)discoverInterestingView:(DiscoverInterestingView *)interesting_view didSelectInteresting:(anixart::Interesting::Ptr)interesting { 
-    self.navigationController.navigationBarHidden = NO;
-    self.navigationController.hidesBarsOnSwipe = NO;
+-(void)discoverInterestingView:(DiscoverInterestingView*)interesting_view didSelectInteresting:(anixart::Interesting::Ptr)interesting {
     if (interesting->type == anixart::Interesting::Type::OpenRelease) {
         [self.navigationController setNavigationBarHidden:NO];
         anixart::ReleaseID release_id = static_cast<anixart::ReleaseID>(std::stoll(interesting->action));

@@ -195,12 +195,12 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     return [_data_provider getContextMenuConfigurationForItemAtIndex:index_path.row];
 }
 
--(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     // reload sections causes constraints errors
     [_table_view reloadData];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index {
     if (_is_first_loading) {
         _is_first_loading = NO;
         [_loadable_view endLoading];
@@ -209,7 +209,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [_table_view reloadData];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailPageAtIndex:(NSInteger)page_index {
     // TODO
 }
 

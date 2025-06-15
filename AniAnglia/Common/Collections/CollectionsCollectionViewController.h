@@ -10,6 +10,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LibanixartApi.h"
+#import "CollectionsPageableDataProvider.h"
 
 @interface CollectionCollectionViewCell : UICollectionViewCell
 
@@ -24,12 +25,18 @@
 @interface CollectionsCollectionViewController : UIViewController
 @property(nonatomic) BOOL is_container_view_controller;
 
+-(instancetype)initWithAxis:(UICollectionViewScrollDirection)axis;
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Collection>::UPtr)pages axis:(UICollectionViewScrollDirection)axis;
+-(instancetype)initWithDataProvider:(CollectionsPageableDataProvider*)pageable_data_provider axis:(UICollectionViewScrollDirection)axis;
 
 -(void)setPages:(anixart::Pageable<anixart::Collection>::UPtr)pages;
--(void)reset;
+-(void)setDataProvider:(CollectionsPageableDataProvider*)pageable_data_provider;
+
+-(void)reload;
+-(void)refresh;
 
 -(void)setHeaderView:(UIView*)header_view;
+
 @end
 
 

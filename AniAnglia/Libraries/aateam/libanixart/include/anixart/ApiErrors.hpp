@@ -67,6 +67,7 @@ namespace anixart {
 
 		TCode code;
 	};
+
 	using GenericAuthError = ApiCodeError<codes::GenericCode, ApiAuthRequestError>;
 	using GenericBookmarksError = ApiCodeError<codes::GenericCode, ApiBookmarksRequestError>;
 	using GenericCollectionError = ApiCodeError<codes::GenericCode, ApiCollectionRequestError>;

@@ -9,7 +9,6 @@
 #define ReleasesPageableDataProvider_h
 
 #import <UIKit/UIKit.h>
-#import "LibanixartApi.h"
 #import "PageableDataProvider.h"
 
 @interface ReleasesPageableDataProvider : PageableDataProvider
@@ -34,6 +33,7 @@
 -(anixart::Release::Ptr)getReleaseAtIndex:(NSInteger)index;
 
 -(void)loadCurrentPage;
+// load page if isn't loaded yet. If loaded immediately calls delegate "didLoadedPageAtIndex:"
 -(void)loadCurrentPageIfNeeded;
 -(void)loadNextPage;
 

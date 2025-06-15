@@ -16,9 +16,6 @@
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Comment>::UPtr)pages initialComments:(std::vector<anixart::Comment::Ptr>)comments;
 
--(instancetype)initWithPages:(anixart::Pageable<anixart::Comment>::UPtr)pages;
--(instancetype)initWithPages:(anixart::Pageable<anixart::Comment>::UPtr)pages initialComments:(std::vector<anixart::Comment::Ptr>)comments;
-
 // clear all the data without reload
 -(void)clear;
 // clear all the data and reload

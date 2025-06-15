@@ -30,6 +30,7 @@
 @property(nonatomic) NSInteger axis_item_count;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UICollectionView* collection_view;
+@property(nonatomic, retain) UILabel* empty_label;
 
 @end
 
@@ -51,6 +52,7 @@
     _image_view = [LoadableImageView new];
     _image_view.clipsToBounds = YES;
     _image_view.layer.cornerRadius = 8;
+    _image_view.contentMode = UIViewContentModeScaleAspectFill;
     
     _title_label = [UILabel new];
     _title_label.numberOfLines = 2;
@@ -183,9 +185,12 @@
         [_data_provider loadCurrentPageIfNeeded];
     }
 }
+
 -(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
     layout.scrollDirection = _axis;
+    layout.sectionInset = UIEdgeInsetsMake(0, 10, 0, 10);
+    
     _collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
     [_collection_view registerClass:ReleaseCollectionViewCell.class forCellWithReuseIdentifier:[ReleaseCollectionViewCell getIdentifier]];
     _collection_view.dataSource = self;
@@ -194,35 +199,36 @@
     
     _loadable_view = [LoadableView new];
     
+    _empty_label = [UILabel new];
+    _empty_label.text = NSLocalizedString(@"app.common.load_empty", "");
+    _empty_label.hidden = YES;
+    _empty_label.textAlignment = NSTextAlignmentCenter;
+    
     [self.view addSubview:_collection_view];
     [self.view addSubview:_loadable_view];
+    [self.view addSubview:_empty_label];
     
     _collection_view.translatesAutoresizingMaskIntoConstraints = NO;
     _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
-    if (_is_container_view_controller) {
-        [NSLayoutConstraint activateConstraints:@[
-            [_collection_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-            [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-            [_collection_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-            [_collection_view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
-            [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    _empty_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_collection_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_collection_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+        [_collection_view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
+        [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
             
-            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor]
-        ]];
-    }
-    else {
-        [NSLayoutConstraint activateConstraints:@[
-            [_collection_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-            
-            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
-            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor]
-        ]];
-    }
+        [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+        
+        [_empty_label.topAnchor constraintGreaterThanOrEqualToAnchor:self.view.topAnchor],
+        [_empty_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.view.leadingAnchor],
+        [_empty_label.trailingAnchor constraintLessThanOrEqualToAnchor:self.view.trailingAnchor],
+        [_empty_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.bottomAnchor],
+        [_empty_label.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_empty_label.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+    ]];
 }
 -(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
@@ -301,16 +307,16 @@
     [cell setListStatus:release->profile_list_status];
     return cell;
 }
-
 -(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewFlowLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
     // TODO: maybe change aspect ratio
     if (_axis == UICollectionViewScrollDirectionHorizontal) {
         return CGSizeMake(collection_view.frame.size.height * (9. / 16), collection_view.frame.size.height);
     }
     
-    CGFloat width_inset = collection_view_layout.sectionInset.left + collection_view_layout.sectionInset.right;
+    // TODO: fix without strange constant
+    CGFloat width_inset = collection_view_layout.sectionInset.left + collection_view_layout.sectionInset.right + 10;
     CGFloat item_insets = collection_view_layout.minimumLineSpacing * (_axis_item_count - 1);
-    CGFloat item_width = (collection_view.frame.size.width - width_inset - item_insets) / _axis_item_count;
+    CGFloat item_width = (collection_view.bounds.size.width - width_inset - item_insets) / _axis_item_count;
     return CGSizeMake(item_width, item_width * (19. / 9));
 }
 
@@ -325,11 +331,13 @@
     [self.navigationController pushViewController:[[ReleaseViewController alloc] initWithReleaseID:release->id] animated:YES];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     [self reloadData];
 }
 
--(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index {
+    [_loadable_view endLoading];
+    _empty_label.hidden = [_data_provider getItemsCount] != 0;
     [self reloadData];
 }
 

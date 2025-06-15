@@ -81,12 +81,12 @@
 -(void)clear {
     // TODO: load cancel
     _releases.clear();
-    [self callDelegateDidUpdated];
+    [self callDelegateDidUpdate];
 }
 
 -(void)reload {
     _releases.clear();
-    [self callDelegateDidUpdated];
+    [self callDelegateDidUpdate];
     [self loadPageAtIndex:0];
 }
 
@@ -97,19 +97,21 @@
 -(void)setPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     _releases.clear();
     _pages = std::move(pages);
-    [self callDelegateDidUpdated];
+    [self callDelegateDidUpdate];
     [self loadCurrentPage];
 }
 
 -(BOOL)isEnd {
     if (!_pages) {
-        return true;
+        return YES;
     }
     return _pages->is_end();
 }
+
 -(size_t)getItemsCount {
     return _releases.size();
 }
+
 -(anixart::Release::Ptr)getReleaseAtIndex:(NSInteger)index {
     if (index >= _releases.size()) {
         // wtf
@@ -133,7 +135,7 @@
         return NO;
     } completion:^(BOOL errored) {
         if (errored) {
-            [self callDelegateDidFailedPageAtIndex:self->_pages->get_current_page()];
+            [self callDelegateDidFailPageAtIndex:self->_pages->get_current_page()];
             return;
         }
         if (is_append) {
@@ -141,7 +143,7 @@
         } else {
             self->_releases = std::move(new_items);
         }
-        [self callDelegateDidLoadedPageAtIndex:self->_pages->get_current_page()];
+        [self callDelegateDidLoadPageAtIndex:self->_pages->get_current_page()];
     }];
 }
 
@@ -155,6 +157,13 @@
 -(void)loadCurrentPageIfNeeded {
     if (_is_needed_first_load) {
         [self loadCurrentPage];
+        return;
+    }
+    
+    if (_pages) {
+        [self callDelegateDidLoadPageAtIndex:_pages->get_current_page()];
+    } else {
+        [self callDelegateDidLoadPageAtIndex:0];
     }
 }
 
@@ -234,7 +243,7 @@
     } withUICompletion:^{
         // possible violation
         release->profile_list_status = list_status;
-        [self callDelegateDidUpdated];
+        [self callDelegateDidUpdate];
     }];
 }
 
@@ -249,7 +258,7 @@
     } withUICompletion:^{
         // possible violation
         release->is_favorite = bookmarked;
-        [self callDelegateDidUpdated];
+        [self callDelegateDidUpdate];
     }];
 }
 

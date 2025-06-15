@@ -23,17 +23,17 @@
 }
 
 
--(void)callDelegateDidUpdated {
-    [_delegate didUpdatedDataForPageableDataProvider:self];
+-(void)callDelegateDidUpdate {
+    [_delegate didUpdateDataForPageableDataProvider:self];
 }
--(void)callDelegateDidLoadedPageAtIndex:(NSInteger)index {
-    if ([_delegate respondsToSelector:@selector(pageableDataProvider:didLoadedPageAtIndex:)]) {
-        [_delegate pageableDataProvider:self didLoadedPageAtIndex:index];
+-(void)callDelegateDidLoadPageAtIndex:(NSInteger)index {
+    if ([_delegate respondsToSelector:@selector(pageableDataProvider:didLoadPageAtIndex:)]) {
+        [_delegate pageableDataProvider:self didLoadPageAtIndex:index];
     }
 }
--(void)callDelegateDidFailedPageAtIndex:(NSInteger)index {
-    if ([_delegate respondsToSelector:@selector(pageableDataProvider:didFailedPageAtIndex:)]) {
-        [_delegate pageableDataProvider:self didFailedPageAtIndex:index];
+-(void)callDelegateDidFailPageAtIndex:(NSInteger)index {
+    if ([_delegate respondsToSelector:@selector(pageableDataProvider:didFailPageAtIndex:)]) {
+        [_delegate pageableDataProvider:self didFailPageAtIndex:index];
     }
 }
 

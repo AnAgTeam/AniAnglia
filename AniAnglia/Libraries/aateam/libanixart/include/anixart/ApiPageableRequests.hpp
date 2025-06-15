@@ -240,7 +240,7 @@ namespace anixart {
         const std::string& _token;
     };
 
-    class ProfileListPages : public Paginator<Release> {
+    class ProfileListPages : public EmptyContentPaginator<Release> {
     public:
         ProfileListPages(const ApiSession& session, const std::string& token, const int32_t page, const Profile::ListStatus status, const Profile::ListSort sort);
 
@@ -253,7 +253,7 @@ namespace anixart {
         Profile::ListSort _sort;
     };
 
-    class ProfileListByProfilePages : public Paginator<Release> {
+    class ProfileListByProfilePages : public EmptyContentPaginator<Release> {
     public:
         ProfileListByProfilePages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Profile::ListStatus status, const Profile::ListSort sort);
 
@@ -267,7 +267,7 @@ namespace anixart {
         Profile::ListSort _sort;
     };
 
-    class ProfileFavoriteReleasesPages : public Paginator<Release> {
+    class ProfileFavoriteReleasesPages : public EmptyContentPaginator<Release> {
     public:
         ProfileFavoriteReleasesPages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Profile::ListSort sort, const int32_t filter_announce);
 
@@ -343,7 +343,7 @@ namespace anixart {
         Comment::Sort _sort;
     };
 
-    class ReleaseCommentRepliesPages : public Paginator<Comment> {
+    class ReleaseCommentRepliesPages : public OnePagePaginator<Comment> {
     public:
         ReleaseCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Comment::Sort sort);
 
@@ -414,7 +414,7 @@ namespace anixart {
         ProfileID _profile_id;
     };
 
-    class HistoryPages : public Paginator<Release> {
+    class HistoryPages : public EmptyContentPaginator<Release> {
     public:
         HistoryPages(const ApiSession& session, const std::string& token, const int32_t page);
 
@@ -425,7 +425,7 @@ namespace anixart {
         const std::string& _token;
     };
 
-    class CollectionsPages : public Paginator<Collection> {
+    class CollectionsPages : public EmptyContentPaginator<Collection> {
     public:
         CollectionsPages(const ApiSession& session, const std::string& token, const int32_t page, const int32_t where, const Collection::Sort sort);
 
@@ -463,7 +463,7 @@ namespace anixart {
         Collection::Sort _sort;
     };
 
-    class CollectionReleasesPages : public Paginator<Release> {
+    class CollectionReleasesPages : public EmptyContentPaginator<Release> {
     public:
         CollectionReleasesPages(const ApiSession& session, const std::string& token, const int32_t page, const CollectionID collection_id);
 

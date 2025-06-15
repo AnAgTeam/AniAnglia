@@ -34,15 +34,14 @@
 
 @end
 
-@interface CollectionsCollectionViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDataSourcePrefetching, UICollectionViewDelegateFlowLayout> {
-    anixart::Pageable<anixart::Collection>::UPtr _pages;
-    std::vector<anixart::Collection::Ptr> _collections;
-}
+@interface CollectionsCollectionViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDataSourcePrefetching, UICollectionViewDelegateFlowLayout, PageableDataProviderDelegate, LoadableViewDelegate>
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic) UICollectionViewScrollDirection axis;
-@property(nonatomic, retain) NSLock* lock;
+@property(nonatomic, retain) CollectionsPageableDataProvider* data_provider;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) UICollectionView* collection_view;
+@property(nonatomic, retain) UIRefreshControl* refresh_control;
+@property(nonatomic, retain) UILabel* empty_label;
 
 @end
 
@@ -208,65 +207,89 @@
 
 @implementation CollectionsCollectionViewController
 
--(instancetype)initWithPages:(anixart::Pageable<anixart::Collection>::UPtr)pages axis:(UICollectionViewScrollDirection)axis {
+-(instancetype)initWithAxis:(UICollectionViewScrollDirection)axis {
     self = [super init];
     
     _api_proxy = [LibanixartApi sharedInstance];
-    _lock = [NSLock new];
-    _pages = std::move(pages);
     _axis = axis;
     
     return self;
 }
+
+-(instancetype)initWithPages:(anixart::Pageable<anixart::Collection>::UPtr)pages axis:(UICollectionViewScrollDirection)axis {
+    self = [self initWithAxis:axis];
+
+    _data_provider = [[CollectionsPageableDataProvider alloc] initWithPages:std::move(pages)];
+    _data_provider.delegate = self;
+    
+    return self;
+}
+
+-(instancetype)initWithPageableDataProvier:(CollectionsPageableDataProvider*)pageable_data_provider axis:(UICollectionViewScrollDirection)axis {
+    self = [self initWithAxis:axis];
+
+    _data_provider = pageable_data_provider;
+    _data_provider.delegate = self;
+    
+    return self;
+}
+
 -(void)viewDidLoad {
     [super viewDidLoad];
     
     [self setup];
     [self setupLayout];
-    [self loadFirstPage];
+    if (_data_provider) {
+        [_loadable_view startLoading];
+        [_data_provider loadCurrentPageIfNeeded];
+    }
 }
+
 -(void)setup {
     UICollectionViewFlowLayout* layout = [UICollectionViewFlowLayout new];
     layout.scrollDirection = _axis;
     layout.minimumLineSpacing = 20;
-    layout.sectionInset = UIEdgeInsetsMake(10, 8, 10, 8);
+    layout.sectionInset = UIEdgeInsetsMake(0, 12, 0, 12);
+    
     _collection_view = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
     [_collection_view registerClass:CollectionCollectionViewCell.class forCellWithReuseIdentifier:[CollectionCollectionViewCell getIdentifier]];
     _collection_view.dataSource = self;
     _collection_view.delegate = self;
     _collection_view.prefetchDataSource = self;
     
+    if (_axis != UICollectionViewScrollDirectionHorizontal) {
+        _refresh_control = [UIRefreshControl new];
+        [_refresh_control addTarget:self action:@selector(onRefresh:) forControlEvents:UIControlEventValueChanged];
+    }
+    
     _loadable_view = [LoadableView new];
+    _loadable_view.delegate = self;
+    
+    _empty_label = [UILabel new];
+    _empty_label.text = NSLocalizedString(@"app.common.load_empty", "");
+    _empty_label.hidden = YES;
     
     [self.view addSubview:_collection_view];
     [self.view addSubview:_loadable_view];
+    [self.view addSubview:_empty_label];
     
     _collection_view.translatesAutoresizingMaskIntoConstraints = NO;
     _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
-    if (_is_container_view_controller) {
-        [NSLayoutConstraint activateConstraints:@[
-            [_collection_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-            [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-            [_collection_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-            [_collection_view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
-            [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    _empty_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_collection_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_collection_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+        [_collection_view.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
+        [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
             
-            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor]
-        ]];
-    }
-    else {
-        [NSLayoutConstraint activateConstraints:@[
-            [_collection_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [_collection_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [_collection_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [_collection_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-            
-            [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
-            [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor]
-        ]];
-    }
+        [_loadable_view.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_loadable_view.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+        
+        [_empty_label.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_empty_label.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+    ]];
 }
 -(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
@@ -276,57 +299,37 @@
     // TODO
 }
 
--(void)appendItemsFromBlock:(std::vector<anixart::Collection::Ptr>(^)())block {
-    if (!_pages) {
-        return;
-    }
-    
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
-        /* todo: change to thread-safe */
-        auto new_items = block();
-        [self->_lock lock];
-        self->_collections.insert(self->_collections.end(), new_items.begin(), new_items.end());
-        [self->_lock unlock];
-        return YES;
-    } withUICompletion:^{
-        [self->_loadable_view endLoading];
-        [self->_collection_view reloadData];
-    }];
-}
-
--(void)loadFirstPage {
-    [_loadable_view startLoading];
-    [self appendItemsFromBlock:^{
-        return self->_pages->get();
-    }];
-}
--(void)loadNextPage {
-    [self appendItemsFromBlock:^{
-        return self->_pages->next();
-    }];
-}
-
-
 -(void)setPages:(anixart::Pageable<anixart::Collection>::UPtr)pages {
-    _pages = std::move(pages);
-    [self reset];
-    [self loadFirstPage];
+    [_data_provider setPages:std::move(pages)];
 }
 
--(void)reset {
-    /* todo: load cancel */
-    _collections.clear();
-    [_collection_view reloadData];
+-(void)setDataProvider:(CollectionsPageableDataProvider*)pageable_data_provider {
+    _data_provider = pageable_data_provider;
+    if (_data_provider) {
+        _data_provider.delegate = self;
+        [_data_provider loadCurrentPageIfNeeded];
+    }
+}
+
+-(void)reload {
+    [_data_provider reload];
+}
+
+-(void)refresh {
+    [_data_provider refresh];
 }
 
 -(void)collectionView:(UICollectionView*)collection_view prefetchItemsAtIndexPaths:(NSArray<NSIndexPath *>*)index_paths {
-    if (!_pages || _pages->is_end()) {
+    if (!_data_provider) {
+        return;
+    }
+    if ([_data_provider isEnd]) {
         return;
     }
     NSUInteger item_count = [_collection_view numberOfItemsInSection:0];
     for (NSIndexPath* index_path in index_paths) {
         if ([index_path row] >= item_count - 1) {
-            [self loadNextPage];
+            [_data_provider loadNextPage];
             return;
         }
     }
@@ -335,32 +338,81 @@
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collection_view {
     return 1;
 }
+
 -(NSInteger)collectionView:(UICollectionView *)collection_view numberOfItemsInSection:(NSInteger)section {
-    return _collections.size();
+    if (!_data_provider) {
+        return 0;
+    }
+    return [_data_provider getItemsCount];
 }
+
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     CollectionCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[CollectionCollectionViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = index_path.row;
-    anixart::Collection::Ptr& collection = _collections[index];
+    anixart::Collection::Ptr collection = [_data_provider getCollectionAtIndex:index];
     NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(collection->image_url)];
     
     [cell setImageUrl:image_url];
     [cell setTitle:TO_NSSTRING(collection->title)];
     [cell setCommentCount:collection->comment_count];
     [cell setBookmarkCount:collection->favorite_count];
+    
     return cell;
 }
 
 -(CGSize)collectionView:(UICollectionView *)collection_view layout:(UICollectionViewFlowLayout *)collection_view_layout sizeForItemAtIndexPath:(NSIndexPath *)index_path {
+    if (_axis == UICollectionViewScrollDirectionHorizontal) {
+        return CGSizeMake(collection_view.frame.size.height * (16. / 9), collection_view.frame.size.height);
+    }
+    
     CGFloat width_inset = collection_view_layout.sectionInset.left + collection_view_layout.sectionInset.right;
-    return _axis == UICollectionViewScrollDirectionHorizontal ? CGSizeMake(collection_view.frame.size.height * (16. / 9), collection_view.frame.size.height) : CGSizeMake(collection_view.frame.size.width - width_inset, (collection_view.frame.size.width - width_inset) * (9. / 16));
+    return CGSizeMake(collection_view.frame.size.width - width_inset, (collection_view.frame.size.width - width_inset) * (9. / 16));
 }
 
 -(void)collectionView:(UICollectionView *)collection_view didSelectItemAtIndexPath:(NSIndexPath *)index_path {
     NSInteger index = index_path.row;
-    anixart::Collection::Ptr& collection = _collections[index];
+    anixart::Collection::Ptr collection = [_data_provider getCollectionAtIndex:index];
     
     [self.navigationController pushViewController:[[CollectionViewController alloc] initWithCollectionID:collection->id] animated:YES];
 }
+
+-(UIContextMenuConfiguration*)collectionView:(UICollectionView *)collection_view contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)index_path point:(CGPoint)point {
+    NSInteger index = index_path.row;
+    return [_data_provider getContextMenuConfigurationForItemAtIndex:index];
+}
+
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider *)pageable_data_provide {
+    [_collection_view reloadData];
+}
+
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index {
+    [_loadable_view endLoading];
+    _collection_view.refreshControl = _refresh_control;
+    
+    if (_refresh_control.refreshing) {
+        [_refresh_control endRefreshing];
+    }
+    _empty_label.hidden = [_data_provider getItemsCount] != 0;
+    [_collection_view reloadData];
+}
+
+-(void)pageableDataProvider:(PageableDataProvider *)pageable_data_provider didFailPageAtIndex:(NSInteger)page_index {
+    if (_refresh_control.refreshing) {
+        [_data_provider clear];
+        [_refresh_control endRefreshing];
+        _collection_view.refreshControl = nil;	
+    }
+    [_loadable_view endLoadingWithErrored:YES];
+}
+
+-(IBAction)onRefresh:(UIRefreshControl*)sender {
+    [self refresh];
+}
+
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
+    [_loadable_view startLoading];
+    [self refresh];
+}
+
 
 @end

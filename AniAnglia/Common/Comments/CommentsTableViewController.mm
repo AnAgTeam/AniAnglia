@@ -74,7 +74,7 @@
 
 -(void)setup {
     _content_view = [UIView new];
-    _content_view.layoutMargins = _normal_edge_insets = UIEdgeInsetsMake(8, 10, 8, 12);
+    _content_view.layoutMargins = _normal_edge_insets = UIEdgeInsetsMake(11, 20, 11, 20);
     
     _avatar_button = [UIButton new];
     [_avatar_button addTarget:self action:@selector(onAvatarPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -292,11 +292,9 @@
 }
 -(void)setUsername:(NSString*)username {
     _username_label.text = username;
-    [_username_label sizeToFit];
 }
 -(void)setPublishDate:(NSString*)publish_date {
     _publish_date_label.text = publish_date;
-    [_publish_date_label sizeToFit];
 }
 -(void)setContent:(NSString*)content {
     _content_label.text = content;
@@ -304,17 +302,14 @@
 }
 -(void)setVoteCount:(NSInteger)vote_count {
     _vote_count_label.text = [@(vote_count) stringValue];
-    [_vote_count_label sizeToFit];
 }
 
 -(void)setOrigin:(NSString*)origin name:(NSString*)name {
     _origin_label.text = origin;
     _origin_name_label.text = name;
-    [_origin_label sizeToFit];
-    [_origin_name_label sizeToFit];
 }
 -(void)setRepliesCount:(NSInteger)replies_count {
-    // enable "show_replies" button if has replies
+    // enable show replies button if has replies
     _show_replies_button_height_constraint.constant = replies_count != 0 ? 35 : 0;
     // TODO: add replies count to button
 }
@@ -390,6 +385,7 @@
     _lock = [NSLock new];
     _table_view = table_view;
     _data_provider = data_provider;
+    _data_provider.delegate = self;
     _enable_origin_reference = NO;
     _is_first_loading = NO;
     _content_insets = UIEdgeInsetsZero;
@@ -408,7 +404,6 @@
     _table_view.delegate = self;
     _table_view.prefetchDataSource = self;
     _table_view.contentInsetAdjustmentBehavior = _is_container_view_controller ? UIScrollViewContentInsetAdjustmentNever : UIScrollViewContentInsetAdjustmentAutomatic;
-//    _table_view.alwaysBounceVertical = NO;
     self.view = _table_view;
     self.tableView = _table_view;
 }
@@ -454,7 +449,11 @@
 
 -(void)setDataProvider:(CommentsPageableDataProvider*)data_provider {
     _data_provider = data_provider;
-    [_data_provider loadCurrentPage];
+    if (_data_provider) {
+        _data_provider.delegate = self;
+        // TODO: if needed
+        [_data_provider loadCurrentPage];
+    }
 }
 
 -(void)clear {
@@ -472,15 +471,19 @@
 -(void)setHeaderView:(UIView*)header_view {
     _table_view.tableHeaderView = header_view;
 }
+
 -(void)setContentInsets:(UIEdgeInsets)insets {
     _content_insets = insets;
 }
+
 -(CGPoint)getContentOffset {
     return _table_view.contentOffset;
 }
+
 -(void)setContentOffset:(CGPoint)point {
-    [_table_view setContentOffset:point animated:YES];
+    [_table_view setContentOffset:point animated:NO];
 }
+
 -(void)setKeyboardDismissMode:(UIScrollViewKeyboardDismissMode)dismiss_mode {
     _table_view.keyboardDismissMode = dismiss_mode;
 }
@@ -488,6 +491,7 @@
 -(NSInteger)getCommentIndex:(anixart::CommentID)comment_id {
     return [_data_provider getCommentIndex:comment_id];
 }
+
 -(void)scrollToCommentAtIndex:(NSInteger)comment_index {
     if (comment_index >= [_data_provider getItemsCount]) {
         return;
@@ -667,7 +671,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     // TODO
 }
 
--(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider {
     [_table_view reloadData];
 }
 
@@ -676,7 +680,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [_data_provider loadCurrentPage];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index {
     if (_is_first_loading) {
         _is_first_loading = NO;
         [_loadable_view endLoading];
@@ -685,7 +689,7 @@ prefetchRowsAtIndexPaths:(NSArray<NSIndexPath*>*)index_paths {
     [self callDelegateDidGotPageAtIndex:page_index];
 }
 
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index {
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailPageAtIndex:(NSInteger)page_index {
     if (_is_first_loading) {
         [_loadable_view endLoadingWithErrored:YES];
     } else {

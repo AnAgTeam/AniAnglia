@@ -18,6 +18,7 @@
 #import "ReleaseViewController.h"
 #import "CommentRepliesViewController.h"
 #import "ProfileViewController.h"
+#import "NamedSectionView.h"
 
 @class CollectionTableHeaderView;
 @class CollectionTableAuthorView;
@@ -32,6 +33,11 @@
 -(void)didBookmarkPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
 -(void)didCommentsPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
 -(void)didRandomPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view;
+@end
+
+@interface CollectionReleasesTableViewController : ReleasesTableViewController
+@property(nonatomic, copy) void(^on_refresh_handler)();
+
 @end
 
 @interface CollectionTableHeaderListsView : UIView
@@ -65,6 +71,7 @@
 @property(nonatomic, retain) CollectionTableAuthorView* author_view;
 @property(nonatomic, retain) ExpandableLabel* description_label;
 @property(nonatomic, retain) ProfileListsView* lists_view;
+@property(nonatomic, retain) NamedSectionView* lists_section_view;
 @property(nonatomic, retain) UIButton* random_button;
 
 -(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info;
@@ -80,21 +87,41 @@
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @property(nonatomic, retain) CollectionTableHeaderView* header_view;
-@property(nonatomic, retain) ReleasesTableViewController* releases_view_controller;
+@property(nonatomic, retain) CollectionReleasesTableViewController* releases_view_controller;
+@property(nonatomic) BOOL is_ui_inited;
+
+@end
+
+@implementation CollectionReleasesTableViewController
+
+-(void)refresh {
+    if (_on_refresh_handler) {
+        _on_refresh_handler();
+    }
+    [super refresh];
+}
 
 @end
 
 @implementation CollectionTableAuthorView
 
--(instancetype)initWithCollection:(anixart::Collection::Ptr)collection {
+-(instancetype)init {
     self = [super init];
     
-    _collection = collection;
     [self setup];
     [self setupLayout];
     
     return self;
 }
+
+-(instancetype)initWithCollection:(anixart::Collection::Ptr)collection {
+    self = [self init];
+    
+    [self setCollection:collection];
+    
+    return self;
+}
+
 -(void)setup {
     _avatar_button = [UIButton new];
     [_avatar_button addTarget:self action:@selector(onAvatarPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -105,7 +132,6 @@
     _avatar_view.contentMode = UIViewContentModeScaleAspectFill;
     
     _username_label = [UILabel new];
-    _username_label.text = TO_NSSTRING(_collection->creator->username);
     _username_label.textAlignment = NSTextAlignmentJustified;
     _username_label.numberOfLines = 0;
     
@@ -134,13 +160,23 @@
         [_username_label.centerYAnchor constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
         [_username_label.bottomAnchor constraintLessThanOrEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
     ]];
+}
+
+-(void)setupLayout {
+    _avatar_view.backgroundColor = [AppColorProvider foregroundColor1];
+    _username_label.textColor = [AppColorProvider textColor];
+}
+
+-(void)refresh {
+    _username_label.text = TO_NSSTRING(_collection->creator->username);
     
     NSURL* avatar_url = [NSURL URLWithString:TO_NSSTRING(_collection->creator->avatar_url)];
     [_avatar_view tryLoadImageWithURL:avatar_url];
 }
--(void)setupLayout {
-    _avatar_view.backgroundColor = [AppColorProvider foregroundColor1];
-    _username_label.textColor = [AppColorProvider textColor];
+
+-(void)setCollection:(anixart::Collection::Ptr)collection {
+    _collection = collection;
+    [self refresh];
 }
 
 -(IBAction)onAvatarPressed:(UIButton*)sender {
@@ -151,16 +187,23 @@
 
 @implementation CollectionTableHeaderView
 
--(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
+-(instancetype)init {
     self = [super init];
     
-    _collection_get_info = collection_get_info;
-    _collection = collection_get_info->collection;
     [self setup];
     [self setupLayout];
     
     return self;
 }
+
+-(instancetype)initWithCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
+    self = [self init];
+    
+    [self setCollectionGetInfo:collection_get_info];
+    
+    return self;
+}
+
 -(void)setup {
     _content_stack_view = [UIStackView new];
     _content_stack_view.axis = UILayoutConstraintAxisVertical;
@@ -175,15 +218,12 @@
     
     _title_label = [UILabel new];
     _title_label.font = [UIFont systemFontOfSize:22];
-    _title_label.text = TO_NSSTRING(_collection->title);
     _title_label.textAlignment = NSTextAlignmentJustified;
     _title_label.numberOfLines = 0;
     
     _created_date_label = [UILabel new];
-    _created_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.created.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_collection->creation_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     
     _updated_date_label = [UILabel new];
-    _updated_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.updated.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_collection->last_update_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
     
     _actions_stack_view = [UIStackView new];
     _actions_stack_view.axis = UILayoutConstraintAxisHorizontal;
@@ -191,29 +231,28 @@
     _actions_stack_view.alignment = UIStackViewAlignmentCenter;
     
     _bookmark_button = [UIButton new];
-    [_bookmark_button setTitle:[@(_collection->favorite_count) stringValue] forState:UIControlStateNormal];
-    [self updateBookmarkButton];
     [_bookmark_button addTarget:self action:@selector(onBookmarkButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _bookmark_button.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 8);
     _comments_button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 3); 
     _bookmark_button.layer.cornerRadius = 8;
     
     _comments_button = [UIButton new];
-    [_comments_button setTitle:[@(_collection->comment_count) stringValue] forState:UIControlStateNormal];
     [_comments_button setImage:[UIImage systemImageNamed:@"message"] forState:UIControlStateNormal];
     [_comments_button addTarget:self action:@selector(onCommentsButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _comments_button.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 8);
     _comments_button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 3);
     _comments_button.layer.cornerRadius = 8;
     
-    _author_view = [[CollectionTableAuthorView alloc] initWithCollection:_collection];
+    _author_view = [CollectionTableAuthorView new];
     _author_view.delegate = self;
     
     _description_label = [ExpandableLabel new];
-    [_description_label setText:TO_NSSTRING(_collection->description)];
     _description_label.delegate = self;
     
-    _lists_view = [[ProfileListsView alloc] initWithCollectionGetInfo:_collection_get_info];
+    _lists_view = [ProfileListsView new];
+    
+    _lists_section_view = [[NamedSectionView alloc] initWithName:NSLocalizedString(@"app.collection.lists", "") view:_lists_view];
+    _lists_section_view.layoutMargins = UIEdgeInsetsMake(0, 0, 0, 0);
     
     _random_button = [UIButton new];
     [_random_button setTitle:NSLocalizedString(@"app.collection.random.title", "") forState:UIControlStateNormal];
@@ -234,7 +273,7 @@
     [_actions_stack_view addArrangedSubview:[UIView new]];
     [_content_stack_view addArrangedSubview:_author_view];
     [_content_stack_view addArrangedSubview:_description_label];
-    [_content_stack_view addArrangedSubview:_lists_view];
+    [_content_stack_view addArrangedSubview:_lists_section_view];
     [_content_stack_view addArrangedSubview:_random_button];
     
     _content_stack_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -247,7 +286,7 @@
     _comments_button.translatesAutoresizingMaskIntoConstraints = NO;
     _author_view.translatesAutoresizingMaskIntoConstraints = NO;
     _description_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _lists_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _lists_section_view.translatesAutoresizingMaskIntoConstraints = NO;
     _random_button.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_content_stack_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
@@ -268,14 +307,12 @@
         [_comments_button.widthAnchor constraintGreaterThanOrEqualToConstant:60],
         [_author_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
         [_description_label.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
-        [_lists_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
+        [_lists_section_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
         [_random_button.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
         [_random_button.heightAnchor constraintEqualToConstant:50],
     ]];
-    
-    NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(_collection->image_url)];
-    [_image_view tryLoadImageWithURL:image_url];
 }
+
 -(void)setupLayout {
     _image_view.backgroundColor = [AppColorProvider foregroundColor1];
     _title_label.textColor = [AppColorProvider textColor];
@@ -289,12 +326,41 @@
     [_random_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
 }
 
+-(void)refresh {
+    _title_label.text = TO_NSSTRING(_collection->title);
+    
+    _created_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.created.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_collection->creation_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
+    
+    _updated_date_label.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"app.collection.updated.start", ""), [NSDateFormatter localizedStringFromDate:anix_time_point_to_nsdate(_collection->last_update_date) dateStyle:NSDateFormatterShortStyle timeStyle:NSDateFormatterShortStyle]];
+    
+    [_bookmark_button setTitle:[@(_collection->favorite_count) stringValue] forState:UIControlStateNormal];
+    [self updateBookmarkButton];
+    
+    [_comments_button setTitle:[@(_collection->comment_count) stringValue] forState:UIControlStateNormal];
+    
+    [_author_view setCollection:_collection];
+    
+    [_description_label setText:TO_NSSTRING(_collection->description)];
+    
+    [_lists_view setFromCollectionGetInfo:_collection_get_info];
+    
+    NSURL* image_url = [NSURL URLWithString:TO_NSSTRING(_collection->image_url)];
+    [_image_view tryLoadImageWithURL:image_url];
+}
+
 -(void)updateBookmarkButton {
     if (_collection->is_favorite) {
         [_bookmark_button setImage:[UIImage systemImageNamed:@"bookmark.fill"] forState:UIControlStateNormal];
     } else {
         [_bookmark_button setImage:[UIImage systemImageNamed:@"bookmark"] forState:UIControlStateNormal];
     }
+}
+
+-(void)setCollectionGetInfo:(anixart::CollectionGetInfo::Ptr)collection_get_info {
+    _collection_get_info = collection_get_info;
+    _collection = collection_get_info->collection;
+    
+    [self refresh];
 }
 
 -(IBAction)onBookmarkButtonPressed:(UIButton*)sender {
@@ -324,6 +390,7 @@
     
     _api_proxy = [LibanixartApi sharedInstance];
     _collection_id = collection_id;
+    _is_ui_inited = NO;
     
     return self;
 }
@@ -336,6 +403,7 @@
     
     [self loadCollection];
 }
+
 -(void)preSetup {
     _loadable_view = [LoadableView new];
     
@@ -349,12 +417,17 @@
         [_loadable_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
     ]];
 }
+
 -(void)setup {
+    __weak auto weak_self = self;
+    
     _header_view = [[CollectionTableHeaderView alloc] initWithCollectionGetInfo:_collection_get_info];
     _header_view.delegate = self;
     
-    _releases_view_controller = [[ReleasesTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->collections().collection_releases(_collection->id, 0)];
-    _releases_view_controller.is_container_view_controller = YES;
+    _releases_view_controller = [[CollectionReleasesTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->collections().collection_releases(_collection->id, 0)];
+    _releases_view_controller.on_refresh_handler = ^{
+        [weak_self onRefresh];
+    };
     [self addChildViewController:_releases_view_controller];
     [_releases_view_controller setHeaderView:_header_view];
     
@@ -368,32 +441,49 @@
         [_releases_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
         [_releases_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
         
+        [_header_view.topAnchor constraintGreaterThanOrEqualToAnchor:_releases_view_controller.view.topAnchor],
         [_header_view.leadingAnchor constraintEqualToAnchor:_releases_view_controller.view.layoutMarginsGuide.leadingAnchor],
         [_header_view.trailingAnchor constraintEqualToAnchor:_releases_view_controller.view.layoutMarginsGuide.trailingAnchor],
+        [_header_view.bottomAnchor constraintLessThanOrEqualToAnchor:_releases_view_controller.view.bottomAnchor],
     ]];
+    
+    [_releases_view_controller didMoveToParentViewController:self];
+    
+    _is_ui_inited = YES;
 }
+
 -(void)preSetupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
 }
+
 -(void)setupLayout {
     
 }
 
 -(void)loadCollection {
     [_loadable_view startLoading];
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+    [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
         self->_collection_get_info = api->collections().get_collection(self->_collection_id);
         self->_collection = self->_collection_get_info->collection;
-        return YES;
-    } withUICompletion:^{
-        [self->_loadable_view endLoading];
+        return NO;
+    } completion:^(BOOL errored) {
+        [self onCollectionLoaded:errored];
+    }];
+}
+
+-(void)onCollectionLoaded:(BOOL)errored {
+    [self->_loadable_view endLoading];
+    
+    if (!_is_ui_inited) {
         [self setup];
         [self setupLayout];
-    }];
+    }
+    [_header_view setCollectionGetInfo:_collection_get_info];
 }
 
 -(void)didBookmarkPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view {
     BOOL to_set_bookmarked = !_collection->is_favorite;
+    
     [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
         if (to_set_bookmarked) {
             api->collections().add_collection_to_favorites(self->_collection->id);
@@ -426,6 +516,10 @@
 -(void)didDescriptionExpandPressedForCollectionTableHeaderView:(CollectionTableHeaderView*)collection_table_header_view {
     [self.view layoutIfNeeded];
     [_releases_view_controller setHeaderView:_header_view];
+}
+
+-(void)onRefresh {
+    [self loadCollection];
 }
 
 @end

@@ -12,7 +12,6 @@
 @property(nonatomic, retain) UISearchBar* search_bar;
 @property(nonatomic, retain) UIBarButtonItem* back_bar_button;
 @property(nonatomic, retain) UIViewController* inline_view_controller;
-@property(nonatomic, retain) NSArray<NSLayoutConstraint*>* inline_view_controller_constraints;
 @property(nonatomic, retain) NSString* initial_search_bar_text;
 
 @property(nonatomic) UIBarButtonItem* orig_right_bar_button;
@@ -85,25 +84,15 @@
     }
     _inline_view_controller = view_controller;
     [self addChildViewController:_inline_view_controller];
-    [self.view addSubview:view_controller.view];
+    [self.view addSubview:_inline_view_controller.view];
     
-    view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
-    if (@available(iOS 15.0, *)) {
-        _inline_view_controller_constraints = @[
-            [view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-            [view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-            [view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
-        ];
-    } else {
-        _inline_view_controller_constraints = @[
-            [view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-            [view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-            [view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
-        ];
-    }
-    [NSLayoutConstraint activateConstraints:_inline_view_controller_constraints];
+    _inline_view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_inline_view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_inline_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_inline_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_inline_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+    ]];
     [_inline_view_controller didMoveToParentViewController:self];
 }
 -(void)hideInlineSearchViewController {
@@ -111,7 +100,6 @@
         return;
     }
     [_inline_view_controller willMoveToParentViewController:nil];
-    [NSLayoutConstraint deactivateConstraints:_inline_view_controller_constraints];
     [_inline_view_controller.view removeFromSuperview];
     [_inline_view_controller removeFromParentViewController];
 }

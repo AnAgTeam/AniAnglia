@@ -73,10 +73,12 @@
     [self setupLayout];
     [self loadParentComment];
 }
+
 -(void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
+
 -(void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     if (_last_text_enter_origin_y >= 0) {

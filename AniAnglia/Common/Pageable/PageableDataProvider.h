@@ -15,14 +15,14 @@
 
 @protocol PageableDataProviderDelegate <NSObject>
 
--(void)didUpdatedDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider;
+-(void)didUpdateDataForPageableDataProvider:(PageableDataProvider*)pageable_data_provider;
 
 @optional
 -(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didBeginLoadingPageAtIndex:(NSInteger)page_index;
 @optional
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadedPageAtIndex:(NSInteger)page_index;
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didLoadPageAtIndex:(NSInteger)page_index;
 @optional
--(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailedPageAtIndex:(NSInteger)page_index;
+-(void)pageableDataProvider:(PageableDataProvider*)pageable_data_provider didFailPageAtIndex:(NSInteger)page_index;
 
 @end
 
@@ -33,9 +33,9 @@
 
 -(instancetype)init;
 
--(void)callDelegateDidUpdated;
--(void)callDelegateDidLoadedPageAtIndex:(NSInteger)index;
--(void)callDelegateDidFailedPageAtIndex:(NSInteger)index;
+-(void)callDelegateDidUpdate;
+-(void)callDelegateDidLoadPageAtIndex:(NSInteger)index;
+-(void)callDelegateDidFailPageAtIndex:(NSInteger)index;
 
 @end
 

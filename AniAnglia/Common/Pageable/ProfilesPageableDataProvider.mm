@@ -38,7 +38,7 @@
 -(void)clear {
     // TODO: load cancel
     _profiles.clear();
-    [self callDelegateDidUpdated];
+    [self callDelegateDidUpdate];
 }
 
 -(void)reload {
@@ -53,7 +53,7 @@
 -(void)setPages:(anixart::Pageable<anixart::Profile>::UPtr)pages {
     _profiles.clear();
     _pages = std::move(pages);
-    [self callDelegateDidUpdated];
+    [self callDelegateDidUpdate];
     [self loadCurrentPage];
 }
 
@@ -84,7 +84,7 @@
         return NO;
     } completion:^(BOOL errored) {
         if (errored) {
-            [self callDelegateDidFailedPageAtIndex:self->_pages->get_current_page()];
+            [self callDelegateDidFailPageAtIndex:self->_pages->get_current_page()];
             return;
         }
         if (is_append) {
@@ -92,7 +92,7 @@
         } else {
             self->_profiles = std::move(new_items);
         }
-        [self callDelegateDidLoadedPageAtIndex:self->_pages->get_current_page()];
+        [self callDelegateDidLoadPageAtIndex:self->_pages->get_current_page()];
     }];
 }
 
