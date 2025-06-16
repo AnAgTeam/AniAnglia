@@ -3,7 +3,7 @@
 
 <div align="center">
 
-![app_icon](https://github.com/AnAgTeam/AniAnglia/raw/repo/app_icon.jpg)
+![app_icon](https://github.com/AnAgTeam/AniAnglia/raw/master/repo/app_icon.jpg)
 
 </div>
 
