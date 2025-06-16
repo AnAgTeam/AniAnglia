@@ -51,19 +51,19 @@
 "app.main_tab_bar.profile_tab.title" = "Профиль";
 
 /* MAIN STRINGS */
-"app.main.pages_segment_control.actual.name" = "Актуальное";
-"app.main.pages_segment_control.ongoing.name" = "Онгоинги";
-"app.main.pages_segment_control.upcoming.name" = "Анонсы";
-"app.main.pages_segment_control.finished.name" = "Вышедшие";
-"app.main.pages_segment_control.movies.name" = "Фильмы";
-"app.main.pages_segment_control.ova.name" = "OVA";
+"app.pages.releases.actual" = "Актуальное";
+"app.pages.releases.ongoing" = "Онгоинги";
+"app.pages.releases.upcoming" = "Анонсы";
+"app.pages.releases.finished" = "Вышедшие";
+"app.pages.releases.movies" = "Фильмы";
+"app.pages.releases.ova" = "OVA";
 
 /* DISCOVER */
-"app.discover.option.popular.name" = "Популярное";
-"app.discover.option.schedule.name" = "Расписание";
-"app.discover.option.collections.name" = "Коллекции";
-"app.discover.option.filter.name" = "Фильтр";
-"app.discover.option.random.name" = "Случайное";
+"app.discover.popular" = "Популярное";
+"app.discover.schedule" = "Расписание";
+"app.discover.collections" = "Коллекции";
+"app.discover.filter" = "Фильтр";
+"app.discover.random" = "Случайное";
 "app.release_search.ep_count.text" = "Кол-во эп";
 
 "app.discover.recomended" = "Рекомендовано";
@@ -141,6 +141,9 @@
 
 "app.collection.lists" = "В моих списках";
 
+"app.collection.bookmark.add" = "Добавить в закладки";
+"app.collection.bookmark.remove" = "Убрать из закладок";
+
 /* COMMENTS */
 "app.comments.reply_button.title" = "Ответить";
 "app.comments.show_replies_button.title" = "Показать ответы";
@@ -186,6 +189,7 @@
 "app.profile.lists" = "Статистика";
 "app.profile.lists.total_watched.start" = "Просмотрено серий";
 "app.profile.lists.watched_time.start" = "Общее время просмотра";
+"app.profile.lists.collections" = "Коллекции";
 "app.profile.lists.history" = "История";
 "app.profile.lists.favorite" = "Избранное";
 "app.profile.list_status.none" = "Не указано";

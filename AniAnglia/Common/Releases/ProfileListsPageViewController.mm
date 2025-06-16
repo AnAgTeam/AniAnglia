@@ -13,6 +13,7 @@
 #import "AppDataController.h"
 #import "ReleasesViewController.h"
 #import "ReleasesHistoryTableViewController.h"
+#import "CollectionsCollectionViewController.h"
 
 @interface ReleasesHistoryViewController : ReleasesViewController
 
@@ -70,10 +71,10 @@
     
     _page_view_controller.view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_page_view_controller.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_page_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_page_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_page_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+        [_page_view_controller.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_page_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_page_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_page_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
     ]];
    
 }
@@ -93,6 +94,7 @@
         [view_controllers insertObject:
          [[ReleasesViewController alloc] initWithPages:_api_proxy.api->releases().profile_favorites(_profile_id, _lists_sort, 0, 0)] atIndex:0];
         [view_controllers insertObject:[[ReleasesHistoryTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().get_history(0)] atIndex:0];
+        [view_controllers insertObject:[[CollectionsCollectionViewController alloc] initWithPages:_api_proxy.api->collections().my_favorite_collections(0) axis:UICollectionViewScrollDirectionVertical] atIndex:0];
     }
     return view_controllers;
 }
@@ -108,6 +110,7 @@
     if (_is_my_profile) {
         [lists_names insertObject:NSLocalizedString(@"app.profile.lists.favorite", "") atIndex:0];
         [lists_names insertObject:NSLocalizedString(@"app.profile.lists.history", "") atIndex:0];
+        [lists_names insertObject:NSLocalizedString(@"app.profile.lists.collections", "") atIndex:0];
     }
     return lists_names;
 }

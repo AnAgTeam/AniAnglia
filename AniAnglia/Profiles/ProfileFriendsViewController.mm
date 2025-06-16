@@ -79,9 +79,9 @@ enum class ProfileFriendsSections {
     _table_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+        [_table_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_table_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
     ]];
 }
 -(void)setupLayout {

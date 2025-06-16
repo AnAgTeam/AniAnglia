@@ -90,9 +90,11 @@
     anixart::Profile::Ptr _profile;
 }
 @property(nonatomic, retain) UICollectionView* roles_collection_view;
-@property(nonatomic) CGFloat cell_max_x;
 
 -(instancetype)initWithProfile:(anixart::Profile::Ptr)profile;
+
+-(void)setProfile:(anixart::Profile::Ptr)profile;
+
 @end
 
 @interface ProfileActionsView : UIView {
@@ -401,7 +403,6 @@
         [_roles_collection_view.topAnchor constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
         [_roles_collection_view.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
         [_roles_collection_view.trailingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_roles_collection_view.heightAnchor constraintGreaterThanOrEqualToConstant:40],
         [_roles_collection_view.bottomAnchor constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
     ]];
 }
@@ -440,7 +441,7 @@
 -(UICollectionViewCell*)collectionView:(UICollectionView *)collection_view cellForItemAtIndexPath:(NSIndexPath *)index_path {
     ProfileRolesViewCollectionViewCell* cell = [collection_view dequeueReusableCellWithReuseIdentifier:[ProfileRolesViewCollectionViewCell getIdentifier] forIndexPath:index_path];
     NSInteger index = index_path.row;
-    anixart::Role::Ptr& role = _profile->roles[index];
+    anixart::Role::Ptr role = _profile->roles[index];
     
     [cell setColor:[self getRoleColorFromHEX:TO_NSSTRING(role->color)]];
     [cell setName:TO_NSSTRING(role->name)];
@@ -831,10 +832,10 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _scroll_view.translatesAutoresizingMaskIntoConstraints = NO;
     _loading_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
             
         [_loading_view.centerXAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
         [_loading_view.centerYAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
@@ -867,10 +868,12 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _stats_view = [ProfileStatsBlockView new];
     _stats_view.delegate = self;
     
+    _roles_view = [ProfileRolesView new];
+    
     if (!_is_my_profile) {
         _actions_view = [ProfileActionsView new];
         _actions_view.delegate = self;
-        [optional_constraints addObject:[_actions_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor]];
+        [optional_constraints addObject:[_actions_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor]];
     }
     
     _lists_view = [ProfileListsView new];
@@ -883,7 +886,7 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _lists_section_view.relative_index = 1;
     _lists_section_view.layoutMargins = UIEdgeInsetsMake(0, 0, 0, 0);
     
-    _watch_dynamics_view = [[ProfileWatchDynamicsView alloc] initWithProfile:_profile];
+    _watch_dynamics_view = [ProfileWatchDynamicsView new];
     _watch_dynamics_view.layoutMargins = UIEdgeInsetsZero;
     
     _watch_dynamics_section_view = [[RelativeNamedSectionView alloc] initWithName:NSLocalizedString(@"app.profile.watch_dynamics", "") view:_watch_dynamics_view];
@@ -901,10 +904,8 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [_content_stack_view addArrangedSubview:_avatar_image_view];
     [_content_stack_view addArrangedSubview:_username_label];
     [_content_stack_view addArrangedSubview:_custom_status_label];
+    [_content_stack_view addArrangedSubview:_roles_view];
     [_content_stack_view addArrangedSubview:_status_label];
-    if (!_profile->roles.empty()) {
-        [_content_stack_view addArrangedSubview:_roles_view];
-    }
     [_content_stack_view addArrangedSubview:_stats_view];
     [_content_stack_view addArrangedSubview:_actions_view];
     [_content_stack_view addArrangedSubview:_named_sections_view];
@@ -915,11 +916,11 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     _avatar_image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _username_label.translatesAutoresizingMaskIntoConstraints = NO;
     _custom_status_label.translatesAutoresizingMaskIntoConstraints = NO;
-    _roles_view.translatesAutoresizingMaskIntoConstraints = NO;
     _status_label.translatesAutoresizingMaskIntoConstraints = NO;
     _stats_view.translatesAutoresizingMaskIntoConstraints = NO;
     _actions_view.translatesAutoresizingMaskIntoConstraints = NO;
     _named_sections_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _roles_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_content_stack_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor],
         [_content_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
@@ -930,13 +931,13 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
         [_avatar_image_view.heightAnchor constraintEqualToConstant:80],
         [_avatar_image_view.widthAnchor constraintEqualToConstant:80],
         
+        [_roles_view.heightAnchor constraintEqualToConstant:60],
+        [_roles_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_username_label.widthAnchor constraintLessThanOrEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_custom_status_label.widthAnchor constraintLessThanOrEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_status_label.widthAnchor constraintLessThanOrEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_stats_view.widthAnchor constraintEqualToAnchor:_content_stack_view.layoutMarginsGuide.widthAnchor],
         [_named_sections_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor],
-        
-        [_named_sections_view.bottomAnchor constraintEqualToAnchor:_content_stack_view.bottomAnchor],
     ]];
     [NSLayoutConstraint activateConstraints:optional_constraints];
     
@@ -974,12 +975,10 @@ static size_t PROFILE_WATCH_DYNAMICS_COLLECTION_VIEW_HEIGHT = 200;
     [_stats_view setProfile:_profile];
     
     if (!_profile->roles.empty()) {
-        _roles_view = [ProfileRolesView new];
-        [_content_stack_view insertSubview:_roles_view atIndex:4];
-        [_roles_view.widthAnchor constraintEqualToAnchor:_content_stack_view.widthAnchor].active = YES;
+        _roles_view.hidden = NO;
+        [_roles_view setProfile:_profile];
     } else {
-        [_roles_view removeFromSuperview];
-        _roles_view = nil;
+        _roles_view.hidden = YES;
     }
     
     [_actions_view setProfile:_profile isMyProfile:_is_my_profile];

@@ -92,10 +92,13 @@
         [_segmented_control.heightAnchor constraintEqualToAnchor:_segments_scroll_view.heightAnchor],
         
         [_page_view_controller.view.topAnchor constraintEqualToAnchor:_segments_scroll_view.bottomAnchor constant:8],
-        [_page_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-        [_page_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_page_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor]
+        [_page_view_controller.view.topAnchor constraintGreaterThanOrEqualToAnchor:self.view.topAnchor],
+        [_page_view_controller.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [_page_view_controller.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_page_view_controller.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]
     ]];
+    
+    [_page_view_controller didMoveToParentViewController:self];
     
     _page_pan_gesture_recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(onPageViewControllerPanGesture:)];
     _page_pan_gesture_recognizer.delegate = self;
@@ -126,6 +129,7 @@
     for (NSString* title : segment_titles) {
         [_segmented_control insertSegmentWithTitle:title atIndex:index++ animated:NO];
     }
+    [_segmented_control setSelectedSegmentIndex:0];
 }
 
 -(IBAction)onPagesSegmentChanged:(UISegmentedControl*)sender {

@@ -480,6 +480,7 @@
     UIButton* vote_button = [UIButton new];
     [vote_button setImage:[UIImage systemImageNamed:@"star"] forState:UIControlStateNormal];
     [vote_button addTarget:self action:@selector(onSomeVoteButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    vote_button.tintColor = [AppColorProvider primaryColor];
     return vote_button;
 }
 
@@ -815,9 +816,9 @@
     _loading_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
 
         [_loading_view.centerXAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.centerXAnchor],
         [_loading_view.centerYAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.centerYAnchor]
@@ -1037,8 +1038,10 @@
     _title_label.textColor = [AppColorProvider textColor];
     _orig_title_label.textColor = [AppColorProvider textSecondaryColor];
     _add_list_button.backgroundColor = [AppColorProvider foregroundColor1];
+    _add_list_button.tintColor = [AppColorProvider primaryColor];
     [_add_list_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _bookmark_button.backgroundColor = [AppColorProvider foregroundColor1];
+    _bookmark_button.tintColor = [AppColorProvider primaryColor];
     [_bookmark_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];
     _play_button.backgroundColor = [AppColorProvider primaryColor];
     [_play_button setTitleColor:[AppColorProvider textColor] forState:UIControlStateNormal];

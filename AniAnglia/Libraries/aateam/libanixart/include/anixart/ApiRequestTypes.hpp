@@ -33,7 +33,8 @@ namespace anixart {
 			enum Sort {
 				DateUpdate = 0,
 				Grade = 1,
-				Year = 2
+				Year = 2,
+				Popular = 3
 			};
 
 			std::string serialize() const override;

@@ -91,6 +91,7 @@
 		EFDE6BD02DF8D38000408CF0 /* PageableDataProvider.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */; };
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
+		EFF6D03F2DFF75370014FFEB /* ReleasesPopularPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF6D03E2DFF75370014FFEB /* ReleasesPopularPageViewController.mm */; };
 		EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */; };
 		EFFA21DD2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21DC2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm */; };
 		EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */; };
@@ -1405,6 +1406,8 @@
 		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
+		EFF6D03D2DFF75290014FFEB /* ReleasesPopularPageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesPopularPageViewController.h; sourceTree = "<group>"; };
+		EFF6D03E2DFF75370014FFEB /* ReleasesPopularPageViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesPopularPageViewController.mm; sourceTree = "<group>"; };
 		EFFA21D72DB01A31007D8AD4 /* ReleasesCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesCollectionViewController.h; sourceTree = "<group>"; };
 		EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesCollectionViewController.mm; sourceTree = "<group>"; };
 		EFFA21DB2DB021FD007D8AD4 /* CollectionsCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionsCollectionViewController.h; sourceTree = "<group>"; };
@@ -3626,6 +3629,8 @@
 				EFCE61222DFB3614008431CA /* ProfileListsPageViewController.mm */,
 				EF928F342DFC720E00A5CD85 /* ReleaseRelatedTableViewController.h */,
 				EF928F352DFC722000A5CD85 /* ReleaseRelatedTableViewController.mm */,
+				EFF6D03D2DFF75290014FFEB /* ReleasesPopularPageViewController.h */,
+				EFF6D03E2DFF75370014FFEB /* ReleasesPopularPageViewController.mm */,
 			);
 			path = Releases;
 			sourceTree = "<group>";
@@ -3745,6 +3750,7 @@
 				EFD7F7B02DAFBF5F00D0FBC0 /* ReleaseTableViewCell.mm in Sources */,
 				EF3568A52DA84F1D00086593 /* SharedRunningData.mm in Sources */,
 				EFB856722DFEF23600FCD712 /* ReleasesOnePageDataProvider.mm in Sources */,
+				EFF6D03F2DFF75370014FFEB /* ReleasesPopularPageViewController.mm in Sources */,
 				EF7CD28E2DA0400F00F88227 /* DynamicTableView.mm in Sources */,
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
 				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,

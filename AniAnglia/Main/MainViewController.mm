@@ -49,12 +49,12 @@ anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, con
        [[ReleasesViewController alloc] initWithPages:construct_filter_request_pages(_api_proxy.api, std::nullopt, anixart::Release::Category::Ova)]
    ]];
     [_page_view_controler setSegmentTitles:@[
-        NSLocalizedString(@"app.main.pages_segment_control.actual.name", ""),
-        NSLocalizedString(@"app.main.pages_segment_control.ongoing.name", ""),
-        NSLocalizedString(@"app.main.pages_segment_control.upcoming.name", ""),
-        NSLocalizedString(@"app.main.pages_segment_control.finished.name", ""),
-        NSLocalizedString(@"app.main.pages_segment_control.movies.name", ""),
-        NSLocalizedString(@"app.main.pages_segment_control.ova.name", "")
+        NSLocalizedString(@"app.pages.releases.actual", ""),
+        NSLocalizedString(@"app.pages.releases.ongoing", ""),
+        NSLocalizedString(@"app.pages.releases.upcoming", ""),
+        NSLocalizedString(@"app.pages.releases.finished", ""),
+        NSLocalizedString(@"app.pages.releases.movies", ""),
+        NSLocalizedString(@"app.pages.releases.ova", "")
     ]];
     
     [self addChildViewController:_page_view_controler];
@@ -63,10 +63,10 @@ anixart::FilterPages::UPtr construct_filter_request_pages(anixart::Api* api, con
     
     _page_view_controler.view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_page_view_controler.view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_page_view_controler.view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_page_view_controler.view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_page_view_controler.view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+        [_page_view_controler.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_page_view_controler.view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_page_view_controler.view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_page_view_controler.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
     ]];
 }
 

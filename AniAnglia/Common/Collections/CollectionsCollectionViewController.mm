@@ -15,11 +15,12 @@
 @interface CollectionInfoBadge : UIView
 @property(nonatomic, retain) NSString* name;
 @property(nonatomic, retain) UIImage* image;
+@property(nonatomic, retain) UIImage* setted_image;
 @property(nonatomic, retain) UIStackView* stack_view;
 @property(nonatomic, retain) UILabel* name_label;
 @property(nonatomic, retain) UIImageView* image_view;
 
--(instancetype)initWithName:(NSString*)name image:(UIImage*)image;
+-(instancetype)initWithName:(NSString*)name image:(UIImage*)image  settedImage:(UIImage*)setted_image;
 
 -(void)setName:(NSString*)name;
 -(void)setImage:(UIImage*)image;
@@ -55,11 +56,12 @@
     
     return self;
 }
--(instancetype)initWithName:(NSString*)name image:(UIImage*)image {
+-(instancetype)initWithName:(NSString*)name image:(UIImage*)image settedImage:(UIImage*)setted_image {
     self = [super init];
     
     _name = name;
     _image = image;
+    _setted_image = setted_image;
     [self setup];
     [self setupLayout];
     
@@ -78,6 +80,8 @@
     _name_label.text = _name;
     
     _image_view = [[UIImageView alloc] initWithImage:_image];
+    
+    [self setIsSetted:NO];
     
     [self addSubview:_stack_view];
     [_stack_view addArrangedSubview:_name_label];
@@ -99,7 +103,6 @@
 -(void)setupLayout {
     self.backgroundColor = [[AppColorProvider foregroundColor1] colorWithAlphaComponent:0.85];
     _name_label.textColor = [AppColorProvider textColor];
-    _image_view.tintColor = [AppColorProvider textColor];
 }
 
 -(void)setName:(NSString*)name {
@@ -111,6 +114,12 @@
     _image = image;
     _image_view.image = image;
 }
+
+-(void)setIsSetted:(BOOL)is_setted {
+    _image_view.image = is_setted ? _setted_image : _image;
+    _image_view.tintColor = is_setted ? [AppColorProvider primaryColor] : [AppColorProvider textColor];
+}
+
 @end
 
 @implementation CollectionCollectionViewCell
@@ -138,10 +147,10 @@
     _title_label.numberOfLines = 2;
     _title_label.font = [UIFont systemFontOfSize:24];
     
-    _comment_count_badge = [[CollectionInfoBadge alloc] initWithName:nil image:[UIImage systemImageNamed:@"message"]];
+    _comment_count_badge = [[CollectionInfoBadge alloc] initWithName:nil image:[UIImage systemImageNamed:@"message"] settedImage:[UIImage systemImageNamed:@"message.fill"]];
     _comment_count_badge.layoutMargins = UIEdgeInsetsMake(5, 8, 5, 8);
     
-    _bookmark_count_badge = [[CollectionInfoBadge alloc] initWithName:nil image:[UIImage systemImageNamed:@"bookmark"]];
+    _bookmark_count_badge = [[CollectionInfoBadge alloc] initWithName:nil image:[UIImage systemImageNamed:@"bookmark"] settedImage:[UIImage systemImageNamed:@"bookmark.fill"]];
     _bookmark_count_badge.layoutMargins = UIEdgeInsetsMake(5, 8, 5, 8);
     
     _gradient_layer = [CAGradientLayer layer];
@@ -201,6 +210,10 @@
 }
 -(void)setBookmarkCount:(NSInteger)bookmark_count {
     [_bookmark_count_badge setName:[@(bookmark_count) stringValue]];
+}
+
+-(void)setIsBookmarked:(BOOL)is_bookmarked {
+    [_bookmark_count_badge setIsSetted:is_bookmarked];
 }
 
 @end
@@ -356,6 +369,7 @@
     [cell setTitle:TO_NSSTRING(collection->title)];
     [cell setCommentCount:collection->comment_count];
     [cell setBookmarkCount:collection->favorite_count];
+    [cell setIsBookmarked:collection->is_favorite];
     
     return cell;
 }

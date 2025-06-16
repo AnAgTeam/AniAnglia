@@ -530,7 +530,9 @@
 
 -(void)setup {
     _scroll_view = [UIScrollView new];
-    _scroll_view.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    _scroll_view.contentInset = UIEdgeInsetsMake(12, 0, 10, 0);
+    _scroll_view.clipsToBounds = NO;
+    
     _stack_view = [UIStackView new];
     _stack_view.distribution = UIStackViewDistributionEqualSpacing;
     _stack_view.axis = UILayoutConstraintAxisVertical;
@@ -730,24 +732,24 @@
     _search_button.translatesAutoresizingMaskIntoConstraints = NO;
     
     [NSLayoutConstraint activateConstraints:@[
-        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-//        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_scroll_view.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.bottomAnchor],
         
-        [_stack_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor constant:10],
+        [_stack_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor],
         [_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
         [_stack_view.trailingAnchor constraintEqualToAnchor:_scroll_view.trailingAnchor],
-        [_stack_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor constant:-10],
+        [_stack_view.bottomAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor],
         [_stack_view.widthAnchor constraintEqualToAnchor:_scroll_view.widthAnchor],
-        [_stack_view.heightAnchor constraintGreaterThanOrEqualToAnchor:_scroll_view.heightAnchor],
+//        [_stack_view.heightAnchor constraintGreaterThanOrEqualToAnchor:_scroll_view.heightAnchor],
         
         [_genres_exclude_mode_button.centerYAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.centerYAnchor],
         [_genres_exclude_mode_button.trailingAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.trailingAnchor],
         [_genres_exclude_mode_button.widthAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.heightAnchor],
         [_genres_exclude_mode_button.heightAnchor constraintEqualToAnchor:_genres_select_button.button.layoutMarginsGuide.heightAnchor],
         
-        [_search_button.topAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor constant:3],
+        [_search_button.topAnchor constraintEqualToAnchor:_scroll_view.bottomAnchor],
         [_search_button.leadingAnchor constraintEqualToAnchor:_scroll_view.layoutMarginsGuide.leadingAnchor],
         [_search_button.trailingAnchor constraintEqualToAnchor:_scroll_view.layoutMarginsGuide.trailingAnchor],
         [_search_button.heightAnchor constraintEqualToConstant:50],

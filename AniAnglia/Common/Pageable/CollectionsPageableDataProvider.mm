@@ -146,12 +146,36 @@
     }
     anixart::Collection::Ptr collection = _collections[index];
     
-
+    UIAction* bookmark_action;
+    if (!collection->is_favorite) {
+        bookmark_action = [UIAction actionWithTitle:NSLocalizedString(@"app.collection.bookmark.add", "") image:[UIImage systemImageNamed:@"bookmark"] identifier:nil handler:^(UIAction* action) {
+            [self onBookmarkSelected:YES withCollection:collection];
+        }];
+    } else {
+        bookmark_action = [UIAction actionWithTitle:NSLocalizedString(@"app.collection.bookmark.remove", "") image:[UIImage systemImageNamed:@"bookmark.slash"] identifier:nil handler:^(UIAction* action) {
+            [self onBookmarkSelected:NO withCollection:collection];
+        }];
+    }
     
     return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^(NSArray* suggested_actions) {
         return [UIMenu menuWithChildren:@[
-
+            bookmark_action
         ]];
+    }];
+}
+
+-(void)onBookmarkSelected:(BOOL)bookmarked withCollection:(anixart::Collection::Ptr)collection {
+    [self.api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        if (bookmarked) {
+            api->collections().add_collection_to_favorites(collection->id);
+        } else {
+            api->collections().remove_collection_from_favorites(collection->id);
+        }
+        return YES;
+    } withUICompletion:^{
+        // possible violation
+        collection->is_favorite = bookmarked;
+        [self callDelegateDidUpdate];
     }];
 }
 

@@ -21,6 +21,7 @@
 #import "ReleasesTableViewController.h"
 #import "SegmentedPageViewController.h"
 #import "NamedSectionView.h"
+#import "ReleasesPopularPageViewController.h"
 
 @class DiscoverInterestingView;
 @class DiscoverOptionsView;
@@ -388,19 +389,19 @@
     
     switch (index) {
         case 0:
-            [cell setName:NSLocalizedString(@"app.discover.option.popular.name", "")];
+            [cell setName:NSLocalizedString(@"app.discover.popular", "")];
             [cell setImage:[UIImage systemImageNamed:@"flame"]];
             break;
         case 1:
-            [cell setName:NSLocalizedString(@"app.discover.option.schedule.name", "")];
+            [cell setName:NSLocalizedString(@"app.discover.schedule", "")];
             [cell setImage:[UIImage systemImageNamed:@"calendar"]];
             break;
         case 2:
-            [cell setName:NSLocalizedString(@"app.discover.option.collections.name", "")];
+            [cell setName:NSLocalizedString(@"app.discover.collections", "")];
             [cell setImage:[UIImage systemImageNamed:@"rectangle.stack"]];
             break;
         case 3:
-            [cell setName:NSLocalizedString(@"app.discover.option.random.name", "")];
+            [cell setName:NSLocalizedString(@"app.discover.random", "")];
             [cell setImage:[UIImage systemImageNamed:@"shuffle"]];
             break;
         default:
@@ -535,10 +536,10 @@
     _collections_section_view.translatesAutoresizingMaskIntoConstraints = NO;
     _comments_section_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        [_scroll_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_scroll_view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_scroll_view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [_scroll_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
         
         [_content_stack_view.topAnchor constraintEqualToAnchor:_scroll_view.topAnchor],
         [_content_stack_view.leadingAnchor constraintEqualToAnchor:_scroll_view.leadingAnchor],
@@ -590,12 +591,7 @@
 }
 
 -(void)didPopularPressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
-//    anixart::requests::FilterRequest fr;
-//    fr.sort = anixart::requests::FilterRequest::Sort::DateUpdate;
-//    SegmentedPageViewController* page_view_controller = [SegmentedPageViewController new];
-//    [page_view_controller setPageViewControllers:@[
-//        [ReleasesTableViewController alloc] initWithPages:],
-//    ]];
+    [self.navigationController pushViewController:[ReleasesPopularPageViewController new] animated:YES];
 }
 -(void)didSchedulePressedForDiscoverOptionsView:(DiscoverOptionsView *)discover_options_view {
     // TODO
