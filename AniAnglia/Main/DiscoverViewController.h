@@ -6,9 +6,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "NavSearchViewController.h"
+#import "ReleasesHistoryTableViewController.h"
 
-@interface DiscoverViewController : NavigationSearchViewController <NavigationSearchDelegate>
+@interface DiscoverViewController : UIViewController
 
 @end
 

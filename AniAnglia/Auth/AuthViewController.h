@@ -6,14 +6,14 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "UITextErrorField.h"
+#import "TextErrorField.h"
 
 @interface AuthViewController : UIViewController <UITextFieldDelegate> {
     CGFloat _screen_width;
     CGFloat _screen_height;
 }
 
--(instancetype)initWithNavController:(UINavigationController*)nav_controller;
+-(instancetype)init;
 
 @end
 

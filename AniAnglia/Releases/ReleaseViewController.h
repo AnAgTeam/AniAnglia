@@ -6,9 +6,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LibanixartApi.h"
 
 @interface ReleaseViewController : UIViewController
 
--(instancetype)initWithReleaseID:(NSInteger)release_id;
+-(instancetype)initWithRelease:(anixart::Release::Ptr)release;
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id;
+-(instancetype)initWithRandomRelease;
+-(instancetype)initWithRandomCollectionRelease:(anixart::CollectionID)collection_id;
 
 @end

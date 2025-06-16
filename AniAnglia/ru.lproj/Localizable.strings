@@ -27,6 +27,7 @@
 "app.restore.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
 "app.restore.password_field.error_long.text" = "Пароль слишком длинный";
 "app.restore.password_re_field.error_not_equal.text" = "Пароль не совпадает";
+"app.restore.restore_not_implemented.title" = "Восстановление пароля ещё не сделано";
 
 "app.signup.login_field.placeholder" = "Имя пользователя";
 "app.signup.email_field.placeholder" = "Email";
@@ -41,6 +42,7 @@
 "app.signup.password_field.error_long.text" = "Пароль слишком длинный";
 "app.signup.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
 "app.signup.password_re_field.error_not_equal.text" = "Пароль не совпадает";
+"app.sign_up.sign_up_not_implemented.title" = "Регистрация ещё не сделана ;P";
 
 /* MAIN TAB BAR STRINGS */
 "app.main_tab_bar.main_tab.title" = "Главная";
@@ -49,34 +51,114 @@
 "app.main_tab_bar.profile_tab.title" = "Профиль";
 
 /* MAIN STRINGS */
-"app.main.search_bar.placeholder" = "Найти релиз...";
-"app.main.pages_segment_control.actual.name" = "Актуальное";
-"app.main.pages_segment_control.ongoing.name" = "Онгоинги";
-"app.main.pages_segment_control.upcoming.name" = "Анонсы";
-"app.main.pages_segment_control.finished.name" = "Вышедшие";
-"app.main.pages_segment_control.movies.name" = "Фильмы";
-"app.main.pages_segment_control.ova.name" = "OVA";
+"app.pages.releases.actual" = "Актуальное";
+"app.pages.releases.ongoing" = "Онгоинги";
+"app.pages.releases.upcoming" = "Анонсы";
+"app.pages.releases.finished" = "Вышедшие";
+"app.pages.releases.movies" = "Фильмы";
+"app.pages.releases.ova" = "OVA";
 
 /* DISCOVER */
-"app.discover.search_bar.placeholder" = "Найти релиз...";
-"app.discover.option.popular.name" = "Популярное";
-"app.discover.option.schedule.name" = "Расписание";
-"app.discover.option.collections.name" = "Коллекции";
-"app.discover.option.filter.name" = "Фильтр";
-"app.discover.option.random.name" = "Случайное";
+"app.discover.popular" = "Популярное";
+"app.discover.schedule" = "Расписание";
+"app.discover.collections" = "Коллекции";
+"app.discover.filter" = "Фильтр";
+"app.discover.random" = "Случайное";
 "app.release_search.ep_count.text" = "Кол-во эп";
 
+"app.discover.recomended" = "Рекомендовано";
+"app.discover.discussing" = "Обсуждаемое";
+"app.discover.watching" = "Смотрят";
+"app.discover.week_collections" = "Коллекции недели";
+"app.discover.week_comments" = "Комментарии недели";
+
 /* RELEASES */
-"app.releases.search_bar.placeholder" = "Найти релиз...";
 "app.release.play_button.title" = "Смотреть";
 "app.release.add_list_button.menu.title" = "В список";
-"app.release.state.none.title" = "Не указано";
-"app.release.state.watching.title" = "Смотрю";
-"app.release.state.plan.title" = "В планах";
-"app.release.state.watched.title" = "Просмотрено";
-"app.release.state.deffered.title" = "Отложено";
-"app.release.state.dropped.title" = "Брошено";
+"app.release.copy" = "Скопировать...";
+"app.release.copy_title" = "Название";
+"app.release.copy_orig_title" = "Оригинальное название";
+"app.release.copy_alt_title" = "Альтернативное название";
 
+"app.release.season.unknown" = "Неизвестно";
+"app.release.season.winter" = "Зима";
+"app.release.season.spring" = "Весна";
+"app.release.season.summer" = "Лето";
+"app.release.season.fall" = "Осень";
+
+"app.release.category.unknown" = "Неизвестно";
+"app.release.category.series" = "Сериал";
+"app.release.category.movies" = "Фильм";
+"app.release.category.ova" = "OVA";
+
+"app.release.status.unknown" = "Неизвестно";
+"app.release.status.finished" = "Вышел";
+"app.release.status.ongoing" = "Онгоинг";
+"app.release.status.upcoming" = "Анонс";
+
+"app.release.aired_on.monday" = ", выходит каждый понедельник";
+"app.release.aired_on.tuesday" = ", выходит каждый вторник";
+"app.release.aired_on.wednesday" = ", выходит каждую среду";
+"app.release.aired_on.thursday" = ", выходит каждый четверг";
+"app.release.aired_on.friday" = ", выходит каждую пятницу";
+"app.release.aired_on.saturday" = ", выходит каждую субботу";
+"app.release.aired_on.sunday" = ", выходит каждое воскресенье";
+
+"app.release.general.year.end" = "г.";
+"app.release.general.ep_info.separator" = "эп. по";
+"app.release.general.ep_info.end" = "мин.";
+"app.release.general.author_info.studio" = "Студия";
+"app.release.general.author_info.author" = "Автор";
+"app.release.general.author_info.director" = "Режиссёр";
+
+"app.release.lists" = "В списках";
+"app.release.rating" = "Рейтинг";
+"app.release.rating.vote_count.end" = "Голосов";
+
+"app.release.video_blocks" = "Видео";
+"app.release.video_block.show_all_button.title" = "Показать все";
+
+"app.release.previews" = "Скриншоты";
+
+"app.release.related" = "Связанное";
+
+"app.release.comments" = "Комментарии";
+"app.release.comments.show_all_button.title" = "Показать все";
+
+"app.release.episode_count.end" = "эп.";
+
+"app.release.list_status.add" = "Добавить в список";
+"app.release.bookmark.add" = "Добавить в закладки";
+"app.release.bookmark.remove" = "Убрать из закладок";
+
+"app.release.search.placeholder" = "Найти релиз...";
+
+/* COLLECTION */
+"app.collection.created.start" = "Создано";
+"app.collection.updated.start" = "Обновлено";
+
+"app.collection.random.title" = "Случайное";
+
+"app.collection.lists" = "В моих списках";
+
+"app.collection.bookmark.add" = "Добавить в закладки";
+"app.collection.bookmark.remove" = "Убрать из закладок";
+
+/* COMMENTS */
+"app.comments.reply_button.title" = "Ответить";
+"app.comments.show_replies_button.title" = "Показать ответы";
+"app.comments.origin.collection" = "к коллекции";
+"app.comments.origin.release" = "к релизу";
+"app.comments.text_enter.placeholder" = "Комментарий";
+
+"app.comments.comment.copy_text" = "Скопировать текст";
+"app.comments.comment.edit" = "Изменить";
+"app.comments.comment.remove" = "Удалить";
+"app.comments.comment.report" = "Пожаловаться";
+
+"app.comments.spoiler.show" = "Показать спойлер";
+
+/* TO PLAY SELECT */
 "app.type_select.nav_item.title" = "Озвучка";
 "app.type_select.cell.ep_count.name" = "эп.";
 "app.source_select.nav_item.title" = "Источник";
@@ -86,9 +168,201 @@
 "app.bookmarks.search_bar.placeholder" = "Найти закладку...";
 
 /* PROFILE */
-"app.profile.search_bar.placeholder" = "Найти пользователя...";
+"app.profile.search.placeholder" = "Найти пользователя...";
+"app.profile.title" = "Профиль";
+
+"app.profile.status.online.name" = "Онлайн";
+"app.profile.status.offline.start" = "Был(а) в сети";
+
+"app.profile.stats_block.comment_count.name" = "Комментариев";
+"app.profile.stats_block.video_count.name" = "Видео";
+"app.profile.stats_block.collection_count.name" = "Коллекций";
+"app.profile.stats_block.friend_count.name" = "Друзей";
+
+"app.profile.actions.edit_button.title" = "Редактировать";
+"app.profile.actions.add_to_friends_button.title" = "Добавить в друзья";
+"app.profile.actions.remove_from_friends.title" = "Удалить из друзей";
+"app.profile.actions.cancel_friend_request_button.title" = "Отменить запрос дружбы";
+"app.profile.actions.accept_friend_request_button.title" = "Принять";
+"app.profile.actions.reject_friend_request_button.title" = "Отклонить";
+
+"app.profile.lists" = "Статистика";
+"app.profile.lists.total_watched.start" = "Просмотрено серий";
+"app.profile.lists.watched_time.start" = "Общее время просмотра";
+"app.profile.lists.collections" = "Коллекции";
+"app.profile.lists.history" = "История";
+"app.profile.lists.favorite" = "Избранное";
+"app.profile.list_status.none" = "Не указано";
+"app.profile.list_status.watching" = "Смотрю";
+"app.profile.list_status.plan" = "В планах";
+"app.profile.list_status.watched" = "Просмотрено";
+"app.profile.list_status.holdon" = "Отложено";
+"app.profile.list_status.dropped" = "Брошено";
+
+"app.profile.lists.watched_time.days" = "дней";
+"app.profile.lists.watched_time.hours" = "часов";
+"app.profile.lists.watched_time.minutes" = "минут";
+"app.profile.lists.watched_time.seconds" = "секунд";
+
+"app.profile.votes" = "Оценки релизов";
+
+"app.profile.watch_dynamics" = "Динамика просмотра";
+
+"app.profile.history" = "Просмотрено недавно";
+
+"app.profile.comments.release.segment" = "К релизам";
+"app.profile.comments.collection.segment" = "К коллекциям";
+
+"app.profile.copy_username" = "Скопировать ник";
+
+"app.profile.lists_pages" = "Списки";
+
+/* PROFILE FRIENDS */
+"app.profile_friends.title" = "Друзья";
+"app.profile_friends.friends_count.end" = "друзей";
+"app.profile_friends.requests_in.header" = "Входящие запросы";
+"app.profile_friends.requests_out.header" = "Исходящие запросы";
+"app.profile_friends.friends.header" = "Друзья";
+
+/* SETTINGS */
+"app.settings.title" = "Настройки";
+"app.settings.profile.name" = "Профиль";
+"app.settings.privacy_and_security.name" = "Приватность и безопасность";
+
+"app.settings.appearance.name" = "Внешний вид";
+"app.settings.notifications.name" = "Уведомления";
+"app.settings.data_control.name" = "Управление данными";
+"app.settings.playback.name" = "Воспроизведение";
+
+"app.settings.alternative_connection.name" = "Альтернативное соединение";
+"app.settings.alternative_connection.footer" = "Активируйте только если испытываете проблемы с работой приложения, связанные с блокировкой в вашей стране";
+
+"app.settings.help.name" = "Помощь";
+"app.settings.rules.name" = "Правила";
+
+/* APPEARANCE SETTINGS */
+"app.settings.appearance.theme" = "Тема";
+"app.settings.appearance.theme.dark" = "Тёмная";
+"app.settings.appearance.theme.light" = "Светлая";
+"app.settings.appearance.theme.system" = "Системная";
+
+"app.settings.appearance.main_display_style" = "Вид отображения релизов";
+"app.settings.appearance.main_display_style.table" = "Таблица";
+"app.settings.appearance.main_display_style.cards" = "Карточки";
+
+/* PROFILE SETTINGS */
+"app.settings.profile.save_button.title" = "Сохранить";
+
+"app.settings.profile.username" = "Никнейм";
+
+"app.settings.profile.custom_status" = "Статус";
+
+"app.settings.profile.social_vkonakte.placeholder" = "ВКонтакте";
+"app.settings.profile.social_telegram.placeholder" = "Telegram";
+"app.settings.profile.social_discord.placeholder" = "Discord";
+"app.settings.profile.social_instagram.placeholder" = "Instagram";
+"app.settings.profile.social_tiktok.placeholder" = "TikTok";
+"app.settings.profile.socials.footer" = "Укажите свои социальные сети, чтобы другие пользователи могли с вами связаться";
+
+"app.settings.profile.logout.text" = "Выйти";
+
+/* PRIVACY AND SECURITY SETTINGS */
+"app.settings.privacy_and_security.change_email.name" = "Изменить Email";
+"app.settings.privacy_and_security.change_password.name" = "Изменить пароль";
+
+"app.settings.privacy_and_security.privacy.header" = "Приватность";
+"app.settings.privacy_and_security.privacy.footer" = "";
+"app.settings.privacy_and_security.stats.name" = "Статистика";
+"app.settings.privacy_and_security.social.name" = "Соцсети";
+"app.settings.privacy_and_security.activity.name" = "Активность";
+"app.settings.privacy_and_security.friend_requests.name" = "Заявки в друзья";
+
+"app.settings.privacy_and_security.privacy.all" = "Все";
+"app.settings.privacy_and_security.privacy.only_friends" = "Только друзья";
+"app.settings.privacy_and_security.privacy.only_me" = "Только я";
+"app.settings.privacy_and_security.privacy.nobody" = "Никто";
 
 /* PLAYER */
 "app.player.stream_not_found_error.title" = "Ошибка";
 "app.player.stream_not_found_error.message" = "Не удалось найти источник для данной серии";
 "app.player.stream_not_found_error.default_action.text" = "ОК";
+
+/* SEARCH FILTER */
+"app.filter.multi_select._modal.done_button.title" = "Готово";
+
+"app.filter.status_select_button.menu.title" = "Статус";
+"app.filter.status_select_button.menu.none.text" = "Похуй";
+"app.filter.status_select_button.menu.finished.text" = "Вышел";
+"app.filter.status_select_button.menu.ongoing.text" = "Онгоинг";
+"app.filter.status_select_button.menu.upcoming.text" = "Анонс";
+
+"app.filter.category_select_button.menu.title" = "Категория";
+"app.filter.category_select_button.menu.none.text" = "Похуй";
+"app.filter.category_select_button.menu.series.text" = "Сериал";
+"app.filter.category_select_button.menu.movies.text" = "Фильмы";
+"app.filter.category_select_button.menu.ova.text" = "OVA";
+
+"app.filter.genres_select_button.menu.title" = "Жанры";
+
+"app.filter.country_select_button.title" = "Страна";
+"app.filter.country_select_button.menu.none.text" = "Похуй";
+"app.filter.country_select_button.menu.japan.text" = "Япония";
+"app.filter.country_select_button.menu.china.text" = "Китай";
+
+"app.filter.types_select_button.menu.title" = "Озвучки";
+
+"app.filter.studio_select_button.title" = "Студия";
+"app.filter.studio_select_button.menu.none.text" = "Похуй";
+
+"app.filter.season_select_button.title" = "Сезон";
+"app.filter.season_select_button.menu.none.text" = "Похуй";
+"app.filter.season_select_button.menu.winter.text" = "Зима";
+"app.filter.season_select_button.menu.spring.text" = "Весна";
+"app.filter.season_select_button.menu.summer.text" = "Лето";
+"app.filter.season_select_button.menu.fall.text" = "Осень";
+
+"app.filter.episode_count_select_button.title" = "Количество эпизодов";
+"app.filter.episode_count_select_button.menu.none.text" = "Похуй";
+"app.filter.episode_count_select_button.menu.1_to_12.text" = "От 1 по 12";
+"app.filter.episode_count_select_button.menu.13_to_24.text" = "От 13 по 24";
+"app.filter.episode_count_select_button.menu.25_to_100.text" = "От 25 по 100";
+"app.filter.episode_count_select_button.menu.100_plus.text" = "От 100";
+
+"app.filter.episode_duration_select_button.title" = "Длительность эпизодов";
+"app.filter.episode_duration_select_button.menu.none.text" = "Похуй";
+"app.filter.episode_duration_select_button.menu.to_10.text" = "До 10 минут";
+"app.filter.episode_duration_select_button.menu.to_30.text" = "До 30 минут";
+"app.filter.episode_duration_select_button.menu.30_plus.text" = "От 30 минут";
+
+"app.filter.list_exclude_select_button.menu.title" = "Исключить закладки";
+"app.filter.list_exclude_select_button.menu.favorite" = "Избранное";
+"app.filter.list_exclude_select_button.menu.watching" = "Смотрю";
+"app.filter.list_exclude_select_button.menu.plan" = "В планах";
+"app.filter.list_exclude_select_button.menu.watched" = "Просмотрено";
+"app.filter.list_exclude_select_button.menu.hold_on" = "Отложено";
+"app.filter.list_exclude_select_button.menu.dropped" = "Брошено";
+
+"app.filter.age_rating_select_button.menu.title" = "Возрастное ограничение";
+"app.filter.age_rating_select_button.menu.g" = "0+";
+"app.filter.age_rating_select_button.menu.pg6" = "6+";
+"app.filter.age_rating_select_button.menu.pg12" = "12+";
+"app.filter.age_rating_select_button.menu.r16" = "16+";
+"app.filter.age_rating_select_button.menu.r18" = "18+";
+
+"app.filter.sort_select_button.title" = "Сортировка";
+"app.filter.sort_select_button.menu.release_date.text" = "По дате выхода";
+"app.filter.sort_select_button.menu.grade.text" = "По рейтингу";
+"app.filter.sort_select_button.menu.year.text" = "По году";
+
+"app.filter.search_button.title" = "Поиск";
+
+/* COMMON */
+"app.common.expandable_label.show_all.title" = "Показать всё";
+
+"app.common.text_enter.edit_text" = "Редактирование комментария";
+
+/* COMMON LOADABLE */
+"app.loadable.error.text" = "Что-то пошло не так :O";
+"app.loadable.reload.title" = "Повторить";
+"app.common.named_section.show_all" = "Показать все";
+"app.common.load_empty" = "Ничего не найдено :C";

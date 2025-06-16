@@ -21,7 +21,6 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-    libanixart::api_init("ru");
     // setup audio
     AVAudioSession* audio_sess = [AVAudioSession sharedInstance];
     [audio_sess setCategory:AVAudioSessionCategoryPlayback error:nil];

@@ -9,5 +9,4 @@
 
 @interface SignUpViewController : UIViewController <UITextFieldDelegate>
 
--(instancetype)initWithNavController:(UINavigationController*)nav_controller;
 @end

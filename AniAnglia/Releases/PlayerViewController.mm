@@ -12,6 +12,7 @@
 #import "AppColor.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
+#import "TorrentAVAsset.h"
 
 @interface PlayerViewController : AVPlayerViewController
 @property(nonatomic, retain) AVPlayerViewController* player_view_controller;
@@ -20,14 +21,16 @@
 @end
 
 @interface PlayerController ()
-@property(atomic) long long release_id;
-@property(atomic) long long source_id;
+@property(atomic) anixart::ReleaseID release_id;
+@property(atomic) anixart::EpisodeSourceID source_id;
 @property(atomic) long source_position;
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic) std::unordered_map<std::string, std::string> streams_arr;
 @property(nonatomic, retain) NSURL* selected_stream_url;
 @property(nonatomic, retain) PlayerViewController* player_view_controller;
 @property(nonatomic, retain) AVPictureInPictureController* pip_controller;
+
+@property(nonatomic, retain) TorrentAVResourceLoaderDelegate* torrent_rc_delegate;
 @end
 
 static const std::string_view preferred_quality = "720";
@@ -70,20 +73,21 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 -(instancetype)init {
     self = [super init];
     
-    _release_id = -1;
-    _source_id = -1;
+    _release_id = static_cast<anixart::ReleaseID>(-1);
+    _source_id = static_cast<anixart::EpisodeSourceID>(-1);
     _source_position = -1;
     _api_proxy = [LibanixartApi sharedInstance];
     _player_view_controller = [PlayerViewController new];
     [_player_view_controller setDelegate:self];
     [self setupLayout];
+    _torrent_rc_delegate = [TorrentAVResourceLoaderDelegate new];
     
     return self;
 }
 
 -(void)loadStreamsAndAutoPlay:(BOOL)auto_play completion:(void(^)(BOOL errored))completion_handler {
     __block BOOL stream_founded = NO;
-    [_api_proxy performAsyncBlock:^BOOL(libanixart::Api* api){
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api){
         auto ep_target = self->_api_proxy.api->episodes().get_episode_target(self->_release_id, self->_source_id, static_cast<int32_t>(self->_source_position));
         self->_streams_arr = self->_api_proxy.parsers->extract_info(ep_target->url);
         auto selected_stream = choose_quality(self->_streams_arr, preferred_quality);
@@ -108,7 +112,7 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     }];
 }
 
--(void)playWithReleaseID:(long long)release_id sourceID:(long long)source_id position:(long)position autoShow:(BOOL)auto_show completion:(void(^)(BOOL errored))completion_handler {
+-(void)playWithReleaseID:(anixart::ReleaseID)release_id sourceID:(anixart::EpisodeSourceID)source_id position:(long)position autoShow:(BOOL)auto_show completion:(void(^)(BOOL errored))completion_handler {
     _release_id = release_id;
     _source_id = source_id;
     _source_position = position;
@@ -117,10 +121,13 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     
     _player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
     _player_view_controller.player = nil;
+    [_pip_controller stopPictureInPicture];
     
     [_pip_controller setDelegate:self];
     [self loadStreamsAndAutoPlay:YES completion:completion_handler];
-    [self showViewController:_player_view_controller];
+    if (auto_show) {
+        [self showViewController:_player_view_controller];
+    }
 }
 
 -(void)showAndRunPlayer {
@@ -128,20 +135,20 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     [self runPlayer];
 }
 
--(void)showViewController:(UIViewController*)view_controller{
-    UIViewController* top_view_controller = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-    while (top_view_controller.presentedViewController) {
-        top_view_controller = top_view_controller.presentedViewController;
-    }
-    if ([top_view_controller isKindOfClass:UINavigationController.class]) {
-        top_view_controller = [((UINavigationController*)top_view_controller) topViewController];
-    }
-    
+-(void)showViewController:(UIViewController*)view_controller {
+    UIViewController* top_view_controller = [[[[UIApplication sharedApplication] delegate] window] rootViewController]; // should be MainTabBarController
     [top_view_controller presentViewController:view_controller animated:NO completion:nil];
+}
+
+-(void)playWithURL:(NSURL*)url {
+    _selected_stream_url = url;
+    [self runPlayer];
 }
 
 -(void)runPlayer {
     _player_view_controller.player = [AVPlayer playerWithURL:_selected_stream_url];
+    AVURLAsset* asset = (AVURLAsset*)_player_view_controller.player.currentItem.asset;
+    [asset.resourceLoader setDelegate:_torrent_rc_delegate queue:dispatch_queue_create("TorrentRepo loader", nil)];
     [_player_view_controller.player play];
     
     AVMutableMetadataItem* title = [AVMutableMetadataItem new];
@@ -187,6 +194,11 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 }
 
 -(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler {
+    /* cancelled by PlayerController */
+    if (!_player_view_controller.player) {
+        completion_handler(YES);
+        return;
+    }
     [self showViewController:_player_view_controller];
 //    completion_handler(YES);
 }
