@@ -2,7 +2,7 @@
 #include <anixart/ApiRequestsCoreTypes.hpp>
 #include <anixart/ApiRequestTypes.hpp>
 #if __has_include("anixart/ApiRequestsAuth.hpp")
-#include <anixart/ApiRequestsAuth.hpp>
+# include <anixart/ApiRequestsAuth.hpp>
 #endif
 #include <netsess/UrlSession.hpp>
 
@@ -14,6 +14,7 @@ namespace anixart {
 	namespace requests {
 		extern const std::string_view base_url;
 		extern const std::string_view base_url_alt;
+		extern const std::string_view editor_url;
 
 		namespace collection {
 			extern ApiGetRequest collection(const int64_t collection_id, const std::string& token);
@@ -21,6 +22,7 @@ namespace anixart {
 			extern ApiGetRequest profile_collections(const int64_t profile_id, const int32_t page, const std::string& token);
 			extern ApiGetRequest release_collections(const int64_t release_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiGetRequest releases(const int64_t collection_id, const int32_t page, const std::string& token);
+			[[deprecated("use report api instead")]]
 			extern ApiPostRequest report(const int64_t collection_id, const CollectionReportRequest& request, const std::string& token);
 		};
 		namespace collection::comment {
@@ -32,7 +34,8 @@ namespace anixart {
 			extern ApiPostRequest process(const int64_t comment_id, const CommentProcessRequest& request, const std::string& token);
 			extern ApiGetRequest profile_comments(const int64_t profile_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiPostRequest replies(const int64_t comment_id, const int32_t page, const int32_t sort, const std::string& token);
-			extern ApiPostRequest report(const int64_t comment_id, const CommentReportRequest& request, const std::string& token);
+			[[deprecated("use report api instead")]]
+			extern ApiPostRequest report(const int64_t comment_id, const DeprecatedReportRequest& request, const std::string& token);
 			extern ApiGetRequest vote(const int64_t comment_id, const int32_t vote, const std::string& token);
 		};
 		namespace collection::favorite {
@@ -122,6 +125,7 @@ namespace anixart {
 		namespace episode {
 			extern ApiGetRequest episode_target(int64_t release_id, int64_t source_id, int32_t position);
 			extern ApiGetRequest episodes(const int64_t release_id, const int64_t type_id, const int64_t source_id, const int32_t sort, const std::string& token);
+			[[deprecated("use report api instead")]]
 			extern ApiPostRequest report(const int64_t release_id, const int64_t source_id, const int32_t position, const EpisodeReportRequest& request, const std::string& token);
 			extern ApiGetRequest sources(const int64_t release_id, const int64_t type_id);
 			extern ApiGetRequest types(const int64_t release_id);
@@ -132,7 +136,7 @@ namespace anixart {
 			extern ApiPostRequest watch(const int64_t release_id, const int64_t source_id, const int32_t position, const std::string& token);
 		};
 		namespace importing {
-			
+
 		};
 		namespace exporting {
 
@@ -158,6 +162,7 @@ namespace anixart {
 			extern ApiGetRequest random_favorite(const bool extended_mode, const std::string& token);
 			extern ApiGetRequest random_profile_list(const int64_t profile_id, const int32_t status, const bool extended_mode, const std::string& token);
 			extern ApiGetRequest release(const int64_t release_id, const bool extended_mode, const std::string& token);
+			[[deprecated("use report api instead")]]
 			extern ApiPostRequest report(const int64_t release_id, const ReleaseReportRequest& request, const std::string& token);
 			extern ApiGetRequest vote(const int64_t release_id, const int32_t vote, const std::string& token);
 		};
@@ -173,7 +178,8 @@ namespace anixart {
 			extern ApiPostRequest process(const int64_t comment_id, const CommentProcessRequest& request, const std::string& token);
 			extern ApiGetRequest profile_comments(const int64_t profile_id, const int32_t page, const int32_t sort, const std::string& token);
 			extern ApiPostRequest replies(const int64_t comment_id, const int32_t page, const int32_t sort, const std::string& token);
-			extern ApiPostRequest report(const int64_t comment_id, const CommentReportRequest& request, const std::string& token);
+			[[deprecated("use report api instead")]]
+			extern ApiPostRequest report(const int64_t comment_id, const DeprecatedReportRequest& request, const std::string& token);
 			extern ApiGetRequest vote(const int64_t comment_id, const int32_t vote, const std::string& token);
 		};
 		namespace release::streamingPlatform {
@@ -211,13 +217,102 @@ namespace anixart {
 			extern ApiGetRequest types(const int64_t release_id);
 			extern ApiGetRequest types(const std::string& token);
 		};
-	};
-	namespace requests::beta {
+		namespace article {
+			extern ApiGetRequest article(const int64_t article_id, const std::string& token);
+			extern ApiPostRequest articles(const int32_t page, const ArticlesFilterRequest& request, const std::string& token);
+			extern ApiPostRequest create(const int64_t channel_id, const ArticleCreateEditRequest& request, const std::string& token);
+			extern ApiPostRequest remove(const int64_t article_id, const std::string& token);
+			extern ApiPostRequest edit(const int64_t article_id, const ArticleCreateEditRequest& request, const std::string& token);
+			extern ApiPostRequest latest_article(const std::string& token);
+			extern ApiPostRequest latest_articles(const int32_t page, const std::string& token);
+			extern ApiGetRequest reposts(const int64_t article_id, const int32_t page, const int32_t sort, const std::string& token);
+			extern ApiGetRequest vote(const int64_t article_id, const int32_t vote, const std::string& token);
+			extern ApiPostRequest votes(const int64_t article_id, const int32_t page, const int32_t sort, const std::string& token);
+		};
+		namespace article::comment {
+			extern ApiPostRequest add(const int64_t article_id, const CommentAddRequest& request, const std::string& token);
+			extern ApiGetRequest comment(const int64_t article_id, const std::string& token);
+			extern ApiGetRequest comments(const int64_t article_id, const int32_t page, const int32_t sort, const std::string& token);
+			extern ApiGetRequest comment_popular(const int64_t article_id, const std::string& token);
+			extern ApiGetRequest remove(const int64_t comment_id, const std::string& token);
+			extern ApiPostRequest edit(const int64_t comment_id, const CommentEditRequest& request, const std::string& token);
+			extern ApiPostRequest process(const int64_t comment_id, const CommentProcessRequest& request, const std::string& token);
+			extern ApiGetRequest profile_comments(const int64_t profile_id, const int32_t page, const int32_t sort, const std::string& token);
+			extern ApiPostRequest replies(const int64_t comment_id, const int32_t page, const int32_t sort, const std::string& token);
+			[[deprecated("use report api instead")]]
+			extern ApiPostRequest report(const int64_t comment_id, const DeprecatedReportRequest& request, const std::string& token);
+			extern ApiGetRequest vote(const int64_t comment_id, const int32_t vote, const std::string& token);
+			extern ApiPostRequest votes(const int64_t comment_id, const int32_t page, int32_t sort, const std::string& token);
+		};
+		namespace article::suggestion {
+			extern ApiGetRequest article_suggestion(const int64_t article_suggestion_id, const std::string& token);
+			extern ApiPostRequest article_suggestions(const int32_t page, const ArticleSuggestionsFilterRequest& request, const std::string& token);
+			extern ApiPostRequest create(const int64_t channel_id, const ArticleSuggestionCreateEditRequest& request, const std::string& token);
+			extern ApiPostRequest remove(const int64_t article_suggestion_id, const std::string& token);
+			extern ApiPostRequest edit(const int64_t article_suggestion_id, const ArticleSuggestionCreateEditRequest& request, const std::string& token);
+			extern ApiPostRequest publish(const int64_t article_suggestion_id, const std::string& token);
+		};
+		namespace channel {
+			extern ApiPostMultipartRequest avatar_upload(const int64_t channel_id, const network::MultipartPart& image, const std::string& token);
+			extern ApiGetRequest block(const int64_t channel_id, const int64_t profile_id, const std::string& token);
+			extern ApiPostRequest block_manage(const int64_t channel_id, const ChannelBlockManageRequest& request, const std::string& token);
+			extern ApiGetRequest blocks(const int64_t channel_id, const int32_t page, const std::string& token);
+			extern ApiGetRequest blog(const int64_t profile_id, const std::string& token);
+			extern ApiGetRequest channel(const int64_t channel_id, const std::string& token);
+			extern ApiPostRequest channels(const int32_t page, const requests::ChannelsFilterRequest& request, const std::string& token);
+			extern ApiPostMultipartRequest cover_upload(const int64_t channel_id, const network::MultipartPart& image, const std::string& token);
+			extern ApiPostRequest create(const ChannelCreateEditRequest& request, const std::string& token);
+			extern ApiPostRequest create_blog(const std::string& token);
+			extern ApiPostRequest edit(const int64_t channel_id, const ChannelCreateEditRequest& request, const std::string& token);
+			extern ApiGetRequest editor_available(const int64_t channel_id, const bool is_suggestion, const bool is_edit_mode, const std::string& token);
+			extern ApiPostRequest permission_manage(const int64_t channel_id, const ChannelPermissionManageRequest& request, const std::string& token);
+			extern ApiPostRequest permissions(const int64_t channel_id, const int32_t page, const ChannelPermissionsFilterRequest& request, const std::string& token);
+			extern ApiPostRequest recomendations(const int32_t page, const std::string& token);
+			extern ApiPostRequest subscribe(const int64_t channel_id, const std::string& token);
+			extern ApiPostRequest subscribers(const int64_t channel_id, const int32_t page, const std::string& token);
+			extern ApiGetRequest subscription_count( const std::string& token);
+			extern ApiGetRequest subscriptions(const int32_t page, const std::string& token);
+			extern ApiPostRequest unsubscribe(const int64_t channel_id, const std::string& token);
+		}
 		namespace achievements {
 			extern ApiGetRequest get_achievement(const int64_t achievement_id, const std::string& token);
 		};
 		namespace profile::badge {
+			extern ApiGetRequest all(const int32_t page, const std::string& token);
 			extern ApiGetRequest edit(const int64_t badge_id, const std::string& token);
+			extern ApiGetRequest remove(const std::string& token);
+		};
+		namespace feed {
+			extern ApiPostRequest feed(const int32_t page, const ArticlesFilterRequest& request, const std::string& token);
+		};
+		namespace report {
+			extern ApiPostRequest article(const ArticleReportRequest& request, const std::string token);
+			extern ApiPostRequest article_comment(const ArticleCommentReportRequest& request, const std::string token);
+			extern ApiGetRequest article_comments_reasons(const std::string token);
+			extern ApiGetRequest article_reasons(const std::string token);
+			extern ApiPostRequest channel(const ChannelReportRequest& request, const std::string token);
+			extern ApiGetRequest channel_reasons(const std::string token);
+			extern ApiPostRequest collection(const CollectionReportRequest& request, const std::string token);
+			extern ApiPostRequest collection_comment(const CollectionCommentReportRequest& request, const std::string token);
+			extern ApiGetRequest collection_comments_reasons(const std::string token);
+			extern ApiGetRequest collection_reasons(const std::string token);
+			extern ApiPostRequest episode(const EpisodeReportRequest& request, const std::string token);
+			extern ApiGetRequest episode_reasons(const std::string token);
+			extern ApiPostRequest profile(const ProfileReportRequest& request, const std::string token);
+			extern ApiGetRequest profile_reasons(const std::string token);
+			extern ApiPostRequest release(const ReleaseReportRequest& request, const std::string token);
+			extern ApiPostRequest release_comment(const ReleaseCommentReportRequest& request, const std::string token);
+			extern ApiGetRequest release_comments_reasons(const std::string token);
+			extern ApiGetRequest release_reasons(const std::string token);
+		};
+		namespace schedule {
+			extern ApiGetRequest schedule();
+		};
+		namespace profile::role_list {
+			extern ApiGetRequest all(const int32_t page, const int64_t role_id, const std::string& token);
+		};
+		namespace editor {
+			//extern ApiPostMultipartRequest upload_media(...); // TODO
 		};
 	};
 };

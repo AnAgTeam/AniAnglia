@@ -89,10 +89,10 @@
     _avatar_image_view.translatesAutoresizingMaskIntoConstraints = NO;
     _avatar_button.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
-        [_content_table_view.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [_content_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [_content_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [_content_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_content_table_view.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
+        [_content_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
         
         [_avatar_button.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [_avatar_button.trailingAnchor constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],

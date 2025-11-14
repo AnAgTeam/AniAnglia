@@ -15,9 +15,7 @@
 #import "TorrentAVAsset.h"
 
 @interface PlayerViewController : AVPlayerViewController
-@property(nonatomic, retain) AVPlayerViewController* player_view_controller;
-@property(nonatomic) BOOL in_pip;
-@property(nonatomic) BOOL is_visible;
+
 @end
 
 @interface PlayerController ()
@@ -27,8 +25,9 @@
 @property(nonatomic, retain) LibanixartApi* api_proxy;
 @property(nonatomic) std::unordered_map<std::string, std::string> streams_arr;
 @property(nonatomic, retain) NSURL* selected_stream_url;
-@property(nonatomic, retain) PlayerViewController* player_view_controller;
+@property(nonatomic, weak) PlayerViewController* player_view_controller;
 @property(nonatomic, retain) AVPictureInPictureController* pip_controller;
+@property(nonatomic) BOOL just_restored_pip;
 
 @property(nonatomic, retain) TorrentAVResourceLoaderDelegate* torrent_rc_delegate;
 @end
@@ -53,19 +52,6 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 
 @implementation PlayerViewController
 
--(void)viewWillAppear:(BOOL)animated {
-    _is_visible = YES;
-    [super viewWillAppear:animated];
-}
-
--(void)viewDidDisappear:(BOOL)animated{
-    if (!_in_pip) {
-        self.player = nil;
-    }
-    _is_visible = NO;
-    [super viewDidDisappear:animated];
-}
-
 @end
 
 @implementation PlayerController
@@ -77,8 +63,6 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     _source_id = static_cast<anixart::EpisodeSourceID>(-1);
     _source_position = -1;
     _api_proxy = [LibanixartApi sharedInstance];
-    _player_view_controller = [PlayerViewController new];
-    [_player_view_controller setDelegate:self];
     [self setupLayout];
     _torrent_rc_delegate = [TorrentAVResourceLoaderDelegate new];
     
@@ -119,14 +103,21 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     
 //    _pip_controller = [AVPictureInPictureController alloc] init;
     
-    _player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
-    _player_view_controller.player = nil;
-    [_pip_controller stopPictureInPicture];
+    if (_player_view_controller) {
+        _player_view_controller.player = nil;
+    }
+    
+    PlayerViewController* player_view_controller = [PlayerViewController new];
+    [player_view_controller setDelegate:self];
+    player_view_controller.modalPresentationStyle = UIModalPresentationFullScreen;
+//    [_pip_controller stopPictureInPicture];
+    
+    _player_view_controller = player_view_controller;
     
     [_pip_controller setDelegate:self];
     [self loadStreamsAndAutoPlay:YES completion:completion_handler];
     if (auto_show) {
-        [self showViewController:_player_view_controller];
+        [self showViewController:player_view_controller];
     }
 }
 
@@ -183,23 +174,23 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
 }
 
 -(void)playerViewControllerWillStartPictureInPicture:(AVPlayerViewController*)player_view_controller{
-    _player_view_controller.in_pip = YES;
+
 }
 -(void)playerViewControllerDidStopPictureInPicture:(AVPlayerViewController*)player_view_controller {
-    _player_view_controller.in_pip = NO;
-    if (!_player_view_controller.is_visible) {
-        // closed outside application
+    if (!_just_restored_pip) {
         _player_view_controller.player = nil;
     }
+    _just_restored_pip = false;
 }
 
 -(void)playerViewController:(AVPlayerViewController *)player_view_controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler {
     /* cancelled by PlayerController */
-    if (!_player_view_controller.player) {
+    _just_restored_pip = true;
+    if (!player_view_controller.player) {
         completion_handler(YES);
         return;
     }
-    [self showViewController:_player_view_controller];
+    [self showViewController:player_view_controller];
 //    completion_handler(YES);
 }
 

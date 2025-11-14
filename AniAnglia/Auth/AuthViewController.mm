@@ -54,7 +54,7 @@
     _login_view = [TextErrorField new];
     _login_field = _login_view.field;
     _login_field.keyboardType = UIKeyboardTypeDefault;
-    _login_field.placeholder = NSLocalizedString(@"app.auth.login_field.placeholder", "");
+    _login_field.placeholder = NSLocalizedString(@"app.auth.username_or_email", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _login_field.returnKeyType = UIReturnKeyDone;
     _login_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -67,7 +67,7 @@
     _password_view = [TextErrorField new];
     _password_field = _password_view.field;
     _password_field.keyboardType = UIKeyboardTypeDefault;
-    _password_field.placeholder = NSLocalizedString(@"app.auth.password_field.placeholder", "");
+    _password_field.placeholder = NSLocalizedString(@"app.auth.password", "");
     _password_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _password_field.returnKeyType = UIReturnKeyDone;
     _password_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -79,18 +79,18 @@
     [_password_field setDelegate:self];
     
     _login_button = [UIButton new];
-    [_login_button setTitle:NSLocalizedString(@"app.auth.login_button.normal.title", "") forState:UIControlStateNormal];
+    [_login_button setTitle:NSLocalizedString(@"app.auth.login.confirm", "") forState:UIControlStateNormal];
     _login_button.layer.cornerRadius = 8.0;
     [_login_button addTarget:self action:@selector(loginButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     _login_indicator = [UIActivityIndicatorView new];
     
     _forgot_button = [UIButton new];
-    [_forgot_button setTitle:NSLocalizedString(@"app.auth.forgot_button.title", "") forState:UIControlStateNormal];
+    [_forgot_button setTitle:NSLocalizedString(@"app.auth.forgot_password", "") forState:UIControlStateNormal];
     [_forgot_button addTarget:self action:@selector(forgotButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     _signup_button = [UIButton new];
-    [_signup_button setTitle:NSLocalizedString(@"app.auth.signup_button.title", "") forState:UIControlStateNormal];
+    [_signup_button setTitle:NSLocalizedString(@"app.auth.sign_up", "") forState:UIControlStateNormal];
     [_signup_button addTarget:self action:@selector(signUpButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview:_login_view];
@@ -178,10 +178,10 @@
         [self->_login_indicator stopAnimating];
         if (errored) {
             if (error_code == anixart::codes::auth::SignInCode::InvalidLogin) {
-                [self->_login_view showError:NSLocalizedString(@"app.auth.login_field.error_invalid.text", "")];
+                [self->_login_view showError:NSLocalizedString(@"app.auth.error.invalid_username_or_email", "")];
             }
             else if (error_code == anixart::codes::auth::SignInCode::InvalidPassword) {
-                [self->_password_view showError:NSLocalizedString(@"app.auth.password_field.error_invalid.text", "")];
+                [self->_password_view showError:NSLocalizedString(@"app.auth.error.invalid_password", "")];
             }
         } else {
             [self setRootViewControllerToMain];
@@ -221,11 +221,11 @@
 -(BOOL)checkAllFieldsIsCorrect {
     BOOL is_all_corrent = YES;
     if ([_login_field.text length] == 0) {
-        [_login_view showError:NSLocalizedString(@"app.auth.login_field.error_empty.text", "")];
+        [_login_view showError:NSLocalizedString(@"app.auth.username.error.empty", "")];
         is_all_corrent = NO;
     }
     if ([_password_field.text length] == 0) {
-        [_password_view showError:NSLocalizedString(@"app.auth.password_field.error_empty.text", "")];
+        [_password_view showError:NSLocalizedString(@"app.auth.password.error.empty", "")];
         is_all_corrent = NO;
     }
     return is_all_corrent;

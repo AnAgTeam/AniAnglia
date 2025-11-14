@@ -20,6 +20,7 @@
 
 +(UIColor*)getColorForListStatus:(anixart::Profile::ListStatus)list_status;
 +(NSString*)getListStatusName:(anixart::Profile::ListStatus)list_status;
++(NSString*)getListName:(anixart::Profile::List)list;
 
 -(instancetype)init;
 -(instancetype)initWithRelease:(anixart::Release::Ptr)release;

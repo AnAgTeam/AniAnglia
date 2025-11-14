@@ -1,6 +1,8 @@
 #pragma once
 #include <anixart/StrongTypedef.hpp>
 #include <anixart/CachingJson.hpp>
+#include <anixart/Variant.hpp>
+#include <anixart/Serializable.hpp>
 #include <netsess/NetTypes.hpp>
 #include <chrono>
 #include <vector>
@@ -23,9 +25,9 @@ namespace anixart {
 		struct ReleaseVideoHostingIDTag {};
 		struct ProfileWatchDynamicIDTag {};
 		struct RoleIDTag {};
-		namespace beta {
-			struct BadgeIDTag {};
-		};
+		struct BadgeIDTag {};
+		struct ArticleIDTag {};
+		struct ChannelIDTag {};
 	};
 
 	using ProfileID = aux::StrongTypedef<int64_t, aux::ProfileIDTag>;
@@ -44,23 +46,47 @@ namespace anixart {
 	using ReleaseVideoHostingID = aux::StrongTypedef<int64_t, aux::ReleaseVideoHostingIDTag>;
 	using ProfileWatchDynamicID = aux::StrongTypedef<int64_t, aux::ProfileWatchDynamicIDTag>;
 	using RoleID = aux::StrongTypedef<int64_t, aux::RoleIDTag>;
+	using BadgeID = aux::StrongTypedef<int64_t, aux::BadgeIDTag>;
+	using ArticleID = aux::StrongTypedef<int64_t, aux::ArticleIDTag>;
+	using ChannelID = aux::StrongTypedef<int64_t, aux::ChannelIDTag>;
 
 	//using Clock = std::chrono::system_clock;
 	using TimestampDuration = std::chrono::seconds;
 	using TimestampPoint = std::chrono::time_point<std::chrono::system_clock, TimestampDuration>;
 
-	namespace beta {
-		using BadgeID = aux::StrongTypedef<int64_t, aux::beta::BadgeIDTag>;
+	namespace flags {
+		using BitFlagIndex = uint64_t;
 
-		class Bagde {
-		public:
-			BadgeID id;
-			int64_t type;
-			std::string name;
-			TimestampPoint date;
-			std::string image_url; // lottie animations file url
+		constexpr BitFlagIndex is_compact = 1;
+
+		constexpr BitFlagIndex flags_max = 1;
+	};
+
+	class Badge {
+	public:
+		using Ptr = std::shared_ptr<Badge>;
+
+		enum class Type {
+			Image = 0,
+			LottieAnimation = 1
 		};
-	}
+
+		Badge(json::CachingJsonObject& object);
+
+		static Badge from_inner(json::CachingJsonObject& object);
+
+		BadgeID id;
+		std::string name;
+		Type type;
+		TimestampPoint date;
+		std::string badge_url;
+
+	private:
+		struct ctx_from_inner_type { explicit ctx_from_inner_type() = default; };
+		static constexpr ctx_from_inner_type ctx_from_inner;
+		// constructor for "from_inner()"
+		Badge(json::CachingJsonObject& object, ctx_from_inner_type);
+	};
 
 	class ProfileToken {
 	public:
@@ -95,6 +121,9 @@ namespace anixart {
 
 	class Release;
 	class Collection;
+	class Article;
+	class Comment;
+	class ReleaseVideo;
 
 	class Profile {
 	public:
@@ -162,6 +191,12 @@ namespace anixart {
 			Nobody = 1,
 		};
 
+		enum class VoteFilterBy {
+			All = 1,
+			OnlyNegative = 2,
+			OnlyPositive = 3
+		};
+
 		ProfileID id;
 		std::string username;
 		std::string avatar_url;
@@ -174,7 +209,7 @@ namespace anixart {
 		TimestampPoint last_activity_time;
 		TimestampPoint register_date;
 		
-		// experimental::Badge badge;
+		Badge badge;
 
 		bool is_banned;
 		bool is_perm_banned;
@@ -200,6 +235,10 @@ namespace anixart {
 		std::vector<std::shared_ptr<Release>> history; // TODO: remove recursive definition
 		std::vector<ProfileWatchDynamic::Ptr> watch_dynamics;
 		std::vector<Role::Ptr> roles;
+		std::vector<std::shared_ptr<Collection>> collections_preview; // TODO: remove recursive definition
+		std::vector<std::shared_ptr<Comment>> comments_preview; // TODO: remove recursive definition
+		std::vector<std::shared_ptr<Comment>> release_comments_preview; // TODO: remove recursive definition
+		std::vector<std::shared_ptr<ReleaseVideo>> release_videos_preview; // TODO: remove recursive definition
 
 		bool is_blocked;
 		bool is_me_blocked;
@@ -228,6 +267,9 @@ namespace anixart {
 		bool is_google_bound;
 
 		FriendStatus get_friend_status_to(ProfileID other_id) const;
+
+	private:
+		static int32_t parse_friend_status(json::CachingJsonObject& object);
 	};
 
 	class EpisodeUpdate {
@@ -331,11 +373,6 @@ namespace anixart {
 
 		static constexpr CommentID invalid_id = CommentID(0);
 
-		enum class FilterBy {
-			All = 1,
-			Negative = 2,
-			Positive = 3
-		};
 		enum class Sort {
 			Newest = 1,
 			Oldest = 2,
@@ -355,8 +392,10 @@ namespace anixart {
 		int64_t reply_count;
 		TimestampPoint date;
 		Profile::Ptr author;
-		std::shared_ptr<Release> release; // If it's from release, this setted. TODO: remove recursive definition
-		std::shared_ptr<Collection> collection; // If it's from collection, this setted. TODO: remove recursive definition
+
+		std::shared_ptr<Release> release; // If it's from release, this setted. TODO: remove recirsive definition
+		std::shared_ptr<Collection> collection; // If it's from collection, this setted. TODO: remove recirsive definition
+		std::shared_ptr<Article> article; // If it's from article, this setted. TODO: remove recirsive definition
 
 		bool is_deleted;
 		bool is_edited;
@@ -643,6 +682,331 @@ namespace anixart {
 		std::string vk_page;
 	};
 
+	class ArticleBlock : Serializable {
+	public:
+		using Ptr = std::shared_ptr<ArticleBlock>;
+
+		ArticleBlock(std::string_view id, std::string_view name);
+		ArticleBlock(json::CachingJsonObject& object);
+
+		virtual std::string serialize() const override;
+
+		static std::string get_random_uuid();
+
+		std::string id;
+		const std::string name;
+	};
+
+	class ArticleDelimiterBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleDelimiterBlock>;
+
+		static constexpr std::string_view name = "delimiter";
+
+		ArticleDelimiterBlock(std::string_view id);
+		ArticleDelimiterBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+	};
+
+	class ArticleEmbedBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleEmbedBlock>;
+
+		static constexpr std::string_view name = "embed";
+
+		ArticleEmbedBlock(std::string_view id);
+		ArticleEmbedBlock(json::CachingJsonObject& object);
+		ArticleEmbedBlock(std::string_view id, json::CachingJsonObject data_object);
+
+		std::string serialize() const override;
+
+		std::string title;
+		std::string description;
+		std::string embed_url;
+		std::string hash;
+		std::string image_url;
+		std::string service;
+		std::string site_name;
+		std::string url;
+
+		int64_t height;
+		int64_t width;
+
+		bool is_expand_available; // ignored in serialize()
+	};
+
+	class ArticleHeaderBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleHeaderBlock>;
+
+		static constexpr std::string_view name = "header";
+		static constexpr size_t max_preview_length = 350ULL;
+
+		ArticleHeaderBlock(std::string_view id);
+		ArticleHeaderBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		std::string text;
+		int32_t text_length; // unused in serialize()
+		int32_t level; // todo: check
+		bool is_expand_available; // ignored in serialize()
+
+	private:
+		// used to actually construct block, this is done because of block data contains in object["data"]
+		ArticleHeaderBlock(json::CachingJsonObject& object, json::CachingJsonObject data_object);
+	};
+
+	class ArticleListBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleListBlock>;
+
+		enum class Style {
+			None,
+			Unordered = 1,
+			Ordered = 2
+		};
+
+		static constexpr std::string_view name = "list";
+		static constexpr size_t max_items_count = 3ULL;
+		static constexpr size_t max_item_text_length = 350ULL;
+
+		ArticleListBlock(std::string_view id);
+		ArticleListBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		std::vector<std::string> items;
+		int32_t item_count; // unused in serialize()
+		Style style;
+		bool is_expand_available; // ignored in serialize()
+
+	private:
+		// used to actually construct block, this is done because of block data contains in object["data"]
+		ArticleListBlock(json::CachingJsonObject& object, json::CachingJsonObject data_object);
+
+		static constexpr std::string_view style_unordered = "unordered";
+		static constexpr std::string_view style_ordered = "ordered";
+
+		static Style parse_style(const std::string& str);
+		std::string_view serialize_style() const;
+	};
+
+	class MediaFile : Serializable {
+	public:
+		using Ptr = std::shared_ptr<MediaFile>;
+
+		MediaFile();
+		MediaFile(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		std::string uuid;
+		std::string hash;
+		std::string url;
+
+		int32_t height;
+		int32_t width;
+	};
+
+	class ArticleMediaBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleMediaBlock>;
+
+		static constexpr std::string_view name = "media";
+
+		ArticleMediaBlock(std::string_view id);
+		ArticleMediaBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		std::vector<MediaFile::Ptr> items;
+		int32_t item_count; // unused in serialize()
+		bool is_expand_available; // ignored in serialize()
+	private:
+		// used to actually construct block, this is done because of block data contains in object["data"]
+		ArticleMediaBlock(json::CachingJsonObject& object, json::CachingJsonObject data_object);
+	};
+
+	class ArticleParagraphBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleParagraphBlock>;
+
+		static constexpr std::string_view name = "paragraph";
+
+		ArticleParagraphBlock(std::string_view id);
+		ArticleParagraphBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		std::string text;
+		int32_t text_length; // unused in serialize()
+		bool is_expand_available; // ignored in serialize()
+	private:
+		// used to actually construct block, this is done because of block data contains in object["data"]
+		ArticleParagraphBlock(json::CachingJsonObject& object, json::CachingJsonObject data_object);
+	};
+
+	class ArticleQuoteBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleQuoteBlock>;
+
+		enum class Alignment {
+			None = 0,
+			Left = 1,
+			Center = 2
+		};
+
+		static constexpr std::string_view name = "quote";
+		static constexpr size_t max_preview_caption_length = 100ULL;
+		static constexpr size_t max_preview_text_length = 350ULL;
+
+		ArticleQuoteBlock(std::string_view id);
+		ArticleQuoteBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		Alignment alignment;
+		std::string caption;
+		std::string text;
+		int32_t caption_length; // unused in serialize()
+		int32_t text_length; // unused in serialize()
+		bool is_expand_available; // ignored in serialize()
+	private:
+		// used to actually construct block, this is done because of block data contains in object["data"]
+		ArticleQuoteBlock(json::CachingJsonObject& object, json::CachingJsonObject data_object);
+
+		static constexpr std::string_view alignment_left = "left";
+		static constexpr std::string_view alignment_center = "center";
+
+		static Alignment parse_alignment(const std::string& str);
+		std::string_view serialize_alignment() const;
+	};
+
+	class ArticleUnsupportedBlock : public ArticleBlock {
+	public:
+		using Ptr = std::shared_ptr<ArticleUnsupportedBlock>;
+
+		static constexpr std::string_view name = "unsupported";
+
+		ArticleUnsupportedBlock(std::string_view id);
+		ArticleUnsupportedBlock(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		bool is_expand_available; // ignored in serialize()
+	};
+
+	class ArticlePayload : Serializable {
+	public:
+		using Ptr = std::shared_ptr<ArticlePayload>;
+		using BlockVariant = Variant<
+			ArticleDelimiterBlock::Ptr,
+			ArticleEmbedBlock::Ptr,
+			ArticleHeaderBlock::Ptr,
+			ArticleListBlock::Ptr,
+			ArticleMediaBlock::Ptr,
+			ArticleParagraphBlock::Ptr,
+			ArticleQuoteBlock::Ptr,
+			ArticleUnsupportedBlock::Ptr>;
+
+		static constexpr std::string_view last_version = "2.26.5";
+
+		template<typename T>
+		static constexpr int block_magic() {
+			return variant_magic<BlockVariant, typename T::Ptr>();
+		}
+
+		ArticlePayload();
+		ArticlePayload(json::CachingJsonObject& object);
+
+		std::string serialize() const override;
+
+		std::vector<BlockVariant> blocks;
+		int32_t block_count; // unused in serialize()
+
+		TimestampPoint date; // unused in serialize()
+		std::string version;
+
+		bool is_collapse_available; // ignored in serialize()
+		bool is_expand_available; // ignored in serialize()
+
+	private:
+		static std::vector<BlockVariant> parse_blocks(json::CachingJsonArray array);
+		static BlockVariant parse_block(json::CachingJsonObject object);
+	};
+
+	class Channel {
+	public:
+		using Ptr = std::shared_ptr<Channel>;
+
+		enum class Permission {
+			None = 0,
+			Administrator = 1,
+			Creator = 2
+		};
+
+		Channel(json::CachingJsonObject& object);
+
+		ChannelID id;
+		std::string title;
+		std::string description;
+		std::string avatar_url;
+		std::string cover_url;
+		ProfileID blog_profile_id;
+
+		Permission permission;
+
+		int32_t article_count;
+		TimestampPoint creation_date;
+		TimestampPoint last_update_date;
+		int32_t subscriber_count;
+
+		BadgeID badge_id;
+		std::string badge_name;
+		std::string badge_type;
+		std::string badge_url;
+
+		TimestampPoint block_expire_date;
+		std::string block_reason;
+
+		bool is_deleted;
+		bool is_blocked;
+		bool is_perm_banned;
+		bool is_article_suggestion_enabled;
+		bool is_verified;
+		bool is_subscribed;
+		bool is_commenting_enabled;
+		bool is_blog;
+
+		bool is_administrator_or_higher; // use "permission" instead
+		bool is_creator; // use "permission" instead
+	};
+
+	class Article {
+	public:
+		using Ptr = std::shared_ptr<Article>;
+		Article(json::CachingJsonObject& object);
+
+		ArticleID id;
+		TimestampPoint creation_date;
+		TimestampPoint last_update_date;
+		ArticlePayload::Ptr payload;
+
+		Profile::Ptr author;
+		Channel::Ptr channel;
+
+		int32_t vote_count;
+		int32_t vote;
+
+		bool contains_repost_article;
+		int64_t repost_count;
+		Article::Ptr repost_article;
+
+		bool is_deleted;
+	};
+
 	/* --- Some api response types --- */
 	class ProfilePreferenceStatus {
 	public:
@@ -689,6 +1053,39 @@ namespace anixart {
 		int32_t hold_on_count;
 		int32_t plan_count;
 		int32_t watching_count;
+	};
+
+	class ChannelProfile {
+	public:
+		using Ptr = std::shared_ptr<ChannelProfile>;
+
+		ChannelProfile(json::CachingJsonObject& object);
+
+		// from ProfileCompact
+		ProfileID profile_id;
+		std::string username;
+		std::string avatar_url;
+		Profile::PrivilegeLevel privilege_level;
+
+		Badge badge;
+
+		std::string ban_reason;
+		TimestampPoint ban_expires_date;
+
+		bool is_banned;
+		bool is_sponsor;
+		bool is_verified;
+
+		// ChannelProfile
+		ChannelID channel_id;
+		Channel::Permission permission;
+		TimestampPoint permission_creation_date;
+		
+		std::string block_reason;
+		TimestampPoint block_expire_date;
+
+		bool is_blocked;
+		bool is_perm_blocked;
 	};
 }
 

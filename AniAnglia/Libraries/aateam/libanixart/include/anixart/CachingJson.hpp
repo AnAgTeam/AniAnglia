@@ -108,6 +108,8 @@ namespace anixart::json {
 		CachingJsonArray(network::JsonArray array);
 
 		CachingJsonValue operator[](size_t index);
+		size_t size();
+
 		explicit operator network::JsonArray& ();
 
 		template<typename T>

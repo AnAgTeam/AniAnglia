@@ -8,39 +8,35 @@
 #pragma warning(pop)
 
 namespace network {
-	class KeyValue {
-	public:
-		KeyValue(const std::string& key, const std::string& value);
-
-		std::string key;
-		std::string value;
-	};
-
-	class StaticCopyable {
-
-	};
-
-	class UrlParameters : public StaticCopyable {
+	class UrlParameters {
 	public:
 
 		UrlParameters() = default;
-		UrlParameters(const std::vector<KeyValue>& initial);
-		UrlParameters(const UrlParameters& copy, const std::vector<KeyValue>& expanded);
+		UrlParameters(UrlParameters& other) = default;
+		UrlParameters(UrlParameters&& other) = default;
+		UrlParameters(std::initializer_list<std::pair<std::string_view, std::string_view>> initial);
+		UrlParameters(const UrlParameters& copy, std::initializer_list<std::pair<std::string_view, std::string_view>> expanded);
 
-		UrlParameters expand_copy(const std::vector<KeyValue>& added) const;
+		UrlParameters expand_copy(std::initializer_list<std::pair<std::string_view, std::string_view>> added) const;
 
-		std::string apply(const std::string& url) const;
+		UrlParameters& operator=(std::initializer_list<std::pair<std::string_view, std::string_view>> initial)&;
+
+		std::string apply(std::string_view url) const;
 		std::string get() const;
 		bool empty() const;
 
 	private:
+		void append_items(std::initializer_list<std::pair<std::string_view, std::string_view>> items);
+
 		std::string _params;
 	};
 
 	class UrlEncoded {
 	public:
 		/* not implemented */
-		static std::string encode(const std::vector<KeyValue>& from);
+		static std::string encode(std::initializer_list<std::string_view> from);
+
+		static std::string escape(const std::string& str);
 	};
 
 	using JsonObject = boost::json::object;
@@ -52,7 +48,7 @@ namespace network {
 	}
 
 	extern JsonObject parse_json(std::string_view from);
-	
+
 	using MultipartPart = utilspp::clone_ptr<curlpp::FormPart>;
 	using MultipartFilePart = curlpp::FormParts::File;
 	using MultipartContentPart = curlpp::FormParts::Content;

@@ -92,6 +92,8 @@
 		EFE474972CFA42B600508136 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE474962CFA42B500508136 /* MediaPlayer.framework */; };
 		EFED8F572CE2986300C53C1C /* LoadableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFED8F562CE2986300C53C1C /* LoadableView.mm */; };
 		EFF6D03F2DFF75370014FFEB /* ReleasesPopularPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF6D03E2DFF75370014FFEB /* ReleasesPopularPageViewController.mm */; };
+		EFF722452EC660F400703591 /* CodeEnterViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF722442EC660F400703591 /* CodeEnterViewController.mm */; };
+		EFF722492EC68C2300703591 /* AuthPerformer.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFF722482EC68C2300703591 /* AuthPerformer.mm */; };
 		EFFA21D92DB01A45007D8AD4 /* ReleasesCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */; };
 		EFFA21DD2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA21DC2DB0220E007D8AD4 /* CollectionsCollectionViewController.mm */; };
 		EFFA3C442DAB150E00DE042A /* CommentsTableViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFFA3C432DAB150E00DE042A /* CommentsTableViewController.mm */; };
@@ -1408,6 +1410,10 @@
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
 		EFF6D03D2DFF75290014FFEB /* ReleasesPopularPageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesPopularPageViewController.h; sourceTree = "<group>"; };
 		EFF6D03E2DFF75370014FFEB /* ReleasesPopularPageViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesPopularPageViewController.mm; sourceTree = "<group>"; };
+		EFF722442EC660F400703591 /* CodeEnterViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CodeEnterViewController.mm; sourceTree = "<group>"; };
+		EFF722462EC6610C00703591 /* CodeEnterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CodeEnterViewController.h; sourceTree = "<group>"; };
+		EFF722472EC68B8E00703591 /* AuthPerformer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthPerformer.h; sourceTree = "<group>"; };
+		EFF722482EC68C2300703591 /* AuthPerformer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AuthPerformer.mm; sourceTree = "<group>"; };
 		EFFA21D72DB01A31007D8AD4 /* ReleasesCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleasesCollectionViewController.h; sourceTree = "<group>"; };
 		EFFA21D82DB01A45007D8AD4 /* ReleasesCollectionViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ReleasesCollectionViewController.mm; sourceTree = "<group>"; };
 		EFFA21DB2DB021FD007D8AD4 /* CollectionsCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollectionsCollectionViewController.h; sourceTree = "<group>"; };
@@ -1554,6 +1560,10 @@
 				EF8B01B22C7015A200423ECD /* AuthViewController.mm */,
 				EF875C842C79025400DAECB1 /* AuthChecker.h */,
 				EF875C852C79026700DAECB1 /* AuthChecker.mm */,
+				EFF722462EC6610C00703591 /* CodeEnterViewController.h */,
+				EFF722442EC660F400703591 /* CodeEnterViewController.mm */,
+				EFF722472EC68B8E00703591 /* AuthPerformer.h */,
+				EFF722482EC68C2300703591 /* AuthPerformer.mm */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -3741,6 +3751,7 @@
 				EF8C37532DB2B28900ADDBD7 /* CollectionViewController.mm in Sources */,
 				EF65E3492D82297C00114102 /* ReleasesSearchHistoryTableViewController.mm in Sources */,
 				EFCE61202DFB3597008431CA /* ProfilesTableViewController.mm in Sources */,
+				EFF722452EC660F400703591 /* CodeEnterViewController.mm in Sources */,
 				EF3568992DA1C2C000086593 /* MainWindow.mm in Sources */,
 				EF3568B22DA98D4400086593 /* SegmentedPageViewController.mm in Sources */,
 				EF4941062C7238B700832A6C /* AppColor.mm in Sources */,
@@ -3756,6 +3767,7 @@
 				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,
 				EF2330682DAD9293008B0A2A /* TextEnterView.mm in Sources */,
 				EF928F392DFCAACB00A5CD85 /* StarsVoteView.m in Sources */,
+				EFF722492EC68C2300703591 /* AuthPerformer.mm in Sources */,
 				EF875C832C78FCB500DAECB1 /* SignUpViewController.mm in Sources */,
 				EF8097C52D0CC6F2006F18DF /* FilterViewController.mm in Sources */,
 				EF875C862C79026700DAECB1 /* AuthChecker.mm in Sources */,
@@ -3930,7 +3942,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AniAnglia/AniAnglia.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 4G5LGK558P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
@@ -3938,14 +3950,14 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UIStatusBarStyle = "";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.7;
+				MARKETING_VERSION = 0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -3960,7 +3972,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AniAnglia/AniAnglia.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 4G5LGK558P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AniAnglia/Info.plist;
@@ -3968,14 +3980,14 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UIStatusBarStyle = "";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.7;
+				MARKETING_VERSION = 0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;

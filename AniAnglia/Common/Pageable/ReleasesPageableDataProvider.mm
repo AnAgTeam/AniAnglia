@@ -61,6 +61,23 @@
     }
 }
 
++(NSString*)getAgeRatingNameFor:(anixart::Release::AgeRating)age_rating {
+    switch (age_rating) {
+        case anixart::Release::AgeRating::G:
+            return NSLocalizedString(@"app.release.age_rating.g", "");
+        case anixart::Release::AgeRating::PG6:
+            return NSLocalizedString(@"app.release.age_rating.pg6", "");
+        case anixart::Release::AgeRating::PG12:
+            return NSLocalizedString(@"app.release.age_rating.pg12", "");
+        case anixart::Release::AgeRating::R16:
+            return NSLocalizedString(@"app.release.age_rating.r16", "");
+        case anixart::Release::AgeRating::R18:
+            return NSLocalizedString(@"app.release.age_rating.r18", "");
+        default:
+            return NSLocalizedString(@"app.release.age_rating.unknown", "");
+    }
+}
+
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages {
     self = [super init];
     

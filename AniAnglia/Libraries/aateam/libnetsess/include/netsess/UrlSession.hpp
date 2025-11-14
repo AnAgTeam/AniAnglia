@@ -33,9 +33,11 @@ namespace network {
 		std::string get_request(const std::string& url, const std::vector<std::string>& extra_headers = {}, const UrlParameters& params = UrlParameters()) const;
 		std::string post_request(const std::string& url, const std::string& data, std::string_view content_type, const std::vector<std::string>& extra_headers = {}, const UrlParameters& params = UrlParameters()) const;
 		/* forms have to be valid until request */
-		std::string post_multipart_request(const std::string& url, const MultipartForms& forms, const UrlParameters& params = UrlParameters()) const;
+		std::string post_multipart_request(const std::string& url, const MultipartForms& forms, const std::vector<std::string>& extra_headers = {}, const UrlParameters& params = UrlParameters()) const;
 
 	private:
+		std::list<std::string> make_expanded_header(const std::vector<std::string>& extra_headers) const;
+
 		curlpp::Easy _easy_handle;
 		std::list<std::string> _default_headers;
 	};

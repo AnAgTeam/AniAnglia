@@ -7,42 +7,46 @@
 */
 
 /* AUTH STRINGS */
-"app.auth.login_field.placeholder" = "Email или имя пользователя";
-"app.auth.password_field.placeholder" = "Пароль";
-"app.auth.login_button.normal.title" = "Войти";
-"app.auth.forgot_button.title" = "Забыли пароль?";
-"app.auth.signup_button.title" = "Зарегистрироваться";
-"app.auth.login_field.error_invalid.text" = "Неверное имя пользователя или Email";
-"app.auth.login_field.error_empty.text" = "Поле не может быть пусто";
-"app.auth.password_field.error_invalid.text" = "Неверный пароль";
-"app.auth.password_field.error_empty.text" = "Пароль не может быть пуст";
+"app.auth.forgot_password" = "Забыли пароль?";
+"app.auth.error.invalid_username_or_email" = "Неверное имя пользователя или Email";
+"app.auth.error.invalid_password" = "Неверный пароль";
+"app.auth.login.confirm" = "Войти";
 
-"app.restore.login_field.placeholder" = "Email или имя пользователя";
-"app.restore.password_field.placeholder" = "Новый пароль";
-"app.restore.password_re_field.placeholder" = "Повторите пароль";
-"app.restore.restore_button.normal.title" = "Продолжить";
-"app.restore.login_field.error_invalid.text" = "Неверное имя пользователя или Email";
-"app.restore.login_field.error_empty.text" = "Поле не может быть пусто";
-"app.restore.password_field.error_short.text" = "Пароль слишком короткий";
-"app.restore.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
-"app.restore.password_field.error_long.text" = "Пароль слишком длинный";
-"app.restore.password_re_field.error_not_equal.text" = "Пароль не совпадает";
-"app.restore.restore_not_implemented.title" = "Восстановление пароля ещё не сделано";
+"app.auth.sign_up" = "Зарегистрироваться";
+"app.auth.sign_up.confirm" = "Зарегистрироваться";
+"app.auth.sign_up.error.not_implemented" = "Регистрация ещё не сделана ;P";
 
-"app.signup.login_field.placeholder" = "Имя пользователя";
-"app.signup.email_field.placeholder" = "Email";
-"app.signup.password_field.placeholder" = "Пароль";
-"app.signup.password_re_field.placeholder" = "Повторите пароль";
-"app.signup.signup_button.normal.title" = "Создать";
-"app.signup.login_field.error_empty.text" = "Имя пользователя не может быть пусто";
-"app.signup.login_field.error_long.text" = "Имя пользователя слишком длинное";
-"app.signup.email_field.error_empty.text" = "Email не может быть пуст";
-"app.signup.email_field.error_invalid.text" = "Недопустимый Email";
-"app.signup.password_field.error_short.text" = "Пароль слишком короткий";
-"app.signup.password_field.error_long.text" = "Пароль слишком длинный";
-"app.signup.password_field.error_invalid.text" = "Пароль содержит недопустимые символы";
-"app.signup.password_re_field.error_not_equal.text" = "Пароль не совпадает";
-"app.sign_up.sign_up_not_implemented.title" = "Регистрация ещё не сделана ;P";
+"app.restore.login_field.placeholder" = "";
+"app.restore.confirm" = "Продолжить";
+"app.restore.error.code_expired" = "Код истёк";
+"app.restore.error.code_invalid" = "Неверный код";
+"app.restore.error.unknown" = "Неизвестная ошибка";
+
+"app.auth.error.empty" = "Поле не может быть пусто";
+
+"app.auth.new_password" = "Новый пароль";
+"app.auth.password_re" = "Повторите пароль";
+
+"app.auth.password" = "Пароль";
+"app.auth.password.error.empty" = "Пароль не может быть пуст";
+"app.auth.password.error.short" = "Пароль слишком короткий";
+"app.auth.password.error.long" = "Пароль слишком длинный";
+"app.auth.password.error.invalid" = "Пароль содержит недопустимые символы";
+"app.auth.password.error.not_equal" = "Пароль не совпадает";
+
+"app.auth.username_or_email" = "Имя пользователя или Email";
+"app.auth.email" = "Email";
+"app.auth.email.error.empty" = "Email не может быть пуст";
+"app.auth.email.error.invalid" = "Недопустимый Email";
+
+"app.auth.username" = "Имя пользователя";
+"app.auth.username.error.long" = "Имя пользователя слишком длинное";
+"app.auth.username.error.empty" = "Имя пользователя не может быть пусто";
+
+/* CODE ENTER STRINGS */
+"app.code_enter.code_enter" = "Введите код из email";
+"app.code_enter.resend" = "Отправить ещё раз";
+"app.code_enter.submit" = "Ввести";
 
 /* MAIN TAB BAR STRINGS */
 "app.main_tab_bar.main_tab.title" = "Главная";
@@ -95,6 +99,12 @@
 "app.release.status.finished" = "Вышел";
 "app.release.status.ongoing" = "Онгоинг";
 "app.release.status.upcoming" = "Анонс";
+
+"app.release.age_rating.g" = "0+";
+"app.release.age_rating.pg6" = "6+";
+"app.release.age_rating.pg12" = "12+";
+"app.release.age_rating.r16" = "16+";
+"app.release.age_rating.r18" = "18+";
 
 "app.release.aired_on.monday" = ", выходит каждый понедельник";
 "app.release.aired_on.tuesday" = ", выходит каждый вторник";
@@ -288,73 +298,48 @@
 "app.player.stream_not_found_error.default_action.text" = "ОК";
 
 /* SEARCH FILTER */
-"app.filter.multi_select._modal.done_button.title" = "Готово";
+"app.filter.multi_select.done" = "Готово";
 
-"app.filter.status_select_button.menu.title" = "Статус";
-"app.filter.status_select_button.menu.none.text" = "Похуй";
-"app.filter.status_select_button.menu.finished.text" = "Вышел";
-"app.filter.status_select_button.menu.ongoing.text" = "Онгоинг";
-"app.filter.status_select_button.menu.upcoming.text" = "Анонс";
+"app.filter.selection.none" = "Похуй";
 
-"app.filter.category_select_button.menu.title" = "Категория";
-"app.filter.category_select_button.menu.none.text" = "Похуй";
-"app.filter.category_select_button.menu.series.text" = "Сериал";
-"app.filter.category_select_button.menu.movies.text" = "Фильмы";
-"app.filter.category_select_button.menu.ova.text" = "OVA";
+"app.filter.status" = "Статус";
 
-"app.filter.genres_select_button.menu.title" = "Жанры";
+"app.filter.category" = "Категория";
 
-"app.filter.country_select_button.title" = "Страна";
-"app.filter.country_select_button.menu.none.text" = "Похуй";
-"app.filter.country_select_button.menu.japan.text" = "Япония";
-"app.filter.country_select_button.menu.china.text" = "Китай";
+"app.filter.genres" = "Жанры";
 
-"app.filter.types_select_button.menu.title" = "Озвучки";
+"app.filter.country" = "Страна";
+"app.filter.country.japan" = "Япония";
+"app.filter.country.china" = "Китай";
 
-"app.filter.studio_select_button.title" = "Студия";
-"app.filter.studio_select_button.menu.none.text" = "Похуй";
+"app.filter.types" = "Озвучки";
 
-"app.filter.season_select_button.title" = "Сезон";
-"app.filter.season_select_button.menu.none.text" = "Похуй";
-"app.filter.season_select_button.menu.winter.text" = "Зима";
-"app.filter.season_select_button.menu.spring.text" = "Весна";
-"app.filter.season_select_button.menu.summer.text" = "Лето";
-"app.filter.season_select_button.menu.fall.text" = "Осень";
+"app.filter.studio" = "Студия";
 
-"app.filter.episode_count_select_button.title" = "Количество эпизодов";
-"app.filter.episode_count_select_button.menu.none.text" = "Похуй";
-"app.filter.episode_count_select_button.menu.1_to_12.text" = "От 1 по 12";
-"app.filter.episode_count_select_button.menu.13_to_24.text" = "От 13 по 24";
-"app.filter.episode_count_select_button.menu.25_to_100.text" = "От 25 по 100";
-"app.filter.episode_count_select_button.menu.100_plus.text" = "От 100";
+"app.filter.season" = "Сезон";
 
-"app.filter.episode_duration_select_button.title" = "Длительность эпизодов";
-"app.filter.episode_duration_select_button.menu.none.text" = "Похуй";
-"app.filter.episode_duration_select_button.menu.to_10.text" = "До 10 минут";
-"app.filter.episode_duration_select_button.menu.to_30.text" = "До 30 минут";
-"app.filter.episode_duration_select_button.menu.30_plus.text" = "От 30 минут";
+"app.filter.episodes_count" = "Количество эпизодов";
+"app.filter.episodes_count.1_to_12" = "От 1 по 12";
+"app.filter.episodes_count.13_to_24" = "От 13 по 24";
+"app.filter.episodes_count.25_to_100" = "От 25 по 100";
+"app.filter.episodes_count.100_plus" = "От 100";
 
-"app.filter.list_exclude_select_button.menu.title" = "Исключить закладки";
-"app.filter.list_exclude_select_button.menu.favorite" = "Избранное";
-"app.filter.list_exclude_select_button.menu.watching" = "Смотрю";
-"app.filter.list_exclude_select_button.menu.plan" = "В планах";
-"app.filter.list_exclude_select_button.menu.watched" = "Просмотрено";
-"app.filter.list_exclude_select_button.menu.hold_on" = "Отложено";
-"app.filter.list_exclude_select_button.menu.dropped" = "Брошено";
+"app.filter.episodes_duration" = "Длительность эпизодов";
+"app.filter.episodes_duration.to_10" = "До 10 минут";
+"app.filter.episodes_duration.to_30" = "До 30 минут";
+"app.filter.episodes_duration.30_plus" = "От 30 минут";
 
-"app.filter.age_rating_select_button.menu.title" = "Возрастное ограничение";
-"app.filter.age_rating_select_button.menu.g" = "0+";
-"app.filter.age_rating_select_button.menu.pg6" = "6+";
-"app.filter.age_rating_select_button.menu.pg12" = "12+";
-"app.filter.age_rating_select_button.menu.r16" = "16+";
-"app.filter.age_rating_select_button.menu.r18" = "18+";
+"app.filter.list_exclude" = "Исключить закладки";
 
-"app.filter.sort_select_button.title" = "Сортировка";
-"app.filter.sort_select_button.menu.release_date.text" = "По дате выхода";
-"app.filter.sort_select_button.menu.grade.text" = "По рейтингу";
-"app.filter.sort_select_button.menu.year.text" = "По году";
+"app.filter.age_rating" = "Возрастное ограничение";
 
-"app.filter.search_button.title" = "Поиск";
+"app.filter.sort" = "Сортировка";
+"app.filter.sort.date_update" = "По дате выхода";
+"app.filter.sort.grade" = "По рейтингу";
+"app.filter.sort.year" = "По году";
+"app.filter.sort.popular" = "По популярности";
+
+"app.filter.search" = "Поиск";
 
 /* COMMON */
 "app.common.expandable_label.show_all.title" = "Показать всё";

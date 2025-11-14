@@ -4,7 +4,8 @@
 #include <anixart/ApiEpisodes.hpp>
 #include <anixart/ApiProfiles.hpp>
 #include <anixart/ApiReleases.hpp>
-#include <anixart/ApiCollection.hpp>
+#include <anixart/ApiCollections.hpp>
+#include <anixart/ApiArticles.hpp>
 
 namespace anixart {
 	class Api {
@@ -25,7 +26,8 @@ namespace anixart {
 		ApiEpisodes& episodes();
 		ApiProfiles& profiles();
 		ApiReleases& releases();
-		ApiCollection& collections();
+		ApiCollections& collections();
+		ApiArticles& articles();
 
 	private:
 		std::string _token;
@@ -37,6 +39,7 @@ namespace anixart {
 		ApiEpisodes _episodes;
 		ApiProfiles _profiles;
 		ApiReleases _releases;
-		ApiCollection _collection;
+		ApiCollections _collections;
+		ApiArticles _articles;
 	};
 };

@@ -1,5 +1,8 @@
 #pragma once
 #include <anixart/ApiTypes.hpp>
+#include <anixart/Serializable.hpp>
+#include <anixart/StrongTypedef.hpp>
+#include <netsess/JsonTools.hpp>
 #include <netsess/JsonTools.hpp>
 
 #include <vector>
@@ -7,11 +10,16 @@
 
 namespace anixart {
 	namespace requests {
-		class Serializable {
-		public:
-			virtual ~Serializable() = default;
-
-			virtual std::string serialize() const = 0;
+		namespace aux {
+			struct ArticleReportReasonTag {};
+			struct ArticleCommentReportReasonTag {};
+			struct ReleaseCommentReportReasonTag {};
+			struct CollectionCommentReportReasonTag {};
+			struct ReleaseReportReasonTag {};
+			struct CollectionReportReasonTag {};
+			struct ProfileReportReasonTag {};
+			struct EpisodeReportReasonTag {};
+			struct ChannelReportReasonTag {};
 		};
 
 		class BookmarksImportRequest {
@@ -82,7 +90,7 @@ namespace anixart {
 			std::string url;
 		};
 
-		class ReleaseReportRequest : Serializable {
+		class DeprecatedReportRequest : Serializable {
 		public:
 
 			std::string serialize() const override;
@@ -91,21 +99,44 @@ namespace anixart {
 			int64_t reason;
 		};
 
-		template<typename T>
+		template<typename ID, typename Tag>
 		class ReportRequest : Serializable {
 		public:
-			typedef std::shared_ptr<T> ValuePtr;
+			using EntityID = ID;
+			using Reason = anixart::aux::StrongTypedef<int64_t, Tag>;
 
 			std::string serialize() const override {
-				// Not implemented
-				throw std::exception();
+				using namespace network::json;
+				std::string json;
+				InlineJson::open_object(json);
+				InlineJson::append(json, "entity_id", static_cast<int64_t>(entity_id));
+				InlineJson::append(json, "message", message);
+				InlineJson::append(json, "reason", static_cast<int64_t>(reason));
+				InlineJson::close_object(json);
+				return json;
 			}
 
-			ValuePtr entity;
+			operator DeprecatedReportRequest() const {
+				DeprecatedReportRequest req;
+				req.message = message;
+				req.reason = static_cast<int64_t>(reason);
+				return req;
+			}
+
+			EntityID entity_id;
 			std::string message;
-			int64_t reason;
+			Reason reason;
 		};
-		using EpisodeReportRequest = ReportRequest<Episode>;
+
+		using ArticleReportRequest = ReportRequest<ChannelID, aux::ArticleReportReasonTag>;
+		using ArticleCommentReportRequest = ReportRequest<CommentID, aux::ArticleCommentReportReasonTag>;
+		using ReleaseCommentReportRequest = ReportRequest<CommentID, aux::ReleaseCommentReportReasonTag>;
+		using CollectionCommentReportRequest = ReportRequest<CommentID, aux::CollectionCommentReportReasonTag>;
+		using ProfileReportRequest = ReportRequest<ProfileID, aux::ProfileReportReasonTag>;
+		using ReleaseReportRequest = ReportRequest<ReleaseID, aux::ReleaseReportReasonTag>;
+		using CollectionReportRequest = ReportRequest<CollectionID, aux::CollectionReportReasonTag>;
+		using EpisodeReportRequest = ReportRequest<EpisodeID, aux::EpisodeReportReasonTag>;
+		using ChannelReportRequest = ReportRequest<EpisodeID, aux::ChannelReportReasonTag>;
 
 		class ProfileProcessRequest : Serializable {
 		public:
@@ -179,15 +210,6 @@ namespace anixart {
 			TimestampPoint ban_expires;
 		};
 
-		class CommentReportRequest : Serializable {
-		public:
-
-			std::string serialize() const override;
-
-			std::string message;
-			int64_t reason;
-		};
-
 		class ReleaseVideoAppealRequest : Serializable {
 		public:
 
@@ -197,15 +219,6 @@ namespace anixart {
 			ReleaseVideoCategoryID category_id;
 			std::string title;
 			std::string url;
-		};
-
-		class CollectionReportRequest : Serializable {
-		public:
-
-			std::string serialize() const override;
-
-			std::string message;
-			int64_t reason; // todo: check
 		};
 
 		class CreateEditCollectionRequest : Serializable {
@@ -218,5 +231,117 @@ namespace anixart {
 			std::vector<ReleaseID> release_ids;
 			bool is_private;
 		};
+
+		class ArticlesFilterRequest : Serializable {
+		public:
+
+			enum class Sort {
+				DateNone = 0,
+				DateToday = 1,
+				DateDay = 2,
+				DateWeek = 3,
+				DateMonth = 4,
+				DateYear = 5,
+				DateWholeTime = 6
+			};
+
+			enum class DateFilter {
+				None = 0,
+				Today = 1,
+				LastFullDay = 2, // 24 hours
+				Week = 3,
+				Month = 4,
+				Year = 5,
+				AllTime = 6
+			};
+
+			std::string serialize() const override;
+
+			ChannelID channel_id;
+			DateFilter date_filter;
+		};
+
+		class ArticleCreateEditRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+			
+			std::string payload;
+			std::optional<ArticleID> repost_article_id; // TODO: check
+		};
+
+		class ArticleSuggestionsFilterRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+
+			ChannelID channel_id;
+		};
+
+		class ArticleSuggestionCreateEditRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+
+			std::string payload;
+		};
+
+		class ChannelBlockManageRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+
+			std::optional<TimestampPoint> expire_date;
+			std::optional<std::string> reason;
+			ProfileID target_profile_id;
+			bool is_blocked;
+			bool is_perm_banned;
+			bool is_reason_showing_enabled;
+		};
+
+		class ChannelCreateEditRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+
+			std::string title;
+			std::string description;
+			bool is_article_suggestion_enabled;
+			bool is_commenting_enabled;
+		};
+
+		class ChannelPermissionManageRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+
+			Channel::Permission permission; // TODO: check
+			ProfileID target_profile_id;
+		};
+
+		class ChannelPermissionsFilterRequest : Serializable {
+		public:
+
+			std::string serialize() const override;
+
+			Channel::Permission permission; //TODO: check
+		};
+
+		class ChannelsFilterRequest : Serializable {
+		public:
+
+			enum class Sort {
+				None = 0,
+				SubscriberCount = 1
+			};
+
+			std::string serialize() const override;
+
+			std::optional<bool> is_blog;
+			std::optional<bool> is_subscribed;
+			Sort sort;
+			Channel::Permission permission; // 1 - feed, 0 - ???. TODO: check
+		};
+
 	}
 }

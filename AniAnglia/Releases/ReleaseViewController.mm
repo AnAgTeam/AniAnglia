@@ -1257,7 +1257,7 @@
 }
 
 -(void)onCommentsShowAllPresed {
-    CommentsTableViewController* view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::FilterBy::All)];
+    CommentsTableViewController* view_controller = [[CommentsTableViewController alloc] initWithTableView:[UITableView new] pages:_api_proxy.api->releases().release_comments(_release->id, 0, anixart::Comment::Sort::Newest)];
     view_controller.delegate = self;
     [self.navigationController pushViewController:view_controller animated:YES];
 }

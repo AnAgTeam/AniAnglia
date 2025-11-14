@@ -100,7 +100,7 @@
         
     [_view_controller setPages:std::move(pages)];
 }
--(void)releasesHistoryTableViewController:(ReleasesHistoryTableViewController*)history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
+-(void)releasesSearchHistoryTableViewController:(ReleasesHistoryTableViewController*)history_table_view_controller didSelectHistoryItem:(NSString*)item_name {
     [_search_view_controller setSearchText:item_name];
     [_search_view_controller endSearching];
     

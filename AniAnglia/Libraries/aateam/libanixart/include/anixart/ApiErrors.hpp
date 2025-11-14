@@ -55,6 +55,11 @@ namespace anixart {
 		ApiReportRequestError(int64_t code);
 		const char* what() const noexcept override;
 	};
+	class ApiArticleRequestError : public ApiRequestError {
+	public:
+		ApiArticleRequestError(int64_t code);
+		const char* what() const noexcept override;
+	};
 
 	template<typename TCode, typename TBase>
 	class ApiCodeError : public TBase {
@@ -74,6 +79,7 @@ namespace anixart {
 	using GenericProfileError = ApiCodeError<codes::GenericCode, ApiProfileRequestError>;
 	using GenericReleaseError = ApiCodeError<codes::GenericCode, ApiReleaseRequestError>;
 	using GenericRequestError = ApiCodeError<codes::GenericCode, ApiRequestError>;
+	using GenericArticleError = ApiCodeError<codes::GenericCode, ApiArticleRequestError>;
 
 	using SignUpError = ApiCodeError<codes::auth::SignUpCode, ApiAuthRequestError>;
 	using ResendError = ApiCodeError<codes::auth::ResendCode, ApiAuthRequestError>;
@@ -90,18 +96,12 @@ namespace anixart {
 	using BookmarksExportError = ApiCodeError<codes::bookmarks::BookmarksExportCode, ApiBookmarksRequestError>;
 
 	using GetCollectionError = ApiCodeError<codes::collection::CollectionResponseCode, ApiCollectionRequestError>;
-	using CollectionReportError = ApiCodeError<codes::collection::CollectionReportCode, ApiCollectionRequestError>;
 	using CreateEditCollectionError = ApiCodeError<codes::collection::CreateEditCollectionCode, ApiCollectionRequestError>;
 	using RemoveCollectionError = ApiCodeError<codes::collection::RemoveCollectionCode, ApiCollectionRequestError>;
 	using EditImageCollection = ApiCodeError<codes::collection::EditImageCollection, ApiCollectionRequestError>;
 	using FavoriteCollectionAddError = ApiCodeError<codes::collection::FavoriteCollectionAddCode, ApiCollectionRequestError>;
 	using FavoriteCollectionRemoveError = ApiCodeError<codes::collection::FavoriteCollectionRemoveCode, ApiCollectionRequestError>;
 	using ReleaseAddCollectionError = ApiCodeError<codes::collection::ReleaseAddCollectionCode, ApiCollectionRequestError>;
-	using CommentAddError = ApiCodeError<codes::comment::CommentAddCode, ApiCollectionRequestError>;
-	using CommentRemoveError = ApiCodeError<codes::comment::CommentRemoveCode, ApiCollectionRequestError>;
-	using CommentEditError = ApiCodeError<codes::comment::CommentEditCode, ApiCollectionRequestError>;
-	using CommentReportError = ApiCodeError<codes::comment::CommentReportCode, ApiCollectionRequestError>;
-	using CommentVoteError = ApiCodeError<codes::comment::CommentVoteCode, ApiCollectionRequestError>;
 
 	using ChangeEmailConfirmError = ApiCodeError<codes::profile::ChangeEmailConfirmCode, ApiProfileRequestError>;
 	using ChangeEmailError = ApiCodeError<codes::profile::ChangeEmailCode, ApiProfileRequestError>;
@@ -110,29 +110,36 @@ namespace anixart {
 	using ChangePasswordError = ApiCodeError<codes::profile::ChangePasswordCode, ApiProfileRequestError>;
 	using GoogleBindError = ApiCodeError<codes::profile::GoogleBindCode, ApiProfileRequestError>;
 	using GoogleUnbindError = ApiCodeError<codes::profile::GoogleUnbindCode, ApiProfileRequestError>;
-	using ProfilePreferenceError = ApiCodeError<codes::profile::ProfilePreferenceCode, ApiProfileRequestError>;
-	using ProfileSocialError = ApiCodeError<codes::profile::ProfileSocialCode, ApiProfileRequestError>;
 	using RemoveFriendRequestError = ApiCodeError<codes::profile::RemoveFriendRequestCode, ApiProfileRequestError>;
 	using SendFriendRequestError = ApiCodeError<codes::profile::SendFriendRequestCode, ApiProfileRequestError>;
 	using SocialEditError = ApiCodeError<codes::profile::SocialEditCode, ApiProfileRequestError>;
 	using VkBindError = ApiCodeError<codes::profile::VkBindCode, ApiProfileRequestError>;
 	using VkUnbindError = ApiCodeError<codes::profile::VkUnbindCode, ApiProfileRequestError>;
-	using AddToBlockListError = ApiCodeError<codes::profile::AddToBlockListCode, ApiProfileRequestError>;
-	using RemoveFromBlockListError = ApiCodeError<codes::profile::RemoveFromBlockListCode, ApiProfileRequestError>;
 
-	using RemoveVoteReleaseError = ApiCodeError<codes::release::RemoveVoteReleaseCode, ApiReleaseRequestError>;
-	using ReleaseReportError = ApiCodeError<codes::release::ReleaseReportCode, ApiReleaseRequestError>;
-	using ReleaseError = ApiCodeError<codes::release::ReleaseCode, ApiReleaseRequestError>;
-	using VoteReleaseError = ApiCodeError<codes::release::VoteReleaseCode, ApiReleaseRequestError>;
-	using EpisodeError = ApiCodeError<codes::release::episode::EpisodeCode, ApiReleaseRequestError>;
-	using EpisodeTargetError = ApiCodeError<codes::release::episode::EpisodeTargetCode, ApiReleaseRequestError>;
-	using EpisodeUnwatchError = ApiCodeError<codes::release::episode::EpisodeUnwatchCode, ApiReleaseRequestError>;
-	using EpisodeWatchError = ApiCodeError<codes::release::episode::EpisodeWatchCode, ApiReleaseRequestError>;
-	using SourcesError = ApiCodeError<codes::release::episode::SourcesCode, ApiReleaseRequestError>;
-	using TypesError = ApiCodeError<codes::release::episode::TypesCode, ApiReleaseRequestError>;
 	using ReleaseVideosError = ApiCodeError<codes::release::video::ReleaseVideosCode, ApiReleaseRequestError>;
 	using ReleaseVideoAppealError = ApiCodeError<codes::release::video::appeal::ReleaseVideoAppealCode, ApiReleaseRequestError>;
-	using ReleaseVideoCategoriesError = ApiCodeError<codes::release::video::appeal::ReleaseVideoCategoriesCode, ApiReleaseRequestError>;
+
+	using ArticleError = ApiCodeError<codes::article::ArticleCode, ApiArticleRequestError>;
+	using ArticleCreateEditError = ApiCodeError<codes::article::ArticleCreateEditCode, ApiArticleRequestError>;
+	using ArticleRemoveError = ApiCodeError<codes::article::ArticleRemoveCode, ApiArticleRequestError>;
+	using ArticleEditorAvailableError = ApiCodeError<codes::article::EditorAvailableCode, ApiArticleRequestError>;
+
+	using ArticleSuggestionRemoveError = ApiCodeError<codes::article::suggestion::ArticleSuggestionRemoveCode, ApiArticleRequestError>;
+	using ArticleSuggestionPublishError = ApiCodeError<codes::article::suggestion::ArticleSuggestionPublishCode, ApiArticleRequestError>;
+
+	using ChannelError = ApiCodeError<codes::channel::ChannelCode, ApiArticleRequestError>;
+	using BlogCreateError = ApiCodeError<codes::channel::BlogCreateCode, ApiArticleRequestError>;
+	using ChannelBlockError = ApiCodeError<codes::channel::ChannelBlockCode, ApiArticleRequestError>;
+	using ChannelCreateEditError = ApiCodeError<codes::channel::ChannelCreateEditCode, ApiArticleRequestError>;
+	using ChannelPermissionManageError = ApiCodeError<codes::channel::PermissionManageCode, ApiArticleRequestError>;
+	using ChannelSubscribeError = ApiCodeError<codes::channel::ChannelSubscribeCode, ApiArticleRequestError>;
+	using ChannelUnsubscribeError = ApiCodeError<codes::channel::ChannelUnsubscribeCode, ApiArticleRequestError>;
+	using ChannelUploadCoverAvatarError = ApiCodeError<codes::channel::ChannelUploadCoverAvatarCode, ApiArticleRequestError>;
+
+	using CommentAddError = ApiCodeError<codes::comment::CommentAddCode, ApiRequestError>;
+	using CommentRemoveError = ApiCodeError<codes::comment::CommentRemoveCode, ApiRequestError>;
+	using CommentEditError = ApiCodeError<codes::comment::CommentEditCode, ApiRequestError>;
+	using CommentVoteError = ApiCodeError<codes::comment::CommentVoteCode, ApiRequestError>;
 
 	using ReportError = ApiCodeError<codes::report::ReportCode, ApiRequestError>;
 

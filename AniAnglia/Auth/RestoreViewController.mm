@@ -9,8 +9,15 @@
 #import "RestoreViewController.h"
 #import "TextErrorField.h"
 #import "AppColor.h"
+#import "CodeEnterViewController.h"
+#import "LibanixartApi.h"
+#import "StringCvt.h"
+#import "AuthPerformer.h"
 
-@interface RestoreViewController ()
+@interface RestoreViewController () <CodeEnterViewControllerDelegate> {
+    anixart::ApiRestorePending::UPtr _pending_restore;
+}
+@property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, retain) TextErrorField* login_view;
 @property(nonatomic, retain) UITextField* login_field;
 @property(nonatomic, retain) TextErrorField* password_view;
@@ -24,6 +31,8 @@
 
 -(instancetype)init {
     self = [super init];
+    
+    _api_proxy = [LibanixartApi sharedInstance];
     
     return self;
 }
@@ -39,7 +48,7 @@
     _login_view = [TextErrorField new];
     _login_field = _login_view.field;
     _login_field.keyboardType = UIKeyboardTypeDefault;
-    _login_field.placeholder = NSLocalizedString(@"app.restore.login_field.placeholder", "");
+    _login_field.placeholder = NSLocalizedString(@"app.auth.username", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _login_field.returnKeyType = UIReturnKeyDone;
     _login_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -52,7 +61,7 @@
     _password_view = [TextErrorField new];
     _password_field = _password_view.field;
     _password_field.keyboardType = UIKeyboardTypeDefault;
-    _password_field.placeholder = NSLocalizedString(@"app.restore.password_field.placeholder", "");
+    _password_field.placeholder = NSLocalizedString(@"app.auth.password", "");
     _password_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _password_field.returnKeyType = UIReturnKeyDone;
     _password_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -60,12 +69,13 @@
     _password_field.borderStyle = UITextBorderStyleNone;
     _password_field.layer.cornerRadius = 8.0;
     _password_field.layer.borderWidth = 0.8;
+    _password_field.secureTextEntry = YES;
     [_password_field setDelegate:self];
     
     _password_re_view = [TextErrorField new];
     _password_re_field = _password_re_view.field;
     _password_re_field.keyboardType = UIKeyboardTypeDefault;
-    _password_re_field.placeholder = NSLocalizedString(@"app.restore.password_re_field.placeholder", "");
+    _password_re_field.placeholder = NSLocalizedString(@"app.auth.password_re", "");
     _password_re_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _password_re_field.returnKeyType = UIReturnKeyDone;
     _password_re_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -73,10 +83,11 @@
     _password_re_field.borderStyle = UITextBorderStyleNone;
     _password_re_field.layer.cornerRadius = 8.0;
     _password_re_field.layer.borderWidth = 0.8;
+    _password_re_field.secureTextEntry = YES;
     [_password_re_field setDelegate:self];
     
     _restore_button = [UIButton new];
-    [_restore_button setTitle:NSLocalizedString(@"app.restore.restore_button.normal.title", "") forState:UIControlStateNormal];
+    [_restore_button setTitle:NSLocalizedString(@"app.restore.confirm", "") forState:UIControlStateNormal];
     _restore_button.layer.cornerRadius = 8.0;
     [_restore_button addTarget:self action:@selector(restoreButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -123,12 +134,29 @@
     _restore_button.backgroundColor = [AppColorProvider primaryColor];
 }
 
--(IBAction)restoreButtonTapped:(id)sender {
-    UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"app.restore.restore_not_implemented.title", "") message:@"" preferredStyle:UIAlertControllerStyleAlert];
-    [alert_controller addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
-        
-    }]];
-    [self presentViewController:alert_controller animated:YES completion:nil];
+-(BOOL)checkFieldAndShowError:(UITextField*)text_field {
+    // check for empty
+    if ([text_field.text length] == 0) {
+        if (text_field == _login_field) {
+            [_login_view showError:NSLocalizedString(@"app.auth.username.error.empty", "")];
+        }
+        else if (text_field == _password_field) {
+            [_password_view showError:NSLocalizedString(@"app.auth.password.error.empty", "")];
+        }
+        else if (text_field == _password_re_field) {
+            [_password_re_view showError:NSLocalizedString(@"app.auth.password.error.empty", "")];
+        }
+        return NO;
+    }
+    // check for not equal
+    else if (text_field == _password_re_field) {
+        if (![_password_field.text isEqualToString:_password_re_field.text]) {
+            [_password_re_view showError:NSLocalizedString(@"app.auth.password.error.not_equal", "")];
+            return NO;
+        }
+    }
+    
+    return YES;
 }
 
 -(void)textFieldDidBeginEditing:(UITextField *)text_field {
@@ -144,29 +172,96 @@
 }
 
 -(void)textFieldDidEndEditing:(UITextField *)text_field reason:(UITextFieldDidEndEditingReason)reason {
-    // check for empty
-    if ([text_field.text length] == 0) {
-        if (text_field == _login_field) {
-            [_login_view showError:NSLocalizedString(@"app.restore.login_field.error_empty.text", "")];
-        }
-        else if (text_field == _password_field) {
-            [_password_view showError:NSLocalizedString(@"app.restore.password_field.error_empty.text", "")];
-        }
-        else if (text_field == _password_re_field) {
-            [_password_re_view showError:NSLocalizedString(@"app.restore.password_re_field.error_empty.text", "")];
-        }
-    }
-    // check for not equal
-    else if (text_field == _password_re_field) {
-        if (![_password_field.text isEqualToString:_password_re_field.text]) {
-            [_password_re_view showError:NSLocalizedString(@"app.restore.password_re_field.error_not_equal.text", "")];
-        }
-    }
+    [self checkFieldAndShowError:text_field];
 }
 
 -(BOOL)textFieldShouldReturn:(UITextField *)text_field {
     [text_field resignFirstResponder];
     return NO;
+}
+
+-(IBAction)restoreButtonTapped:(id)sender {
+    if (![self checkFieldAndShowError:_login_field] ||
+        ![self checkFieldAndShowError:_password_field] ||
+        ![self checkFieldAndShowError:_password_re_field]) {
+        return;
+    }
+    
+    std::string login = TO_STDSTRING(_login_field.text);
+    std::string password = TO_STDSTRING(_password_field.text);
+    
+    [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        self->_pending_restore = api->auth().restore(login, password);
+        return NO;
+    } completion:^(BOOL errored) {
+        if (!errored) {
+            CodeEnterViewController* view_controller = [CodeEnterViewController new];
+            view_controller.delegate = self;
+            [self.navigationController pushViewController:view_controller animated:YES];
+            return;
+        }
+        
+        // todo
+    }];
+}
+
+-(void)didResendForCodeEnterViewController:(CodeEnterViewController*)view_contoroller completionHandler:(void(^)(BOOL errored))completion_handler{
+    [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        self->_pending_restore->resend();
+        return NO;
+    } completion:^(BOOL errored) {
+        completion_handler(errored);
+        if (errored) {
+            // todo
+        }
+        
+    }];
+}
+
+-(void)codeEnterViewController:(CodeEnterViewController*)view_contoroller didSubmitedCode:(NSString*)code completionHandler:(void(^)(BOOL errored))completion_handler{
+    using anixart::codes::auth::RestoreVerifyCode;
+    
+    std::string restore_code = TO_STDSTRING(code);
+    __block anixart::Profile::Ptr profile;
+    __block anixart::ProfileToken profile_token;
+    __block RestoreVerifyCode error_code = RestoreVerifyCode::Success;
+    
+    [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        try {
+            auto result = self->_pending_restore->verify(restore_code);
+            profile = result.first;
+            profile_token = std::move(result.second);
+        } catch (const anixart::RestoreVerifyError& e) {
+            error_code = e.code;
+            return YES;
+        }
+        return NO;
+    } completion:^(BOOL errored) {
+        completion_handler(errored);
+        if (!errored) {
+            [AuthPerformer performAuthWithProfile:profile profileToken:std::move(profile_token)];
+            return;
+        }
+        
+        NSString* error_msg = nil;
+        switch (error_code) {
+            case RestoreVerifyCode::CodeExpired:
+                error_msg = NSLocalizedString(@"app.restore.error.code_expired", "");
+                break;
+            case RestoreVerifyCode::CodeInvalid:
+                error_msg = NSLocalizedString(@"app.restore.error.code_invalid", "");
+                break;
+            default:
+                error_msg = NSLocalizedString(@"app.restore.error.unknown", "");
+                break;
+        }
+        
+        UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:error_msg message:@"" preferredStyle:UIAlertControllerStyleAlert];
+        [alert_controller addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+            
+        }]];
+        [self presentViewController:alert_controller animated:YES completion:nil];
+    }];
 }
 
 @end

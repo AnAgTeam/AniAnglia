@@ -13,6 +13,7 @@
 #import "SearchViewController.h"
 #import "ReleasesHistoryTableViewController.h"
 #import "ReleasesViewController.h"
+#import "ProfileListsView.h"
 
 @class MultiSelectMenuModalViewController;
 
@@ -383,7 +384,7 @@
     
     _done_button = [UIButton new];
     [_done_button addTarget:self action:@selector(onDoneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    [_done_button setTitle:NSLocalizedString(@"app.filter.multi_select._modal.done_button.title", "") forState:UIControlStateNormal];
+    [_done_button setTitle:NSLocalizedString(@"app.filter.multi_select.done", "") forState:UIControlStateNormal];
     _done_button.layer.cornerRadius = 8;
     
     [self.view addSubview:_blur_effect_view];
@@ -542,153 +543,167 @@
     _stack_view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(0, 15, 0, 15);
     _stack_view.layoutMarginsRelativeArrangement = YES;
     
-    _status_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.status_select_button.menu.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.status_select_button.menu.none.text", "") handler:^{
+    _status_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.status", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
             [self onStatusMenuItemSelected:anixart::Release::Status::Unknown];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.status_select_button.menu.finished.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getStatusNameFor:anixart::Release::Status::Finished] handler:^{
             [self onStatusMenuItemSelected:anixart::Release::Status::Finished];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.status_select_button.menu.ongoing.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getStatusNameFor:anixart::Release::Status::Ongoing] handler:^{
             [self onStatusMenuItemSelected:anixart::Release::Status::Ongoing];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.status_select_button.menu.upcoming.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getStatusNameFor:anixart::Release::Status::Upcoming] handler:^{
             [self onStatusMenuItemSelected:anixart::Release::Status::Upcoming];
         }]
     ]];
 
-    _category_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.category_select_button.menu.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.category_select_button.menu.none.text", "") handler:^{
+    _category_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.category", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
             [self onCategoryMenuItemSelected:anixart::Release::Category::Unknown];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.category_select_button.menu.series.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getCategoryNameFor:anixart::Release::Category::Series] handler:^{
             [self onCategoryMenuItemSelected:anixart::Release::Category::Series];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.category_select_button.menu.movies.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getCategoryNameFor:anixart::Release::Category::Movies] handler:^{
             [self onCategoryMenuItemSelected:anixart::Release::Category::Movies];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.category_select_button.menu.ova.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getCategoryNameFor:anixart::Release::Category::Ova] handler:^{
             [self onCategoryMenuItemSelected:anixart::Release::Category::Ova];
         }]
     ]];
-    _genres_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.genres_select_button.menu.title", "") buttonMenuActions:[self createGenreActions]];
+    
+    _genres_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.genres", "") buttonMenuActions:[self createGenreActions]];
+    
     _genres_exclude_mode_button = [UIButton new];
     [_genres_exclude_mode_button setImage:[UIImage systemImageNamed:@"square.slash"] forState:UIControlStateNormal];
     [_genres_exclude_mode_button addTarget:self action:@selector(onGenresExcludeModePressed:) forControlEvents:UIControlEventTouchUpInside];
     _genres_exclude_mode_button.contentVerticalAlignment = UIControlContentVerticalAlignmentFill;
     _genres_exclude_mode_button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentFill;
     
-    _country_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.country_select_button.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.country_select_button.menu.none.text", "") handler:^{
+    _country_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.country", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
             [self onCountryMenuItemSelected:nil];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.country_select_button.menu.japan.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.country.japan", "") handler:^{
             [self onCountryMenuItemSelected:@"Япония"];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.country_select_button.menu.china.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.country.china", "") handler:^{
             [self onCountryMenuItemSelected:@"Китай"];
         }]
     ]];
-    _types_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.types_select_button.menu.title", "") buttonMenuActions:@[]];
-    _studio_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.studio_select_button.title", "") buttonMenuActions:[self createStudioActions]];
-    _season_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.season_select_button.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.season_select_button.menu.none.text", "") handler:^{
+    
+    _types_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.types", "") buttonMenuActions:@[]];
+    
+    _studio_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.studio", "") buttonMenuActions:[self createStudioActions]];
+    
+    _season_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.season", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
         [self onSeasonMenuItemSelected:anixart::Release::Season::Unknown];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.season_select_button.menu.winter.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getSeasonNameFor:anixart::Release::Season::Winter] handler:^{
         [self onSeasonMenuItemSelected:anixart::Release::Season::Winter];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.season_select_button.menu.spring.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getSeasonNameFor:anixart::Release::Season::Spring] handler:^{
         [self onSeasonMenuItemSelected:anixart::Release::Season::Spring];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.season_select_button.menu.summer.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getSeasonNameFor:anixart::Release::Season::Summer] handler:^{
         [self onSeasonMenuItemSelected:anixart::Release::Season::Summer];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.season_select_button.menu.fall.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getSeasonNameFor:anixart::Release::Season::Fall] handler:^{
             [self onSeasonMenuItemSelected:anixart::Release::Season::Fall];
         }]
     ]];
-    _episode_count_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.episode_count_select_button.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_count_select_button.menu.none.text", "") handler:^{
+    
+    _episode_count_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.episodes_count", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
             [self onEpisodeCountMenuItemSelected:0];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_count_select_button.menu.1_to_12.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_count.1_to_12", "") handler:^{
             [self onEpisodeCountMenuItemSelected:1];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_count_select_button.menu.13_to_24.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_count.13_to_24", "") handler:^{
             [self onEpisodeCountMenuItemSelected:2];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_count_select_button.menu.25_to_100.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_count.25_to_100", "") handler:^{
             [self onEpisodeCountMenuItemSelected:3];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_count_select_button.menu.100_plus.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_count.100_plus", "") handler:^{
             [self onEpisodeCountMenuItemSelected:4];
         }]
     ]];
-    _episode_duration_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.episode_duration_select_button.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_duration_select_button.menu.none.text", "") handler:^{
+    
+    _episode_duration_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.episodes_duration", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
             [self onEpisodeDurationMenuItemSelected:0];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_duration_select_button.menu.to_10.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_duration.to_10", "") handler:^{
             [self onEpisodeDurationMenuItemSelected:1];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_duration_select_button.menu.to_30.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_duration.to_30", "") handler:^{
             [self onEpisodeDurationMenuItemSelected:2];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episode_duration_select_button.menu.30_plus.text", "") handler:^{
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.episodes_duration.30_plus", "") handler:^{
             [self onEpisodeDurationMenuItemSelected:3];
         }]
     ]];
-    _list_exclude_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.title", "") buttonMenuActions:@[
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.favorite", "") handler:^(BOOL selected) {
+    
+    _list_exclude_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.list_exclude", "") buttonMenuActions:@[
+        [MultiSelectMenuAction actionWithTitle:[ProfileListsView getListName:anixart::Profile::List::Favorite] handler:^(BOOL selected) {
             [self onProfileListExlusionMenuItemSelected:anixart::Profile::List::Favorite selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.watching", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ProfileListsView getListName:anixart::Profile::List::Watching] handler:^(BOOL selected) {
             [self onProfileListExlusionMenuItemSelected:anixart::Profile::List::Watching selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.plan", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ProfileListsView getListName:anixart::Profile::List::Plan] handler:^(BOOL selected) {
             [self onProfileListExlusionMenuItemSelected:anixart::Profile::List::Plan selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.watched", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ProfileListsView getListName:anixart::Profile::List::Watched] handler:^(BOOL selected) {
             [self onProfileListExlusionMenuItemSelected:anixart::Profile::List::Watched selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.hold_on", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ProfileListsView getListName:anixart::Profile::List::HoldOn] handler:^(BOOL selected) {
             [self onProfileListExlusionMenuItemSelected:anixart::Profile::List::HoldOn selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.list_exclude_select_button.menu.dropped", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ProfileListsView getListName:anixart::Profile::List::Dropped] handler:^(BOOL selected) {
             [self onProfileListExlusionMenuItemSelected:anixart::Profile::List::Dropped selected:selected];
         }]
     ]];
-    _age_rating_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.age_rating_select_button.menu.title", "") buttonMenuActions:@[
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.age_rating_select_button.menu.g", "") handler:^(BOOL selected) {
+    
+    _age_rating_select_button = [[MultiSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.age_rating", "") buttonMenuActions:@[
+        [MultiSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getAgeRatingNameFor:anixart::Release::AgeRating::G] handler:^(BOOL selected) {
             [self onAgeRatingMenuItemSelected:anixart::Release::AgeRating::G selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.age_rating_select_button.menu.pg6", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getAgeRatingNameFor:anixart::Release::AgeRating::PG6] handler:^(BOOL selected) {
         [self onAgeRatingMenuItemSelected:anixart::Release::AgeRating::PG6 selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.age_rating_select_button.menu.pg12", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getAgeRatingNameFor:anixart::Release::AgeRating::PG12] handler:^(BOOL selected) {
         [self onAgeRatingMenuItemSelected:anixart::Release::AgeRating::PG12 selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.age_rating_select_button.menu.r16", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getAgeRatingNameFor:anixart::Release::AgeRating::R16] handler:^(BOOL selected) {
         [self onAgeRatingMenuItemSelected:anixart::Release::AgeRating::R16 selected:selected];
         }],
-        [MultiSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.age_rating_select_button.menu.r18", "") handler:^(BOOL selected) {
+        [MultiSelectMenuAction actionWithTitle:[ReleasesPageableDataProvider getAgeRatingNameFor:anixart::Release::AgeRating::R18] handler:^(BOOL selected) {
         [self onAgeRatingMenuItemSelected:anixart::Release::AgeRating::R18 selected:selected];
         }]
     ]];
-    _sort_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.sort_select_button.title", "") buttonMenuActions:@[
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort_select_button.menu.release_date.text", "") handler:^{
+    
+    _sort_select_button = [[SingleSelectMenuButton alloc] initWithTitle:NSLocalizedString(@"app.filter.sort.date_update", "") buttonMenuActions:@[
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort.date_update", "") handler:^{
             [self onSortSelectMenuItemSelected:anixart::requests::FilterRequest::Sort::DateUpdate];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort_select_button.menu.grade.text", "") handler:^{
-        [self onSortSelectMenuItemSelected:anixart::requests::FilterRequest::Sort::Grade];
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort.grade", "") handler:^{
+            [self onSortSelectMenuItemSelected:anixart::requests::FilterRequest::Sort::Grade];
         }],
-        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort_select_button.menu.year.text", "") handler:^{
-        [self onSortSelectMenuItemSelected:anixart::requests::FilterRequest::Sort::Year];
-        }]
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort.year", "") handler:^{
+            [self onSortSelectMenuItemSelected:anixart::requests::FilterRequest::Sort::Year];
+        }],
+        [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.sort.popular", "") handler:^{
+            [self onSortSelectMenuItemSelected:anixart::requests::FilterRequest::Sort::Popular];
+        }],
     ]];
+    
     _search_button = [UIButton new];
-    [_search_button setTitle:NSLocalizedString(@"app.filter.search_button.title", "") forState:UIControlStateNormal];
+    [_search_button setTitle:NSLocalizedString(@"app.filter.search", "") forState:UIControlStateNormal];
     [_search_button addTarget:self action:@selector(onSearchButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     _search_button.layer.cornerRadius = 8;
     
@@ -764,6 +779,7 @@
     _search_button.backgroundColor = [AppColorProvider primaryColor];
     [self updateGenresExcludeButton];
 }
+
 -(NSArray<MultiSelectMenuAction*>*)createGenreActions {
     NSArray<NSString*>* genres = [_api_proxy getGenresArray];
     NSMutableArray<MultiSelectMenuAction*>* actions = [NSMutableArray arrayWithCapacity:[genres count]];
@@ -774,10 +790,11 @@
     }
     return actions;
 }
+
 -(NSArray<SingleSelectMenuAction*>*)createStudioActions {
     NSArray<NSString*>* studios = [_api_proxy getStudiosArray];
     NSMutableArray<SingleSelectMenuAction*>* actions = [NSMutableArray arrayWithCapacity:1 + [studios count]];
-    actions[0] = [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.studio_select_button.menu.none.text", "") handler:^{
+    actions[0] = [SingleSelectMenuAction actionWithTitle:NSLocalizedString(@"app.filter.selection.none", "") handler:^{
         [self onStudioMenuItemSelectedAtIndex:0];
     }];
     for (size_t i = 0; i < [studios count]; ++i) {
@@ -796,6 +813,7 @@
         [self updateTypesButtonActions];
     }];
 }
+
 -(void)updateTypesButtonActions {
     NSMutableArray<MultiSelectMenuAction*>* actions = [NSMutableArray arrayWithCapacity:_episode_types.size()];
     for (size_t i = 0; i < _episode_types.size(); ++i) {
@@ -805,6 +823,7 @@
     }
     [_types_select_button updateActions:actions];
 }
+
 -(void)updateGenresExcludeButton {
     if (_filter_request.is_genres_exclude_mode) {
         _genres_exclude_mode_button.tintColor = [AppColorProvider primaryColor];
@@ -899,6 +918,7 @@
             break;
     }
 }
+
 -(void)onSortSelectMenuItemSelected:(anixart::requests::FilterRequest::Sort)sort {
     _filter_request.sort = sort;
 }
@@ -914,6 +934,7 @@
         return genre == selected_genre;
     });
 }
+
 -(void)onTypeMenuItemSelectedAtIndex:(size_t)index selected:(BOOL)selected {
     anixart::EpisodeTypeID selected_episode_type_id = _episode_types[index]->id;
     if (selected) {
@@ -924,6 +945,7 @@
         return episode_type_id == selected_episode_type_id;
     });
 }
+
 -(void)onProfileListExlusionMenuItemSelected:(anixart::Profile::List)profile_list selected:(BOOL)selected {
     if (selected) {
         _filter_request.profile_list_exclusions.push_back(profile_list);
@@ -933,6 +955,8 @@
         return list == profile_list;
     });
 }
+
+
 -(void)onAgeRatingMenuItemSelected:(anixart::Release::AgeRating)age_rating selected:(BOOL)selected {
     if (selected) {
         _filter_request.age_ratings.push_back(age_rating);
@@ -947,6 +971,7 @@
     _filter_request.is_genres_exclude_mode = !_filter_request.is_genres_exclude_mode;
     [self updateGenresExcludeButton];
 }
+
 -(IBAction)onSearchButtonPressed:(UIButton*)sender {
     anixart::FilterPages::UPtr pages = _api_proxy.api->search().filter_search(_filter_request, false, 0);
     

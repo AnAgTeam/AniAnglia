@@ -132,6 +132,7 @@
     }
     return [UIColor clearColor];
 }
+
 +(NSString*)getListStatusName:(anixart::Profile::ListStatus)list_status {
     switch (list_status) {
         case anixart::Profile::ListStatus::Watching:
@@ -146,6 +147,24 @@
             return NSLocalizedString(@"app.profile.list_status.dropped", "");
         case anixart::Profile::ListStatus::NotWatching:
             return NSLocalizedString(@"app.profile.list_status.none", "");
+    }
+    return nil;
+}
+
++(NSString*)getListName:(anixart::Profile::List)list {
+    switch (list) {
+        case anixart::Profile::List::Favorite:
+            return NSLocalizedString(@"app.profile.lists.favorite", "");
+        case anixart::Profile::List::Watching:
+            return NSLocalizedString(@"app.profile.list_status.watching", "");
+        case anixart::Profile::List::Plan:
+            return NSLocalizedString(@"app.profile.list_status.plan", "");
+        case anixart::Profile::List::Watched:
+            return NSLocalizedString(@"app.profile.list_status.watched", "");
+        case anixart::Profile::List::HoldOn:
+            return NSLocalizedString(@"app.profile.list_status.holdon", "");
+        case anixart::Profile::List::Dropped:
+            return NSLocalizedString(@"app.profile.list_status.dropped", "");
     }
     return nil;
 }

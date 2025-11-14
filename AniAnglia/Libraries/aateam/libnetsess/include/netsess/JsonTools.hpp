@@ -51,10 +51,37 @@ namespace network::json {
             json_str[json_str.length() - 1] = ']';
         }
 
+        static std::string escape_string(std::string_view str) {
+            std::string out_string;
+            out_string.reserve(str.size());
+            for (auto& ch : str) {
+                switch (ch) {
+                case '\n':
+                    out_string += "\\n";
+                    break;
+                case '\\':
+                    out_string += "\\\\";
+                    break;
+                case '"':
+                    out_string += "\\\"";
+                    break;
+                case '\t':
+                    out_string += "\\t";
+                    break;
+                case '\r':
+                    out_string += "\\r";
+                    break;
+                default:
+                    out_string += ch;
+                    break;
+                }
+            }
+            return out_string;
+        }
+
         template<typename T>
         static void raw_append(std::string& json_str, T&& value) {
-            using std::to_string;
-            using Type = std::remove_cvref_t<T>;
+            using Type = std::decay_t<std::remove_cvref_t<T>>;
             if constexpr (std::same_as<Type, bool>) {
                 json_str += value ? "true" : "false";
             }
@@ -64,16 +91,16 @@ namespace network::json {
             else if constexpr (std::integral<Type> || std::floating_point<Type>) {
                 json_str += std::to_string(value);
             }
+            else if constexpr (same_as_any_of<Type, std::string, std::string_view, char*>) {
+                json_str += '"';
+                json_str += escape_string(value);
+                json_str += '"';
+            }
             else if constexpr (requires { InlineJson::serialize(value); }) {
                 json_str += InlineJson::serialize(value);
             }
             else if constexpr (convertible_time_tools_to_integer<Type>) {
                 json_str += std::to_string(TimeTools::to_integer(value));
-            }
-            else if constexpr (same_as_any_of<Type, std::string, std::string_view, char*>) {
-                json_str += '"';
-                json_str += value;
-                json_str += '"';
             }
             else if constexpr (nullable<Type>) {
                 if (value.has_value()) {
@@ -85,6 +112,9 @@ namespace network::json {
             }
             // Enables custom 'to_string' overloads
             else if constexpr (requires { to_string(value); }) {
+                json_str += to_string(value);
+            }
+            else if constexpr (requires { serialize(value); }) {
                 json_str += to_string(value);
             }
             else {
@@ -101,9 +131,30 @@ namespace network::json {
             json_str += ",";
         }
 
+        template<typename Value, typename Serializator>
+            requires requires (std::string& str, Value val, Serializator serializator) {
+            str += serializator(val);
+        }
+        static void append(std::string& json_str, std::string_view key, Value&& value, Serializator&& serializator) {
+            json_str += '"';
+            json_str += key;
+            json_str += R"(":)";
+            json_str += serializator(value);
+            json_str += ",";
+        }
+
         template<typename T>
         static void append(std::string& json_str, T&& value) {
             raw_append(json_str, std::forward<T>(value));
+            json_str += ",";
+        }
+
+        template<typename Value, typename Serializator>
+            requires requires (std::string& str, Value val, Serializator serializator) {
+            str += serializator(val);
+        }
+        static void append(std::string& json_str, Value&& value, Serializator&& serializator) {
+            json_str += serializator(std::forward<Value>(value));
             json_str += ",";
         }
 
@@ -117,6 +168,24 @@ namespace network::json {
             open_array(json_str);
             for (auto& val : arr) {
                 append(json_str, val);
+            }
+            close_array(json_str);
+            return json_str;
+        }
+
+        template<typename Array, typename Serializator>
+            requires serializable_to_json_array<std::remove_cvref_t<Array>>&&
+            requires (std::string& str, typename std::remove_cvref_t<Array>::value_type val, Serializator serializator) {
+            InlineJson::append(str, val, serializator);
+        }
+        static std::string serialize(Array&& arr, Serializator&& serializator) {
+            if (arr.empty()) {
+                return "[]";
+            }
+            std::string json_str;
+            open_array(json_str);
+            for (auto& val : arr) {
+                append(json_str, val, serializator);
             }
             close_array(json_str);
             return json_str;

@@ -96,7 +96,7 @@ namespace anixart {
         requests::SearchRequest _request;
     };
 
-    class FavoriteCollectionSearchPages : public Paginator<Collection> {
+    class FavoriteCollectionSearchPages : public EmptyContentPaginator<Collection> {
     public:
         FavoriteCollectionSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
@@ -319,7 +319,7 @@ namespace anixart {
 
     class ReleaseCommentsPages : public Paginator<Comment> {
     public:
-        ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseID release_id, const Comment::FilterBy filter_by);
+        ReleaseCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ReleaseID release_id, const Comment::Sort filter_by);
 
     protected:
         json::CachingJsonObject do_request(const int32_t page) const override;
@@ -327,7 +327,7 @@ namespace anixart {
         const ApiSession& _session;
         const std::string& _token;
         ReleaseID _release_id;
-        Comment::FilterBy _sort;
+        Comment::Sort _sort;
     };
 
     class ProfileReleaseCommentsPages : public Paginator<Comment> {
@@ -514,7 +514,7 @@ namespace anixart {
         Comment::Sort _sort;
     };
 
-    class FavoriteCollectionsPages : public Paginator<Collection> {
+    class FavoriteCollectionsPages : public EmptyContentPaginator<Collection> {
     public:
         FavoriteCollectionsPages(const ApiSession& session, const std::string& token, const int32_t page);
 
@@ -523,6 +523,249 @@ namespace anixart {
     private:
         const ApiSession& _session;
         const std::string& _token;
+    };
+
+    /* beta start */
+
+    class ArticlesPages : public EmptyContentPaginator<Article> {
+    public:
+        ArticlesPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::ArticlesFilterRequest& request);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        requests::ArticlesFilterRequest _request;
+    };
+
+    class LatestArticlesPages : public EmptyContentPaginator<Article> {
+    public:
+        LatestArticlesPages(const ApiSession& session, const std::string& token, const int32_t page);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+    };
+
+    class ArticleRepostsPages : public EmptyContentPaginator<Article> {
+    public:
+        enum class Sort {
+            Newest = 1,
+            Oldest = 2,
+            Popular = 3
+        };
+
+        ArticleRepostsPages(const ApiSession& session, const std::string& token, const int32_t page, const ArticleID article_id, const Sort sort);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ArticleID _article_id;
+        Sort _sort;
+    };
+
+    class ArticleVotesPages : public EmptyContentPaginator<Profile> {
+    public:
+        ArticleVotesPages(const ApiSession& session, const std::string& token, const int32_t page, const ArticleID article_id, const Profile::VoteFilterBy filter_by);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ArticleID _article_id;
+        Profile::VoteFilterBy _filter_by;
+    };
+
+    class ArticleCommentsPages : public EmptyContentPaginator<Comment> {
+    public:
+
+        ArticleCommentsPages(const ApiSession& session, const std::string& token, const int32_t page, const ArticleID article_id, const Comment::Sort sort);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ArticleID _article_id;
+        Comment::Sort _sort;
+    };
+
+    class ArticlePopularCommentsPages : public OnePagePaginator<Comment> {
+    public:
+
+        ArticlePopularCommentsPages(const ApiSession& session, const std::string& token, const ArticleID article_id);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ArticleID _article_id;
+        Comment::Sort _sort;
+    };
+
+    class ArticleCommentsByProfilePages : public EmptyContentPaginator<Comment> {
+    public:
+
+        ArticleCommentsByProfilePages(const ApiSession& session, const std::string& token, const int32_t page, const ProfileID profile_id, const Comment::Sort sort);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ProfileID _profile_id;
+        Comment::Sort _sort;
+    };
+
+    // TODO: test
+    class ArticleCommentRepliesPages : public OnePagePaginator<Comment> {
+    public:
+
+        ArticleCommentRepliesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Comment::Sort sort);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        CommentID _comment_id;
+        Comment::Sort _sort;
+    };
+
+    class ArticleCommentVotesPages : public EmptyContentPaginator<Profile> {
+    public:
+
+        ArticleCommentVotesPages(const ApiSession& session, const std::string& token, const int32_t page, const CommentID comment_id, const Profile::VoteFilterBy filter_by);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        CommentID _comment_id;
+        Profile::VoteFilterBy _filter_by;
+    };
+
+    class ArticleSuggestionsPages : public EmptyContentPaginator<Article> {
+    public:
+
+        ArticleSuggestionsPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::ArticleSuggestionsFilterRequest& request);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        requests::ArticleSuggestionsFilterRequest _request;
+    };
+
+    class ChannelBlocksPages : public EmptyContentPaginator<ChannelProfile> {
+    public:
+
+        ChannelBlocksPages(const ApiSession& session, const std::string& token, const int32_t page, const ChannelID channel_id);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ChannelID _channel_id;
+    };
+
+    class ChannelsPages : public EmptyContentPaginator<Channel> {
+    public:
+
+        ChannelsPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::ChannelsFilterRequest& request);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        requests::ChannelsFilterRequest _request;
+    };
+
+    class ChannelPermissionsPages : public EmptyContentPaginator<ChannelProfile> {
+    public:
+
+        ChannelPermissionsPages(const ApiSession& session, const std::string& token, const int32_t page, const ChannelID channel_id, const requests::ChannelPermissionsFilterRequest& request);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ChannelID _channel_id;
+        requests::ChannelPermissionsFilterRequest _request;
+    };
+
+    class ChannelRecomendationsPages : public EmptyContentPaginator<Channel> {
+    public:
+
+        ChannelRecomendationsPages(const ApiSession& session, const std::string& token, const int32_t page);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+    };
+
+    class ChannelSubscribersPages : public EmptyContentPaginator<ChannelProfile> {
+    public:
+
+        ChannelSubscribersPages(const ApiSession& session, const std::string& token, const int32_t page, const ChannelID channel_id);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        ChannelID _channel_id;
+    };
+
+    class SubscribtionsPages : public EmptyContentPaginator<Channel> {
+    public:
+
+        SubscribtionsPages(const ApiSession& session, const std::string& token, const int32_t page);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+    };
+
+    class MyProfileBadgesPages : public EmptyContentPaginator<Badge> {
+    public:
+
+        MyProfileBadgesPages(const ApiSession& session, const std::string& token, const int32_t page);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+    };
+
+    class ProfilesByRolePages : public EmptyContentPaginator<Profile> {
+    public:
+
+        ProfilesByRolePages(const ApiSession& session, const std::string& token, const int32_t page, const RoleID role_id);
+
+    protected:
+        json::CachingJsonObject do_request(const int32_t page) const override;
+    private:
+        const ApiSession& _session;
+        const std::string& _token;
+        RoleID _role_id;
     };
 }
 

@@ -121,9 +121,6 @@ namespace anixart::codes {
 		};
 	};
 	namespace collection {
-		enum class CollectionReportCode {
-			GENERIC_CODES,
-		};
 		enum class CollectionResponseCode {
 			GENERIC_CODES,
 			InvalidID = 2,
@@ -192,9 +189,6 @@ namespace anixart::codes {
 			CommentIsTooLong = 4,
 			CommentNotOwned = 5
 		};
-		enum class CommentReportCode {
-			GENERIC_CODES,
-		};
 		enum class CommentVoteCode {
 			GENERIC_CODES,
 			NegativeVoteLimitReached = 2
@@ -234,12 +228,6 @@ namespace anixart::codes {
 			GENERIC_CODES,
 			GoogleNotBound = 2
 		};
-		enum class ProfilePreferenceCode {
-			GENERIC_CODES,
-		};
-		enum class ProfileSocialCode {
-			GENERIC_CODES,
-		};
 		enum class RemoveFriendRequestCode {
 			GENERIC_CODES,
 			RequestRemoved = 2,
@@ -272,46 +260,6 @@ namespace anixart::codes {
 			GENERIC_CODES,
 			VkNotBound = 2
 		};
-		enum class AddToBlockListCode {
-			GENERIC_CODES
-		};
-		enum class RemoveFromBlockListCode {
-			GENERIC_CODES
-		};
-	};
-	namespace release {
-		enum class RemoveVoteReleaseCode {
-			GENERIC_CODES,
-		};
-		enum class ReleaseReportCode {
-			GENERIC_CODES,
-		};
-		enum class ReleaseCode {
-			GENERIC_CODES,
-		};
-		enum class VoteReleaseCode {
-			GENERIC_CODES,
-		};
-	};
-	namespace release::episode {
-		enum class EpisodeCode {
-			GENERIC_CODES,
-		};
-		enum class EpisodeTargetCode {
-			GENERIC_CODES,
-		};
-		enum class EpisodeUnwatchCode {
-			GENERIC_CODES,
-		};
-		enum class EpisodeWatchCode {
-			GENERIC_CODES,
-		};
-		enum class SourcesCode {
-			GENERIC_CODES,
-		};
-		enum class TypesCode {
-			GENERIC_CODES,
-		};
 	};
 	namespace release::video {
 		enum class ReleaseVideosCode {
@@ -332,9 +280,6 @@ namespace anixart::codes {
 			AppealNotFound = 9,
 			AppealDisabled = 10
 		};
-		enum class ReleaseVideoCategoriesCode {
-			GENERIC_CODES,
-		};
 	};
 	namespace report {
 		enum class ReportCode {
@@ -344,6 +289,101 @@ namespace anixart::codes {
 			ReasonNotFound = 4
 		};
 	};
+	namespace article {
+		enum class ArticleCreateEditCode {
+			GENERIC_CODES,
+			InvalidRepostArticle = 2,
+			InvalidPayload = 3,
+			InvalidTags = 4,
+			TemporaryDisabled = 5,
+			ArticleLimitReached = 6,
+			ChannelNotFound = 7,
+			ChannelNotOwned = 8,
+			ChannelCreatorBanned = 9,
+			ChannelBlocked = 10,
+			ArticleNotFound = 11
+		};
+		enum class ArticleRemoveCode {
+			GENERIC_CODES,
+			ArticleNotFound = 2,
+			ArticleNotOwned = 3,
+			ArticleDeleted = 4
+		};
+		enum class ArticleCode {
+			GENERIC_CODES,
+			ArticleNotFound = 2,
+			ArticleDeleted = 3
+		};
+		enum class EditorAvailableCode {
+			GENERIC_CODES,
+			TemporaryDisabled = 2,
+			ArticleLimitReached = 3,
+			ChannelNotFound = 4,
+			ChannelNotOwned = 5,
+			ChannelCreatorBanned = 6
+		};
+	};
+	namespace article::suggestion {
+		enum class ArticleSuggestionRemoveCode {
+			GENERIC_CODES,
+			ArticleNotFound = 2,
+			ArticleNotOwned = 3
+		};
+		enum class ArticleSuggestionPublishCode {
+			GENERIC_CODES,
+			ArticleSuggestionNotFound = 2,
+			ChannelNotFound = 3,
+			ChannelNotOwned = 4,
+			InvalidPayload = 5,
+			InvalidTags = 6,
+			ChannelCreatorBanned = 7
+		};
+	}
+	namespace channel {
+		enum class BlogCreateCode {
+			GENERIC_CODES,
+			ReputationTooLow = 2
+		};
+		enum class ChannelBlockCode {
+			GENERIC_CODES,
+			ChannelNotFound = 2,
+			ChannelNotOwned = 3,
+			BlockNotFound = 4
+		};
+		enum class ChannelCreateEditCode {
+			GENERIC_CODES,
+			InvalidTitle = 2,
+			InvalidDescription = 3,
+			ChannelLimitReached = 4,
+			ChannelNotFound = 5,
+			ChannelNotOwned = 6
+		};
+		enum class PermissionManageCode {
+			GENERIC_CODES,
+			InvalidPermission = 2,
+			TargetProfileNotFound = 3,
+			ChannelNotFound = 4,
+			ChannelNotOwned = 5
+		};
+		enum class ChannelCode {
+			GENERIC_CODES,
+			ChannelNotFound = 2
+		};
+		enum class ChannelSubscribeCode {
+			GENERIC_CODES,
+			SubscriptionExists = 2,
+			SubscriptionLimitReached = 3
+		};
+		enum class ChannelUnsubscribeCode {
+			GENERIC_CODES,
+			SubscriptionNotExists = 2
+		};
+		enum class ChannelUploadCoverAvatarCode {
+			GENERIC_CODES,
+			ChannelNotFound = 2,
+			ChannelNotOwned = 3
+		};
+	}
 
 #undef GENERIC_CODES
 };

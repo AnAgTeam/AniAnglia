@@ -45,7 +45,7 @@
     _login_view = [TextErrorField new];
     _login_field = _login_view.field;
     _login_field.keyboardType = UIKeyboardTypeDefault;
-    _login_field.placeholder = NSLocalizedString(@"app.signup.login_field.placeholder", "");
+    _login_field.placeholder = NSLocalizedString(@"app.auth.username", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _login_field.returnKeyType = UIReturnKeyDone;
     _login_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -58,7 +58,7 @@
     _email_view = [TextErrorField new];
     _email_field = _email_view.field;
     _email_field.keyboardType = UIKeyboardTypeDefault;
-    _email_field.placeholder = NSLocalizedString(@"app.signup.email_field.placeholder", "");
+    _email_field.placeholder = NSLocalizedString(@"app.auth.email", "");
     _email_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _email_field.returnKeyType = UIReturnKeyDone;
     _email_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -71,7 +71,7 @@
     _password_view = [TextErrorField new];
     _password_field = _password_view.field;
     _password_field.keyboardType = UIKeyboardTypeDefault;
-    _password_field.placeholder = NSLocalizedString(@"app.signup.password_field.placeholder", "");
+    _password_field.placeholder = NSLocalizedString(@"app.auth.password", "");
     _password_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _password_field.returnKeyType = UIReturnKeyDone;
     _password_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -85,7 +85,7 @@
     _password_re_view = [TextErrorField new];
     _password_re_field = _password_re_view.field;
     _password_re_field.keyboardType = UIKeyboardTypeDefault;
-    _password_re_field.placeholder = NSLocalizedString(@"app.restore.password_re_field.placeholder", "");
+    _password_re_field.placeholder = NSLocalizedString(@"app.auth.password_re", "");
     _password_re_field.autocorrectionType = UITextAutocorrectionTypeNo;
     _password_re_field.returnKeyType = UIReturnKeyDone;
     _password_re_field.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -97,7 +97,7 @@
     [_password_re_field setDelegate:self];
     
     _signup_button = [UIButton new];
-    [_signup_button setTitle:NSLocalizedString(@"app.signup.signup_button.normal.title", "") forState:UIControlStateNormal];
+    [_signup_button setTitle:NSLocalizedString(@"app.auth.sign_up.confirm", "") forState:UIControlStateNormal];
     _signup_button.layer.cornerRadius = 8.0;
     [_signup_button addTarget:self action:@selector(signupButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -154,7 +154,7 @@
 }
 
 -(IBAction)signupButtonTapped:(id)sender {
-    UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"app.sign_up.sign_up_not_implemented.title", "") message:@"" preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"app.auth.sign_up.error.not_implemented", "") message:@"" preferredStyle:UIAlertControllerStyleAlert];
     [alert_controller addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
         
     }]];
@@ -179,39 +179,39 @@
 -(void)textFieldDidEndEditing:(UITextField *)text_field reason:(UITextFieldDidEndEditingReason)reason {
     if (text_field == _login_field) {
         if ([_login_field.text length] == 0) {
-            [_login_view showError:NSLocalizedString(@"app.signup.login_field.error_empty.text", "")];
+            [_login_view showError:NSLocalizedString(@"app.auth.username.error.empty", "")];
             return;
         }
         AuthCheckerStatus check_status = [_auth_checker checkUsername:_login_field.text];
         if (check_status == AuthCheckerStatus::TooLong) {
-            [_login_view showError:NSLocalizedString(@"app.signup.login_field.error_long.text", "")];
+            [_login_view showError:NSLocalizedString(@"app.auth.username.error.long", "")];
         }
     }
     else if (text_field == _email_field) {
         if ([_email_field.text length] == 0) {
-            [_email_view showError:NSLocalizedString(@"app.signup.email_field.error_empty.text", "")];
+            [_email_view showError:NSLocalizedString(@"app.auth.email.error.empty", "")];
             return;
         }
         AuthCheckerStatus check_status = [_auth_checker checkEmail:_email_field.text];
         if (check_status == AuthCheckerStatus::Invalid) {
-            [_email_view showError:NSLocalizedString(@"app.signup.email_field.error_invalid.text", "")];
+            [_email_view showError:NSLocalizedString(@"app.auth.email.error.invalid", "")];
         }
     }
     else if (text_field == _password_field) {
         AuthCheckerStatus check_status = [_auth_checker checkPassword:_password_field.text];
         if (check_status == AuthCheckerStatus::TooShort) {
-            [_password_view showError:NSLocalizedString(@"app.signup.password_field.error_short.text", "")];
+            [_password_view showError:NSLocalizedString(@"app.auth.password.error.short", "")];
         }
         else if (check_status == AuthCheckerStatus::TooLong) {
-            [_password_view showError:NSLocalizedString(@"app.signup.password_field.error_long.text", "")];
+            [_password_view showError:NSLocalizedString(@"app.auth.password.error.long", "")];
         }
         else if (check_status == AuthCheckerStatus::Invalid) {
-            [_password_view showError:NSLocalizedString(@"app.signup.password_field.error_invalid.text", "")];
+            [_password_view showError:NSLocalizedString(@"app.auth.password.error.invalid", "")];
         }
     }
     else if (text_field == _password_re_field) {
         if (![_password_field.text isEqualToString:_password_re_field.text]) {
-            [_password_re_view showError:NSLocalizedString(@"app.signup.password_re_field.error_not_equal.text", "")];
+            [_password_re_view showError:NSLocalizedString(@"app.auth.password.error.not_equal", "")];
         }
     }
 }

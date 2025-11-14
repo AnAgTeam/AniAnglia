@@ -16,6 +16,7 @@
 +(NSString*)getSeasonNameFor:(anixart::Release::Season)category;
 +(NSString*)getCategoryNameFor:(anixart::Release::Category)category;
 +(NSString*)getStatusNameFor:(anixart::Release::Status)category;
++(NSString*)getAgeRatingNameFor:(anixart::Release::AgeRating)age_rating;
 
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages;
 -(instancetype)initWithPages:(anixart::Pageable<anixart::Release>::UPtr)pages initialReleases:(std::vector<anixart::Release::Ptr>)releases;
