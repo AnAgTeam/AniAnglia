@@ -15,6 +15,7 @@
 #import "MainWindow.h"
 #import "AuthViewController.h"
 #import "AppDataController.h"
+#import "AuthPerformer.h"
 
 @interface SettingsProfileViewController () <UITableViewDataSource, UITableViewDelegate, TextFieldTableViewCellDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
     anixart::Profile::Ptr _profile;
@@ -390,12 +391,7 @@ didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
     [self presentViewController:_image_picker_controller animated:YES completion:nil];
 }
 -(void)onLogoutSelected {
-    // TODO: don't set token and instead set is_logged_in
-    [_app_data_controller setToken:@""];
-    [_app_data_controller setMyProfileID:static_cast<anixart::ProfileID>(0)];
-    
-    MainWindow* main_window = (MainWindow*)[[[UIApplication sharedApplication] delegate] window];
-    [main_window setRootViewController:[AuthViewController new]];
+    [AuthPerformer performLogout];
 }
 
 @end

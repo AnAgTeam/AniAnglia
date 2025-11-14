@@ -23,6 +23,8 @@
 
 @property(nonatomic, weak) id<CodeEnterViewControllerDelegate> delegate;
 
+-(void)showCodeError:(NSString*)error_message;
+
 @end
 
 

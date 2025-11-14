@@ -25,6 +25,7 @@
 @property(nonatomic, retain) TextErrorField* password_re_view;
 @property(nonatomic, retain) UITextField* password_re_field;
 @property(nonatomic, retain) UIButton* restore_button;
+@property(nonatomic, retain) UIActivityIndicatorView* activity_indicator_view;
 @end
 
 @implementation RestoreViewController
@@ -50,6 +51,7 @@
     _login_field.keyboardType = UIKeyboardTypeDefault;
     _login_field.placeholder = NSLocalizedString(@"app.auth.username", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
+    _login_field.autocapitalizationType = UITextAutocapitalizationTypeNone;
     _login_field.returnKeyType = UIReturnKeyDone;
     _login_field.clearButtonMode = UITextFieldViewModeWhileEditing;
     _login_field.textAlignment = NSTextAlignmentCenter;
@@ -91,15 +93,19 @@
     _restore_button.layer.cornerRadius = 8.0;
     [_restore_button addTarget:self action:@selector(restoreButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
+    _activity_indicator_view = [UIActivityIndicatorView new];
+    
     [self.view addSubview:_login_view];
     [self.view addSubview:_password_view];
     [self.view addSubview:_password_re_view];
     [self.view addSubview:_restore_button];
+    [self.view addSubview:_activity_indicator_view];
     
     _login_view.translatesAutoresizingMaskIntoConstraints = NO;
     _password_view.translatesAutoresizingMaskIntoConstraints = NO;
     _password_re_view.translatesAutoresizingMaskIntoConstraints = NO;
     _restore_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _activity_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
     [NSLayoutConstraint activateConstraints:@[
         [_login_view.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
         [_login_view.heightAnchor constraintEqualToConstant:80.0],
@@ -119,7 +125,10 @@
         [_restore_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
         [_restore_button.heightAnchor constraintEqualToConstant:50],
         [_restore_button.topAnchor constraintEqualToAnchor:_password_re_view.bottomAnchor constant:15.0],
-        [_restore_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0]
+        [_restore_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
+        
+        [_activity_indicator_view.centerYAnchor constraintEqualToAnchor:_restore_button.centerYAnchor],
+        [_activity_indicator_view.trailingAnchor constraintEqualToAnchor:_restore_button.layoutMarginsGuide.trailingAnchor]
     ]];
 }
 
@@ -186,35 +195,87 @@
         ![self checkFieldAndShowError:_password_re_field]) {
         return;
     }
+    using anixart::codes::auth::RestoreCode;
     
     std::string login = TO_STDSTRING(_login_field.text);
     std::string password = TO_STDSTRING(_password_field.text);
     
+    __block RestoreCode error_code = RestoreCode::Success;
+    
+    [_activity_indicator_view startAnimating];
     [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
-        self->_pending_restore = api->auth().restore(login, password);
+        try {
+            self->_pending_restore = api->auth().restore(login, password);
+        } catch (const anixart::RestoreError& e) {
+            error_code = e.code;
+            return YES;
+        }
         return NO;
     } completion:^(BOOL errored) {
-        if (!errored) {
+        [self->_activity_indicator_view stopAnimating];
+        if (!errored || error_code == RestoreCode::CodeAlreadySent) {
             CodeEnterViewController* view_controller = [CodeEnterViewController new];
             view_controller.delegate = self;
+            if (error_code == RestoreCode::CodeAlreadySent) {
+                [view_controller showCodeError:NSLocalizedString(@"app.auth.error.code_already_sent", "")];
+            }
             [self.navigationController pushViewController:view_controller animated:YES];
             return;
         }
         
-        // todo
+        if (error_code == RestoreCode::ProfileNotFound) {
+            [self->_login_view showError:NSLocalizedString(@"app.auth.username.error.not_found", "")];
+            return;
+        }
+        
+        NSString* error_msg = nil;
+        switch (error_code) {
+            case RestoreCode::CodeCannotSend:
+                error_msg = NSLocalizedString(@"app.auth.error.cannot_send_code", "");
+                break;
+            default:
+                error_msg = NSLocalizedString(@"app.auth.error.unknown", "");
+                break;
+        }
+        
+        UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:error_msg message:@"" preferredStyle:UIAlertControllerStyleAlert];
+        [alert_controller addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"app.auth.action_ok", "") style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+            
+        }]];
+        [self presentViewController:alert_controller animated:YES completion:nil];
     }];
 }
 
 -(void)didResendForCodeEnterViewController:(CodeEnterViewController*)view_contoroller completionHandler:(void(^)(BOOL errored))completion_handler{
+    using anixart::codes::auth::RestoreResendCode;
+    
+    __block RestoreResendCode error_code = RestoreResendCode::Success;
+    
     [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
-        self->_pending_restore->resend();
+        try {
+            self->_pending_restore->resend();
+        } catch (const anixart::RestoreResendError& e) {
+            error_code = e.code;
+            return YES;
+        }
         return NO;
     } completion:^(BOOL errored) {
         completion_handler(errored);
-        if (errored) {
-            // todo
+        if (!errored) {
+            return;
         }
         
+        NSString* error_msg = nil;
+        switch (error_code) {
+            case RestoreResendCode::CodeCannotSend:
+                error_msg = NSLocalizedString(@"app.auth.error.cannot_send_code", "");
+                break;
+            default:
+                error_msg = NSLocalizedString(@"app.auth.error.unknown", "");
+                break;
+        }
+        
+        [view_contoroller showCodeError:error_msg];
     }];
 }
 
@@ -229,7 +290,7 @@
     [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
         try {
             auto result = self->_pending_restore->verify(restore_code);
-            profile = result.first;
+            profile = std::move(result.first);
             profile_token = std::move(result.second);
         } catch (const anixart::RestoreVerifyError& e) {
             error_code = e.code;
@@ -239,25 +300,25 @@
     } completion:^(BOOL errored) {
         completion_handler(errored);
         if (!errored) {
-            [AuthPerformer performAuthWithProfile:profile profileToken:std::move(profile_token)];
+            [AuthPerformer performAuthWithProfile:std::move(profile) profileToken:std::move(profile_token)];
             return;
         }
         
         NSString* error_msg = nil;
         switch (error_code) {
             case RestoreVerifyCode::CodeExpired:
-                error_msg = NSLocalizedString(@"app.restore.error.code_expired", "");
+                error_msg = NSLocalizedString(@"app.auth.error.code_expired", "");
                 break;
             case RestoreVerifyCode::CodeInvalid:
-                error_msg = NSLocalizedString(@"app.restore.error.code_invalid", "");
+                error_msg = NSLocalizedString(@"app.auth.error.code_invalid", "");
                 break;
             default:
-                error_msg = NSLocalizedString(@"app.restore.error.unknown", "");
+                error_msg = NSLocalizedString(@"app.auth.error.unknown", "");
                 break;
         }
         
         UIAlertController* alert_controller = [UIAlertController alertControllerWithTitle:error_msg message:@"" preferredStyle:UIAlertControllerStyleAlert];
-        [alert_controller addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+        [alert_controller addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"app.auth.action_ok", "") style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
             
         }]];
         [self presentViewController:alert_controller animated:YES completion:nil];

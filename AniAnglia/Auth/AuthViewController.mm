@@ -56,6 +56,7 @@
     _login_field.keyboardType = UIKeyboardTypeDefault;
     _login_field.placeholder = NSLocalizedString(@"app.auth.username_or_email", "");
     _login_field.autocorrectionType = UITextAutocorrectionTypeNo;
+    _login_field.autocapitalizationType = UITextAutocapitalizationTypeNone;
     _login_field.returnKeyType = UIReturnKeyDone;
     _login_field.clearButtonMode = UITextFieldViewModeWhileEditing;
     _login_field.textAlignment = NSTextAlignmentCenter;
@@ -126,12 +127,12 @@
         [_login_indicator.leadingAnchor constraintEqualToAnchor:_login_button.leadingAnchor constant:15.0],
         
         [_forgot_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor multiplier:0.45],
-        [_forgot_button.heightAnchor constraintEqualToConstant:30.0],
+        [_forgot_button.heightAnchor constraintEqualToConstant:50.0],
         [_forgot_button.centerYAnchor constraintEqualToAnchor:_login_button.centerYAnchor],
         [_forgot_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0],
         
         [_signup_button.widthAnchor constraintEqualToAnchor:self.view.widthAnchor constant:-20],
-        [_signup_button.heightAnchor constraintEqualToConstant:30.0],
+        [_signup_button.heightAnchor constraintEqualToConstant:50.0],
         [_signup_button.topAnchor constraintEqualToAnchor:_login_button.bottomAnchor constant:40.0],
         [_signup_button.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:10.0]
     ]];

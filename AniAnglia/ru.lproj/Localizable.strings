@@ -11,16 +11,23 @@
 "app.auth.error.invalid_username_or_email" = "Неверное имя пользователя или Email";
 "app.auth.error.invalid_password" = "Неверный пароль";
 "app.auth.login.confirm" = "Войти";
+"app.auth.action_ok" =  "ОК";
 
 "app.auth.sign_up" = "Зарегистрироваться";
 "app.auth.sign_up.confirm" = "Зарегистрироваться";
 "app.auth.sign_up.error.not_implemented" = "Регистрация ещё не сделана ;P";
 
-"app.restore.login_field.placeholder" = "";
 "app.restore.confirm" = "Продолжить";
-"app.restore.error.code_expired" = "Код истёк";
-"app.restore.error.code_invalid" = "Неверный код";
-"app.restore.error.unknown" = "Неизвестная ошибка";
+
+"app.auth.error.code_expired" = "Код истёк";
+"app.auth.error.code_invalid" = "Неверный код";
+"app.auth.error.unknown" = "Неизвестная ошибка";
+"app.auth.error.username_taken" = "Имя пользователя уже занято";
+"app.auth.error.email_taken" = "Email уже используется";
+"app.auth.error.cannot_send_code" = "Не удалось отправить код";
+"app.auth.error.email_service_disallowed" = "Email сервис запрещён";
+"app.auth.error.too_many_registrations" = "Слишком много регистраций";
+"app.auth.error.code_already_sent" = "Код уже был отправлен";
 
 "app.auth.error.empty" = "Поле не может быть пусто";
 
@@ -42,6 +49,7 @@
 "app.auth.username" = "Имя пользователя";
 "app.auth.username.error.long" = "Имя пользователя слишком длинное";
 "app.auth.username.error.empty" = "Имя пользователя не может быть пусто";
+"app.auth.username.error.not_found" = "Имя пользователя не найдено";
 
 /* CODE ENTER STRINGS */
 "app.code_enter.code_enter" = "Введите код из email";

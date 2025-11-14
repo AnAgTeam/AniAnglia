@@ -14,6 +14,7 @@
 @interface AuthPerformer : NSObject
 
 +(void)performAuthWithProfile:(anixart::Profile::Ptr)profile profileToken:(anixart::ProfileToken)profile_token;
++(void)performLogout;
 
 @end
 

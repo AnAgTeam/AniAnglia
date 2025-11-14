@@ -65,8 +65,7 @@ namespace anixart::codes {
 			CodeCannotSend = 4
 		};
 		enum class RestoreResendCode {
-			Success = 0,
-			Failed = 1,
+			GENERIC_CODES,
 			ProfileNotFound = 2,
 			InvalidHash = 3,
 			CodeCannotSend = 4

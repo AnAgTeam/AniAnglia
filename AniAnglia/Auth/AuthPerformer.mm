@@ -29,4 +29,14 @@
     [main_window setRootViewController:[MainTabBarController new]];
 }
 
++(void)performLogout {
+    AppDataController* data_controller = [AppDataController sharedInstance];
+    // TODO: don't set token and instead set is_logged_in
+    [data_controller setToken:@""];
+    [data_controller setMyProfileID:static_cast<anixart::ProfileID>(0)];
+    
+    MainWindow* main_window = (MainWindow*)[[[UIApplication sharedApplication] delegate] window];
+    [main_window setRootViewController:[AuthViewController new]];
+}
+
 @end

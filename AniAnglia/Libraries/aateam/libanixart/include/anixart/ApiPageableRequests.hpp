@@ -159,7 +159,7 @@ namespace anixart {
         Profile::ListStatus _list_status;
     };
 
-    class ProfileSearchPages : public Paginator<Profile> {
+    class ProfileSearchPages : public EmptyContentPaginator<Profile> {
     public:
         ProfileSearchPages(const ApiSession& session, const std::string& token, const int32_t page, const requests::SearchRequest& request);
 
