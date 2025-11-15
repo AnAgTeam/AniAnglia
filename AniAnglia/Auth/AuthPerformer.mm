@@ -36,7 +36,8 @@
     [data_controller setMyProfileID:static_cast<anixart::ProfileID>(0)];
     
     MainWindow* main_window = (MainWindow*)[[[UIApplication sharedApplication] delegate] window];
-    [main_window setRootViewController:[AuthViewController new]];
+    UINavigationController* nav_controller = [[UINavigationController alloc] initWithRootViewController:[AuthViewController new]];
+    [main_window setRootViewController:nav_controller];
 }
 
 @end

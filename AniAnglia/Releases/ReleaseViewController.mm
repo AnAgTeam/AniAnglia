@@ -1086,7 +1086,14 @@
     [_bookmark_button setTitle:[@(_release->favorite_count) stringValue] forState:UIControlStateNormal];
     [self updateBookmarkButton];
     
-    _note_label.text = [HTMLStyleFormatter stringFromString:TO_NSSTRING(_release->note)];
+    NSString* note = TO_NSSTRING(_release->note);
+//    NSData* note_data = [NSData dataWithBytes:_release->note.c_str() length:_release->note.size()];
+//    NSData* note_data = [note dataUsingEncoding:NSUTF16StringEncoding];
+//    _note_label.attributedText = [[NSAttributedString alloc] initWithData:note_data options:@{
+//        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType
+//    } documentAttributes:nil error:nil];
+    
+    _note_label.text = [HTMLStyleFormatter stringFromString:note];
     
     NSString* ep_count = _release->episodes_total != 0 ? [@(_release->episodes_total) stringValue] : @"?";
     

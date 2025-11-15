@@ -142,6 +142,8 @@ std::string choose_quality(const std::unordered_map<std::string, std::string>& q
     [asset.resourceLoader setDelegate:_torrent_rc_delegate queue:dispatch_queue_create("TorrentRepo loader", nil)];
     [_player_view_controller.player play];
     
+    _player_view_controller.view.backgroundColor = [UIColor blackColor];
+    
     AVMutableMetadataItem* title = [AVMutableMetadataItem new];
     title.identifier = AVMetadataCommonIdentifierTitle;
     title.value = @"YO";

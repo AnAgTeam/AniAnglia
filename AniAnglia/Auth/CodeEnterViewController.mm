@@ -13,6 +13,7 @@
 @interface CodeEnterViewController () <UITextFieldDelegate>
 @property(nonatomic, retain) TextErrorField* code_view;
 @property(nonatomic, retain) UITextField* code_field;
+@property(nonatomic, retain) UILabel* check_spam_label;
 @property(nonatomic, retain) UIButton* resend_button;
 @property(nonatomic, retain) UIButton* submit_button;
 @property(nonatomic, retain) UIActivityIndicatorView* activity_indicator_view;
@@ -44,6 +45,9 @@
     _code_field.layer.borderWidth = 0.8;
     _code_field.delegate = self;
     
+    _check_spam_label = [UILabel new];
+    _check_spam_label.text = NSLocalizedString(@"app.auth.check_spam", "");
+    
     _resend_button = [UIButton new];
     _resend_button.layer.cornerRadius = 8.0;
     [_resend_button setTitle:NSLocalizedString(@"app.code_enter.resend", "") forState:UIControlStateNormal];
@@ -57,11 +61,13 @@
     _activity_indicator_view = [UIActivityIndicatorView new];
     
     [self.view addSubview:_code_view];
+    [self.view addSubview:_check_spam_label];
     [self.view addSubview:_resend_button];
     [self.view addSubview:_submit_button];
     [self.view addSubview:_activity_indicator_view];
     
     _code_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _check_spam_label.translatesAutoresizingMaskIntoConstraints = NO;
     _resend_button.translatesAutoresizingMaskIntoConstraints = NO;
     _submit_button.translatesAutoresizingMaskIntoConstraints = NO;
     _activity_indicator_view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -70,7 +76,11 @@
         [_code_view.trailingAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.trailingAnchor],
         [_code_view.heightAnchor constraintEqualToConstant:80.0],
         
-        [_resend_button.topAnchor constraintEqualToAnchor:_code_view.bottomAnchor constant:8],
+        [_check_spam_label.topAnchor constraintEqualToAnchor:_code_view.bottomAnchor constant:8],
+        [_check_spam_label.leadingAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.leadingAnchor],
+        [_check_spam_label.trailingAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.trailingAnchor],
+        
+        [_resend_button.topAnchor constraintEqualToAnchor:_check_spam_label.bottomAnchor constant:8],
         [_resend_button.leadingAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.leadingAnchor],
         [_resend_button.trailingAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.trailingAnchor],
         [_resend_button.centerYAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.centerYAnchor],

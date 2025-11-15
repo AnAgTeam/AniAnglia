@@ -17,6 +17,8 @@
 "app.auth.sign_up.confirm" = "Зарегистрироваться";
 "app.auth.sign_up.error.not_implemented" = "Регистрация ещё не сделана ;P";
 
+"app.auth.check_spam" = "Если код не приходит, проверьте спам";
+
 "app.restore.confirm" = "Продолжить";
 
 "app.auth.error.code_expired" = "Код истёк";
