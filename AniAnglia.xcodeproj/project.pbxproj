@@ -3957,7 +3957,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.8;
+				MARKETING_VERSION = 0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -3987,7 +3987,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.8;
+				MARKETING_VERSION = 0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = org.aateam.AniAnglia1;
 				PRODUCT_NAME = AniAngliaXIX;
 				SWIFT_EMIT_LOC_STRINGS = YES;
