@@ -1,7 +1,363 @@
 /* 
   Localizable.strings
-  AniAnglia
+  iOSAnixart
 
-  Created by Toilettrauma on 27.10.2024.
+  Created by DeltaCion (nionim) on 23.04.2026.
   
 */
+
+/* AUTH STRINGS */
+"app.auth.forgot_password" = "Forgot password?";
+"app.auth.error.invalid_username_or_email" = "Invalid username or email.";
+"app.auth.error.invalid_password" = "Invalid password";
+"app.auth.login.confirm" = "Confirm";
+"app.auth.action_ok" =  "OK";
+
+"app.auth.sign_up" = "Sign up";
+"app.auth.sign_up.confirm" = "Sign up";
+"app.auth.sign_up.error.not_implemented" = "Not implemented yet :D";
+
+"app.auth.check_spam" = "If you don't receive the code, check the spam folder.";
+
+"app.restore.confirm" = "Continue";
+
+"app.auth.error.code_expired" = "Code expired";
+"app.auth.error.code_invalid" = "Invalid code";
+"app.auth.error.unknown" = "Unknown error";
+"app.auth.error.username_taken" = "Username already taken";
+"app.auth.error.email_taken" = "Email already registered";
+"app.auth.error.cannot_send_code" = "Cannot send the code";
+"app.auth.error.email_service_disallowed" = "Email service is disallowed";
+"app.auth.error.too_many_registrations" = "Too many registrations";
+"app.auth.error.code_already_sent" = "Code already sent";
+
+"app.auth.error.empty" = "Field cannot be empty";
+
+"app.auth.new_password" = "New password";
+"app.auth.password_re" = "Repeat password";
+
+"app.auth.password" = "Password";
+"app.auth.password.error.empty" = "Password cannot be empty";
+"app.auth.password.error.short" = "Password is too short";
+"app.auth.password.error.long" = "Password is too long";
+"app.auth.password.error.invalid" = "Password contains invalid characters";
+"app.auth.password.error.not_equal" = "Passwords do not match";
+
+"app.auth.username_or_email" = "Username or email";
+"app.auth.email" = "Email";
+"app.auth.email.error.empty" = "Email cannot be empty";
+"app.auth.email.error.invalid" = "Invalid email";
+
+"app.auth.username" = "Username";
+"app.auth.username.error.long" = "Username is too long";
+"app.auth.username.error.empty" = "Username cannot be empty";
+"app.auth.username.error.not_found" = "Username not found";
+
+/* CODE ENTER STRINGS */
+"app.code_enter.code_enter" = "Enter code from email";
+"app.code_enter.resend" = "Resend";
+"app.code_enter.submit" = "Submit";
+
+/* MAIN TAB BAR STRINGS */
+"app.main_tab_bar.main_tab.title" = "Home";
+"app.main_tab_bar.discover_tab.title" = "Discover";
+"app.main_tab_bar.bookmarks_tab.title" = "Bookmarks";
+"app.main_tab_bar.profile_tab.title" = "Profile";
+
+/* MAIN STRINGS */
+"app.pages.releases.actual" = "Relevant";
+"app.pages.releases.ongoing" = "Ongoing";
+"app.pages.releases.upcoming" = "Upcoming";
+"app.pages.releases.finished" = "Finished";
+"app.pages.releases.movies" = "Movies";
+"app.pages.releases.ova" = "OVA";
+
+/* DISCOVER */
+"app.discover.popular" = "Popular";
+"app.discover.schedule" = "Schedule";
+"app.discover.collections" = "Collections";
+"app.discover.filter" = "Filter";
+"app.discover.random" = "Random";
+"app.release_search.ep_count.text" = "Episodes";
+
+"app.discover.recomended" = "Recommended";
+"app.discover.discussing" = "Discussed";
+"app.discover.watching" = "Watching";
+"app.discover.week_collections" = "Collections of the week";
+"app.discover.week_comments" = "Comments of the week";
+
+/* RELEASES */
+"app.release.play_button.title" = "Watch";
+"app.release.add_list_button.menu.title" = "Add to list";
+"app.release.copy" = "Copy...";
+"app.release.copy_title" = "Title";
+"app.release.copy_orig_title" = "Original title";
+"app.release.copy_alt_title" = "Alternative title";
+
+"app.release.season.unknown" = "Unknown";
+"app.release.season.winter" = "Winter";
+"app.release.season.spring" = "Spring";
+"app.release.season.summer" = "Summer";
+"app.release.season.fall" = "Fall";
+
+"app.release.category.unknown" = "Unknown";
+"app.release.category.series" = "TV Series";
+"app.release.category.movies" = "Movie";
+"app.release.category.ova" = "OVA";
+
+"app.release.status.unknown" = "Unknown";
+"app.release.status.finished" = "Finished";
+"app.release.status.ongoing" = "Ongoing";
+"app.release.status.upcoming" = "Upcoming";
+
+"app.release.age_rating.g" = "0+";
+"app.release.age_rating.pg6" = "6+";
+"app.release.age_rating.pg12" = "12+";
+"app.release.age_rating.r16" = "16+";
+"app.release.age_rating.r18" = "18+";
+
+"app.release.aired_on.monday" = ", airs every Monday";
+"app.release.aired_on.tuesday" = ", airs every Tuesday";
+"app.release.aired_on.wednesday" = ", airs every Wednesday";
+"app.release.aired_on.thursday" = ", airs every Thursday";
+"app.release.aired_on.friday" = ", airs every Friday";
+"app.release.aired_on.saturday" = ", airs every Saturday";
+"app.release.aired_on.sunday" = ", airs every Sunday";
+
+"app.release.general.year.end" = "y.";
+"app.release.general.ep_info.separator" = "ep. of";
+"app.release.general.ep_info.end" = "min.";
+"app.release.general.author_info.studio" = "Studio";
+"app.release.general.author_info.author" = "Author";
+"app.release.general.author_info.director" = "Director";
+
+"app.release.lists" = "In lists";
+"app.release.rating" = "Rating";
+"app.release.rating.vote_count.end" = "Votes";
+
+"app.release.video_blocks" = "Video";
+"app.release.video_block.show_all_button.title" = "Show all";
+
+"app.release.previews" = "Screenshots";
+
+"app.release.related" = "Related";
+
+"app.release.comments" = "Comments";
+"app.release.comments.show_all_button.title" = "Show all";
+
+"app.release.episode_count.end" = "ep.";
+
+"app.release.list_status.add" = "Add to list";
+"app.release.bookmark.add" = "Add to bookmarks";
+"app.release.bookmark.remove" = "Remove from bookmarks";
+
+"app.release.search.placeholder" = "Search release...";
+
+/* COLLECTION */
+"app.collection.created.start" = "Created";
+"app.collection.updated.start" = "Updated";
+
+"app.collection.random.title" = "Random";
+
+"app.collection.lists" = "In my lists";
+
+"app.collection.bookmark.add" = "Add to bookmarks";
+"app.collection.bookmark.remove" = "Remove from bookmarks";
+
+/* COMMENTS */
+"app.comments.reply_button.title" = "Reply";
+"app.comments.show_replies_button.title" = "Show replies";
+"app.comments.origin.collection" = "to collection";
+"app.comments.origin.release" = "to release";
+"app.comments.text_enter.placeholder" = "Comment";
+
+"app.comments.comment.copy_text" = "Copy text";
+"app.comments.comment.edit" = "Edit";
+"app.comments.comment.remove" = "Delete";
+"app.comments.comment.report" = "Report";
+
+"app.comments.spoiler.show" = "Show spoiler";
+
+/* TO PLAY SELECT */
+"app.type_select.nav_item.title" = "Voice-over";
+"app.type_select.cell.ep_count.name" = "ep.";
+"app.source_select.nav_item.title" = "Source";
+"app.episode_select.nav_item.title" = "Episode";
+
+/* BOOKMARKS */
+"app.bookmarks.search_bar.placeholder" = "Find bookmark...";
+
+/* PROFILE */
+"app.profile.search.placeholder" = "Find user...";
+"app.profile.title" = "Profile";
+
+"app.profile.status.online.name" = "Online";
+"app.profile.status.offline.start" = "Last seen";
+
+"app.profile.stats_block.comment_count.name" = "Comments";
+"app.profile.stats_block.video_count.name" = "Videos";
+"app.profile.stats_block.collection_count.name" = "Collections";
+"app.profile.stats_block.friend_count.name" = "Friends";
+
+"app.profile.actions.edit_button.title" = "Edit";
+"app.profile.actions.add_to_friends_button.title" = "Add to friends";
+"app.profile.actions.remove_from_friends.title" = "Remove from friends";
+"app.profile.actions.cancel_friend_request_button.title" = "Cancel friend request";
+"app.profile.actions.accept_friend_request_button.title" = "Accept";
+"app.profile.actions.reject_friend_request_button.title" = "Decline";
+
+"app.profile.lists" = "Statistics";
+"app.profile.lists.total_watched.start" = "Episodes watched";
+"app.profile.lists.watched_time.start" = "Total watch time";
+"app.profile.lists.collections" = "Collections";
+"app.profile.lists.history" = "History";
+"app.profile.lists.favorite" = "Favorites";
+"app.profile.list_status.none" = "None";
+"app.profile.list_status.watching" = "Watching";
+"app.profile.list_status.plan" = "Planned";
+"app.profile.list_status.watched" = "Watched";
+"app.profile.list_status.holdon" = "On hold";
+"app.profile.list_status.dropped" = "Dropped";
+
+"app.profile.lists.watched_time.days" = "days";
+"app.profile.lists.watched_time.hours" = "hours";
+"app.profile.lists.watched_time.minutes" = "minutes";
+"app.profile.lists.watched_time.seconds" = "seconds";
+
+"app.profile.votes" = "Release ratings";
+
+"app.profile.watch_dynamics" = "Watch dynamics";
+
+"app.profile.history" = "Recently watched";
+
+"app.profile.comments.release.segment" = "To releases";
+"app.profile.comments.collection.segment" = "To collections";
+
+"app.profile.copy_username" = "Copy username";
+
+"app.profile.lists_pages" = "Lists";
+
+/* PROFILE FRIENDS */
+"app.profile_friends.title" = "Friends";
+"app.profile_friends.friends_count.end" = "friends";
+"app.profile_friends.requests_in.header" = "Incoming requests";
+"app.profile_friends.requests_out.header" = "Outgoing requests";
+"app.profile_friends.friends.header" = "Friends";
+
+/* SETTINGS */
+"app.settings.title" = "Settings";
+"app.settings.profile.name" = "Profile";
+"app.settings.privacy_and_security.name" = "Privacy & Security";
+
+"app.settings.appearance.name" = "Appearance";
+"app.settings.notifications.name" = "Notifications";
+"app.settings.data_control.name" = "Data management";
+"app.settings.playback.name" = "Playback";
+
+"app.settings.alternative_connection.name" = "Alternative connection";
+"app.settings.alternative_connection.footer" = "Enable only if you are experiencing issues with the app due to blocking in your country.";
+
+"app.settings.help.name" = "Help";
+"app.settings.rules.name" = "Rules";
+
+/* APPEARANCE SETTINGS */
+"app.settings.appearance.theme" = "Theme";
+"app.settings.appearance.theme.dark" = "Dark";
+"app.settings.appearance.theme.light" = "Light";
+"app.settings.appearance.theme.system" = "System";
+
+"app.settings.appearance.main_display_style" = "Release display style";
+"app.settings.appearance.main_display_style.table" = "Table";
+"app.settings.appearance.main_display_style.cards" = "Cards";
+
+/* PROFILE SETTINGS */
+"app.settings.profile.save_button.title" = "Save";
+
+"app.settings.profile.username" = "Nickname";
+
+"app.settings.profile.custom_status" = "Status";
+
+"app.settings.profile.social_vkonakte.placeholder" = "VK";
+"app.settings.profile.social_telegram.placeholder" = "Telegram";
+"app.settings.profile.social_discord.placeholder" = "Discord";
+"app.settings.profile.social_instagram.placeholder" = "Instagram";
+"app.settings.profile.social_tiktok.placeholder" = "TikTok";
+"app.settings.profile.socials.footer" = "Enter your social networks so others can contact you.";
+
+"app.settings.profile.logout.text" = "Log out";
+
+/* PRIVACY AND SECURITY SETTINGS */
+"app.settings.privacy_and_security.change_email.name" = "Change email";
+"app.settings.privacy_and_security.change_password.name" = "Change password";
+
+"app.settings.privacy_and_security.privacy.header" = "Privacy";
+"app.settings.privacy_and_security.privacy.footer" = "";
+"app.settings.privacy_and_security.stats.name" = "Stats";
+"app.settings.privacy_and_security.social.name" = "Social";
+"app.settings.privacy_and_security.activity.name" = "Activity";
+"app.settings.privacy_and_security.friend_requests.name" = "Friend requests";
+
+"app.settings.privacy_and_security.privacy.all" = "Everyone";
+"app.settings.privacy_and_security.privacy.only_friends" = "Only friends";
+"app.settings.privacy_and_security.privacy.only_me" = "Only me";
+"app.settings.privacy_and_security.privacy.nobody" = "Nobody";
+
+/* PLAYER */
+"app.player.stream_not_found_error.title" = "Error";
+"app.player.stream_not_found_error.message" = "Unable to find a source for this episode.";
+"app.player.stream_not_found_error.default_action.text" = "OK";
+
+/* SEARCH FILTER */
+"app.filter.multi_select.done" = "Done";
+
+"app.filter.selection.none" = "Any";
+
+"app.filter.status" = "Status";
+
+"app.filter.category" = "Category";
+
+"app.filter.genres" = "Genres";
+
+"app.filter.country" = "Country";
+"app.filter.country.japan" = "Japan";
+"app.filter.country.china" = "China";
+
+"app.filter.types" = "Voice-overs";
+
+"app.filter.studio" = "Studio";
+
+"app.filter.season" = "Season";
+
+"app.filter.episodes_count" = "Episode count";
+"app.filter.episodes_count.1_to_12" = "1 to 12";
+"app.filter.episodes_count.13_to_24" = "13 to 24";
+"app.filter.episodes_count.25_to_100" = "25 to 100";
+"app.filter.episodes_count.100_plus" = "100+";
+
+"app.filter.episodes_duration" = "Episode duration";
+"app.filter.episodes_duration.to_10" = "Up to 10 minutes";
+"app.filter.episodes_duration.to_30" = "Up to 30 minutes";
+"app.filter.episodes_duration.30_plus" = "30+ minutes";
+
+"app.filter.list_exclude" = "Exclude bookmarks";
+
+"app.filter.age_rating" = "Age rating";
+
+"app.filter.sort" = "Sort";
+"app.filter.sort.date_update" = "By release date";
+"app.filter.sort.grade" = "By rating";
+"app.filter.sort.year" = "By year";
+"app.filter.sort.popular" = "By popularity";
+
+"app.filter.search" = "Search";
+
+/* COMMON */
+"app.common.expandable_label.show_all.title" = "Show all";
+
+"app.common.text_enter.edit_text" = "Editing comment";
+
+/* COMMON LOADABLE */
+"app.loadable.error.text" = "Something went wrong :O";
+"app.loadable.reload.title" = "Retry";
+"app.common.named_section.show_all" = "Show all";
+"app.common.load_empty" = "Nothing found :C";
