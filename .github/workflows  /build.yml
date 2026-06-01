@@ -1,0 +1,53 @@
+name: Build iOS App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build project
+        run: |
+          xcodebuild -project AniAnglia.xcodeproj \
+            -scheme iOSAnixart \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+
+      - name: Locate .app bundle
+        id: locate_app
+        run: |
+          APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: .app bundle not found"
+            exit 1
+          fi
+          echo "app_path=$APP_PATH" >> $GITHUB_OUTPUT
+          echo "Found app at: $APP_PATH"
+
+      - name: Create Payload and package IPA
+        run: |
+          APP_PATH="${{ steps.locate_app.outputs.app_path }}"
+          APP_NAME=$(basename "$APP_PATH")
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -r AniAnglia.ipa Payload
+          rm -rf Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AniAnglia.ipa
+          path: AniAnglia.ipa
+          retention-days: 7
