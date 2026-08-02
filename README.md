@@ -1,36 +1,76 @@
+<p align="center">
+  <a href="#"><img width="100px" height="100px" src="https://github.com/AnAgTeam/AniAnglia/raw/master/repo/app_icon.jpg"></a>
+</p>
+
+<H1 align="center">-==[ AniAnglia ]==-</H1>
+
+<p align="center">
+  AniAnglia - Неофициальный клиент Anixart, разработанный для IOS.
+  <br> В данный момент клиент находится в стадии разработки.
+</p>
+
+---
+
 > [!WARNING]  
-> Приложение находится в стадии разработки. При обнаружений багов, откройте issue
+> Пожалуйста! При проблемах/Багах/Идеях - Создайте ISSUE и максимально подробно опишите ваш_вопрос/вашу_идею.
 
-<div align="center">
+---
 
-![app_icon](https://github.com/AnAgTeam/AniAnglia/raw/master/repo/app_icon.jpg)
+<H2 align="center">-==[ Скачать ]==-</H2>
+<p align="center">
+    <a href="https://github.com/AnAgTeam/AniAnglia/actions">Actions</a> или с 
+    <a href="https://github.com/AnAgTeam/AniAnglia/releases/latest">релизов</a> 
+  <br><br>
+  Установка выполняется через TrollStore/Sideloadly, а так же подобные методы.
+</p>
 
-</div>
+<H2 align="center">-==[ Собрать ]==-</H2>
+<p align="center">
+  Собрать можно двумя способами - Через форк и через git clone.
+  <br> Через форк вам нужно будет просто зайти в Actions и запустить задачу сборки.
+</p>
 
-# AniAnglia
-**AniAnglia** - неофициальный клиент **Anixart** для iOS. Совместим с iOS 14+
+<h3>[ GitClone (MacOS only) >>></h3>
 
-## Установка
-1. Скачать последний ipa [релиз](https://github.com/AnAgTeam/AniAnglia/releases/latest) или [собрать](#Сборка)
-2. Установка на телефон с **iOS**
-* С помощью [TrollStore](https://trollstore.app/) (iOS 15-16)
-* С помощью Jailbreak с твиком [AppSync Unified](https://github.com/akemin-dayo/AppSync) (Версии, совместимые с Jailbreak)
-3. Установка на телефон с **Windows**
-* С помощью [Sideloadly](https://sideloadly.io/) (Любая версия iOS, без сертификата установка только на 7 дней)
-4. Установка на телефон с **MacOs**
-* С помощью [iOS App Signer](https://github.com/DanTheMan827/ios-app-signer/releases/latest) (Любая версия iOS, без сертификата установка только на 7 дней)
-
-## Сборка
-1. 
-```bash
-git clone https://github.com/AnAgTeam/AniAnglia
+```bash 
+git clone https://github.com/AnAgTeam/AniAnglia.git
+# Далее просто открыть проект в XCODE и скомпилить его.
 ```
-2. Открыть проект в XCode
-3. Собрать приложение
+
+<H2 align="center">-==[ For Devs ]==-</H2>
+
+<p align="center">
+  Мы рады любому вашему вкладу в наше приложение.
+  <br> В данный момент у него есть две версии:
+  <a href="https://github.com/AnAgTeam/AniAnglia">AniAnglia</a>
+  и
+  <a href="https://github.com/AniSaturn/AniSaturn">AniSaturn (Форк проекта)</a>
+  <br><br>
+  
+  <!--
+  <a href="https://github.com/AnAgTeam/AniAnglia?tab=contributing-ov-file">Contributing.md file</a> 
+  <br>
+	Если вы хотите поучаствовать в разработке клиента - Пожалуйста, прочитайте Contributing.md
+  -->
+</p>
+
 
 ## TODO
-- [ ] Добавить сортировку к страницам
-- [ ] Обновить настройки
-- [x] Добавить регистрацию и восстановление пароля
-- [ ] Запоминание времени просмотра серии
-- [ ] Кеширование
+Этот репозиторий создан чисто для удобства.
+<br> Потом я возможно просто создам свой аналог.
+
+```json
+1. Добавить сортировку к страницам
+2. Обновить настройки
+3. Запоминание времени просмотра серии
+4. Кеширование
+```
+
+---
+
+<p align="center">
+    <a href="#">
+        <img src="https://img.shields.io/github/last-commit/AnAgTeam/AniAnglia?display_timestamp=committer&style=flat-square&color=000000"></a>   
+    <a href="#">
+        <img src="https://img.shields.io/github/created-at/AnAgTeam/AniAnglia?style=flat-square&color=000000"></a>
+</p>
