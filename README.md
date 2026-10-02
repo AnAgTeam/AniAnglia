@@ -10,9 +10,9 @@
 </p>
 
 ---
-
-<a  target="_blank" href="https://t.me/AnAgTeam">[ НАШ ТГК ]</a>
-
+<p align="center">
+	<a  target="_blank" href="https://t.me/AnAgTeam">[ НАШ ТГК ]</a>
+</p>
 ---
 
 > [!WARNING]  
