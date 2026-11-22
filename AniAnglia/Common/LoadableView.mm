@@ -134,24 +134,89 @@
 
 }
 
++(NSCache<NSURL*, UIImage*>*)sharedImageCache {
+    static NSCache* cache;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        cache = [NSCache new];
+        cache.countLimit = 300;
+    });
+    return cache;
+}
+
++(NSURLSession*)sharedImageSession {
+    static NSURLSession* session;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
+        conf.timeoutIntervalForRequest = 20;
+        conf.requestCachePolicy = NSURLRequestReturnCacheDataElseLoad;
+        conf.URLCache = [[NSURLCache alloc] initWithMemoryCapacity:32 * 1024 * 1024
+                                                      diskCapacity:300 * 1024 * 1024
+                                                          directoryURL:nil];
+        conf.HTTPAdditionalHeaders = @{ @"Accept": @"image/webp,image/*,*/*;q=0.8" };
+        session = [NSURLSession sessionWithConfiguration:conf];
+    });
+    return session;
+}
+
 -(void)tryLoadImageWithURL:(NSURL*)url {
-    self.image = nil;
+    [self tryLoadImageWithURL:url attempt:0];
+}
+
+-(void)tryLoadImageWithURL:(NSURL*)url attempt:(int)attempt {
     if (_url_load_task) {
         [_url_load_task cancel];
+        _url_load_task = nil;
+    }
+    self.image = nil;
+    if (url == nil) {
+        [_loadable_view endLoadingWithErrored:YES];
+        return;
+    }
+    // ATS блокирует http://, поэтому поднимаем схему до https
+    if ([url.scheme isEqualToString:@"http"]) {
+        NSURLComponents* comps = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+        comps.scheme = @"https";
+        url = comps.URL ?: url;
+    }
+    UIImage* cached = [[LoadableImageView sharedImageCache] objectForKey:url];
+    if (cached) {
+        self.image = cached;
+        [_loadable_view endLoading];
+        return;
     }
     [_loadable_view startLoading];
-    _url_load_task = [[NSURLSession sharedSession] dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        if (error != nil || data == nil) {
-            // error
+    __weak LoadableImageView* weak_self = self;
+    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithURL:url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        if (error.code == NSURLErrorCancelled) {
             return;
         }
+        NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 200;
+        UIImage* image = (error == nil && data != nil && status < 400) ? [UIImage imageWithData:data] : nil;
+        if (image) {
+            // декодируем в фоне, чтобы не тормозила прокрутка
+            UIGraphicsImageRenderer* r = [[UIGraphicsImageRenderer alloc] initWithSize:image.size];
+            image = [r imageWithActions:^(UIGraphicsImageRendererContext* ctx) { [image drawAtPoint:CGPointZero]; }];
+            [[LoadableImageView sharedImageCache] setObject:image forKey:url];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
-            UIImage* image = [UIImage imageWithData:data];
-            self.image = image;
-            [self->_loadable_view endLoading];
+            LoadableImageView* strong_self = weak_self;
+            if (!strong_self) return;
+            if (image) {
+                strong_self.image = image;
+                [strong_self->_loadable_view endLoading];
+            } else if (attempt < 2) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((attempt + 1) * 0.7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weak_self tryLoadImageWithURL:url attempt:attempt + 1];
+                });
+            } else {
+                [strong_self->_loadable_view endLoadingWithErrored:YES];
+            }
         });
     }];
-    [_url_load_task resume];
+    _url_load_task = task;
+    [task resume];
 }
 
 @end
