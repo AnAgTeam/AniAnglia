@@ -28,4 +28,7 @@
 @interface LoadableImageView : UIImageView
 
 -(void)tryLoadImageWithURL:(NSURL*)url;
++(NSUInteger)imageCacheDiskUsage;
++(void)setImageCacheDiskLimit:(NSUInteger)bytes;
++(void)clearImageCache;
 @end
