@@ -1,223 +1,434 @@
 //
-//  ProfileEditViewController.m
+//  SettingsViewController.mm
 //  AniAnglia
 //
-//  Created by Toilettrauma on 06.04.2025.
+//  Переписанный экран настроек. Все подэкраны (уведомления, данные,
+//  воспроизведение, помощь, о приложении) живут в этом файле, чтобы не
+//  править project.pbxproj.
 //
 
 #import <Foundation/Foundation.h>
+#include <chrono>
 #import "SettingsViewController.h"
-#import "LibanixartApi.h"
 #import "AppColor.h"
-#import "StringCvt.h"
-#import "SettingsProfileViewController.h"
-#import "CustomTableViewCells.h"
 #import "AppDataController.h"
+#import "LoadableView.h"
+#import "SettingsProfileViewController.h"
 #import "SettingsAppearanceViewController.h"
 #import "SettingsSecurityViewController.h"
 
-@interface SettingsViewController () <UITableViewDataSource, UITableViewDelegate>
-@property(nonatomic, strong) LibanixartApi* api_proxy;
-@property(nonatomic, strong) AppSettingsDataController* app_settings_controller;
-@property(nonatomic, retain) UITableView* content_table_view;
+#define L(key, def) NSLocalizedStringWithDefaultValue(key, nil, [NSBundle mainBundle], def, @"")
 
+static NSString* const kTelegramURL = @"https://t.me/AnAgTeam";
+static NSString* const kGithubURL = @"https://github.com/AnAgTeam/AniAnglia";
+static NSString* const kGithubIssuesURL = @"https://github.com/AnAgTeam/AniAnglia/issues";
+
+@class SettingsListViewController;
+typedef void (^SettingsAction)(SettingsListViewController* from);
+
+#pragma mark - Модель
+
+@interface SettingsRow : NSObject
+@property(nonatomic, copy) NSString* title;
+@property(nonatomic, copy) NSString* (^valueProvider)(void);
+@property(nonatomic, copy) BOOL (^isOn)(void);
+@property(nonatomic, copy) void (^setOn)(BOOL on);
+@property(nonatomic, copy) SettingsAction action;
+@property(nonatomic, copy) NSString* icon;
+@property(nonatomic, strong) UIColor* iconColor;
+@property(nonatomic) BOOL destructive;
+@property(nonatomic) BOOL showsDisclosure;
+@end
+@implementation SettingsRow
 @end
 
-@implementation SettingsViewController
+@interface SettingsSection : NSObject
+@property(nonatomic, copy) NSString* header;
+@property(nonatomic, copy) NSString* footer;
+@property(nonatomic, copy) NSArray<SettingsRow*>* rows;
+@end
+@implementation SettingsSection
+@end
 
--(instancetype)init {
-    self = [super init];
-    
-    _api_proxy = [LibanixartApi sharedInstance];
-    _app_settings_controller = [[AppDataController sharedInstance] getSettingsController];
-    
+static SettingsSection* MakeSection(NSString* header, NSString* footer, NSArray<SettingsRow*>* rows) {
+    SettingsSection* s = [SettingsSection new];
+    s.header = header;
+    s.footer = footer;
+    s.rows = rows;
+    return s;
+}
+static SettingsRow* NavRow(NSString* title, NSString* icon, UIColor* color, SettingsAction action) {
+    SettingsRow* r = [SettingsRow new];
+    r.title = title;
+    r.icon = icon;
+    r.iconColor = color;
+    r.action = action;
+    r.showsDisclosure = YES;
+    return r;
+}
+static SettingsRow* ValueRow(NSString* title, NSString* (^value)(void), SettingsAction action) {
+    SettingsRow* r = [SettingsRow new];
+    r.title = title;
+    r.valueProvider = value;
+    r.action = action;
+    return r;
+}
+static SettingsRow* SwitchRow(NSString* title, BOOL (^isOn)(void), void (^setOn)(BOOL)) {
+    SettingsRow* r = [SettingsRow new];
+    r.title = title;
+    r.isOn = isOn;
+    r.setOn = setOn;
+    return r;
+}
+static SettingsRow* ButtonRow(NSString* title, BOOL destructive, SettingsAction action) {
+    SettingsRow* r = [SettingsRow new];
+    r.title = title;
+    r.destructive = destructive;
+    r.action = action;
+    return r;
+}
+
+#pragma mark - Помощники
+
+static void OpenURL(NSString* string) {
+    NSURL* url = [NSURL URLWithString:string];
+    if (url) {
+        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    }
+}
+
+static NSString* FormatBytes(long long bytes) {
+    return [NSByteCountFormatter stringFromByteCount:bytes countStyle:NSByteCountFormatterCountStyleFile];
+}
+
+static void PresentChoices(UIViewController* from, NSString* title, NSArray<NSString*>* names, NSInteger selected, void (^pick)(NSInteger index)) {
+    UIAlertController* sheet = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    for (NSUInteger i = 0; i < names.count; i++) {
+        NSString* name = (NSInteger)i == selected ? [@"✓ " stringByAppendingString:names[i]] : names[i];
+        [sheet addAction:[UIAlertAction actionWithTitle:name style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            pick((NSInteger)i);
+        }]];
+    }
+    [sheet addAction:[UIAlertAction actionWithTitle:L(@"app.common.cancel", @"Отмена") style:UIAlertActionStyleCancel handler:nil]];
+    sheet.popoverPresentationController.sourceView = from.view;
+    sheet.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(from.view.bounds), CGRectGetMidY(from.view.bounds), 1, 1);
+    [from presentViewController:sheet animated:YES completion:nil];
+}
+
+static void PresentConfirm(UIViewController* from, NSString* title, NSString* message, NSString* button, void (^confirmed)(void)) {
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.cancel", @"Отмена") style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:button style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        confirmed();
+    }]];
+    [from presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - Универсальный список настроек
+
+@interface SettingsListViewController : UITableViewController
+@property(nonatomic, copy) NSArray<SettingsSection*>* (^builder)(SettingsListViewController* controller);
+@property(nonatomic, copy) NSArray<SettingsSection*>* sections;
+-(instancetype)initWithTitle:(NSString*)title builder:(NSArray<SettingsSection*>* (^)(SettingsListViewController* controller))builder;
+-(void)reload;
+@end
+
+@implementation SettingsListViewController
+
+-(instancetype)initWithTitle:(NSString*)title builder:(NSArray<SettingsSection*>* (^)(SettingsListViewController* controller))builder {
+    self = [super initWithStyle:UITableViewStyleInsetGrouped];
+    self.title = title;
+    _builder = [builder copy];
+    _sections = @[];
     return self;
 }
 
 -(void)viewDidLoad {
     [super viewDidLoad];
-    
-    [self setup];
-    [self setupLayout];
-}
--(void)setup {
-    self.navigationItem.title = NSLocalizedString(@"app.settings.title", "");
-    
-    _content_table_view = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
-    [_content_table_view registerClass:TransitionTableViewCell.class forCellReuseIdentifier:[TransitionTableViewCell getIdentifier]];
-    [_content_table_view registerClass:SwitchTableViewCell.class forCellReuseIdentifier:[SwitchTableViewCell getIdentifier]];
-    _content_table_view.dataSource = self;
-    _content_table_view.delegate = self;
-    
-    [self.view addSubview:_content_table_view];
-    
-    _content_table_view.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [_content_table_view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [_content_table_view.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [_content_table_view.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [_content_table_view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
-    ]];
-}
--(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
-    _content_table_view.backgroundColor = [AppColorProvider backgroundColor];
+    self.tableView.backgroundColor = [AppColorProvider backgroundColor];
+    [self reload];
 }
 
--(NSInteger)numberOfSectionsInTableView:(UITableView *)table_view {
-    return 4;
-}
--(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
-    switch (section) {
-        case 0:
-            return 2;
-        case 1:
-            return 4;
-        case 2:
-            return 1;
-        case 3:
-            return 2;
-    }
-    return 0;
-}
--(CGFloat)tableView:(UITableView *)table_view heightForRowAtIndexPath:(NSIndexPath *)index_path {
-    return 50;
-}
-- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
-    switch (section) {
-        case 2:
-            return NSLocalizedString(@"app.settings.alternative_connection.footer", "");
-    }
-    return nil;
-}
--(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
-    NSInteger section = index_path.section;
-    NSInteger row = index_path.row;
-    if (section == 0) {
-        if (row == 0) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.profile.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"person.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemRedColor]];
-            return cell;
-        }
-        if (row == 1) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.privacy_and_security.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"lock.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemGrayColor]];
-            return cell;
-        }
-    }
-    if (section == 1) {
-        if (row == 0) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.appearance.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"eye.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemIndigoColor]];
-            return cell;
-        }
-        if (row == 1) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.notifications.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"bell.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemPurpleColor]];
-            return cell;
-        }
-        if (row == 2) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.data_control.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"externaldrive.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemGreenColor]];
-            return cell;
-        }
-        if (row == 3) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.playback.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"arrowtriangle.right.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemBlueColor]];
-            return cell;
-        }
-    }
-    if (section == 2) {
-        if (row == 0) {
-            SwitchTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[SwitchTableViewCell getIdentifier]];
-            
-            [cell setContent:NSLocalizedString(@"app.settings.alternative_connection.name", "")];
-            [cell setOn:[_app_settings_controller getAlternativeConnection]];
-            [cell setHandler:^(BOOL is_on) {
-                [self onAlternativeConnectionSwitched:is_on];
-            }];
-            return cell;
-        }
-    }
-    if (section == 3) {
-        if (row == 0) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.help.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"questionmark"] tintColor:[UIColor whiteColor] color:[UIColor systemGrayColor]];
-            return cell;
-        }
-        if (row == 1) {
-            TransitionTableViewCell* cell = [table_view dequeueReusableCellWithIdentifier:[TransitionTableViewCell getIdentifier]];
-            
-            [cell setName:NSLocalizedString(@"app.settings.rules.name", "")];
-            [cell setContent:nil];
-            [cell setImage:[UIImage systemImageNamed:@"shield.fill"] tintColor:[UIColor whiteColor] color:[UIColor systemPinkColor]];
-            return cell;
-        }
-    }
-    
-    // should never reach here
-    return nil;
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self reload];
 }
 
--(void)tableView:(UITableView *)table_view didSelectRowAtIndexPath:(NSIndexPath *)index_path {
-    NSInteger section = index_path.section;
-    NSInteger row = index_path.row;
-    [table_view deselectRowAtIndexPath:index_path animated:YES];
-    
-    if (section == 0) {
-        if (row == 0) {
-            [self onProfileSelected];
-        }
-        if (row == 1) {
-            [self onPrivacyAndSectitySelected];
-        }
+-(void)reload {
+    _sections = _builder ? _builder(self) : @[];
+    [self.tableView reloadData];
+}
+
+-(NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
+    return _sections.count;
+}
+-(NSInteger)tableView:(UITableView*)tableView numberOfRowsInSection:(NSInteger)section {
+    return _sections[section].rows.count;
+}
+-(NSString*)tableView:(UITableView*)tableView titleForHeaderInSection:(NSInteger)section {
+    return _sections[section].header;
+}
+-(NSString*)tableView:(UITableView*)tableView titleForFooterInSection:(NSInteger)section {
+    return _sections[section].footer;
+}
+
+-(UITableViewCell*)tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+    SettingsRow* row = _sections[indexPath.section].rows[indexPath.row];
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
+    cell.backgroundColor = [AppColorProvider foregroundColor1];
+    cell.textLabel.text = row.title;
+    cell.textLabel.textColor = row.destructive ? [AppColorProvider alertColor] : [AppColorProvider textColor];
+    cell.detailTextLabel.textColor = [AppColorProvider textSecondaryColor];
+    if (row.valueProvider) {
+        cell.detailTextLabel.text = row.valueProvider();
     }
-    if (section == 1) {
-        if (row == 0) {
-            [self onAppearanceSelected];
-        }
+    if (row.icon) {
+        cell.imageView.image = [UIImage systemImageNamed:row.icon];
+        cell.imageView.tintColor = row.iconColor ?: [AppColorProvider primaryColor];
+    }
+    if (row.isOn) {
+        UISwitch* toggle = [UISwitch new];
+        toggle.on = row.isOn();
+        toggle.onTintColor = [AppColorProvider primaryColor];
+        void (^setter)(BOOL) = row.setOn;
+        [toggle addAction:[UIAction actionWithHandler:^(__kindof UIAction* action) {
+            UISwitch* sender = (UISwitch*)action.sender;
+            if (setter) setter(sender.isOn);
+        }] forControlEvents:UIControlEventValueChanged];
+        cell.accessoryView = toggle;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    } else if (row.showsDisclosure) {
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }
+    if (!row.action && !row.isOn) {
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    return cell;
+}
+
+-(void)tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    SettingsRow* row = _sections[indexPath.section].rows[indexPath.row];
+    if (row.action) {
+        row.action(self);
     }
 }
 
--(void)onLogoutItemSelected {
-    
-}
--(void)onChangeCustomStatusItemSelected {
-    
-}
--(void)onProfileSelected {
-    [self.navigationController pushViewController:[SettingsProfileViewController new] animated:YES];
-}
--(void)onPrivacyAndSectitySelected {
-    [self.navigationController pushViewController:[SettingsSecurityViewController new] animated:YES];
-}
--(void)onAppearanceSelected {
-    [self.navigationController pushViewController:[SettingsAppearanceViewController new] animated:YES];
+@end
+
+#pragma mark - Подэкраны
+
+static SettingsListViewController* MakeNotificationsPage(void) {
+    return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.notifications.name", @"Уведомления") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        return @[
+            MakeSection(nil, L(@"app.settings.notifications.footer", @"Разрешения на уведомления управляются в системных настройках iOS."), @[
+                NavRow(L(@"app.settings.notifications.system", @"Системные настройки уведомлений"), @"bell.badge.fill", [UIColor systemPurpleColor], ^(SettingsListViewController* from) {
+                    OpenURL(UIApplicationOpenSettingsURLString);
+                })
+            ])
+        ];
+    }];
 }
 
--(void)onAlternativeConnectionSwitched:(BOOL)is_on {
-    [_app_settings_controller setAlternativeConnection:is_on];
+static SettingsListViewController* MakeDataControlPage(void) {
+    AppSettingsDataController* settings = [[AppDataController sharedInstance] getSettingsController];
+    NSArray<NSNumber*>* limits = @[@(50), @(100), @(250), @(500), @(1024)]; // МБ
+    return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.data_control.name", @"Управление данными") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        SettingsRow* size_row = ValueRow(L(@"app.settings.data_control.cache_size", @"Занято кэшем изображений"), ^NSString*{
+            return FormatBytes((long long)[LoadableImageView imageCacheDiskUsage]);
+        }, nil);
+        SettingsRow* limit_row = ValueRow(L(@"app.settings.data_control.cache_limit", @"Лимит кэша"), ^NSString*{
+            return FormatBytes([settings getMaxCacheSizeBytes]);
+        }, ^(SettingsListViewController* from) {
+            NSMutableArray<NSString*>* names = [NSMutableArray new];
+            NSInteger selected = -1;
+            for (NSUInteger i = 0; i < limits.count; i++) {
+                long long bytes = limits[i].longLongValue * 1024 * 1024;
+                [names addObject:FormatBytes(bytes)];
+                if (bytes == [settings getMaxCacheSizeBytes]) selected = (NSInteger)i;
+            }
+            PresentChoices(from, L(@"app.settings.data_control.cache_limit", @"Лимит кэша"), names, selected, ^(NSInteger index) {
+                NSInteger bytes = limits[index].integerValue * 1024 * 1024;
+                [settings setMaxCacheSizeBytes:bytes];
+                [LoadableImageView setImageCacheDiskLimit:(NSUInteger)bytes];
+                [from reload];
+            });
+        });
+        SettingsRow* clear_row = ButtonRow(L(@"app.settings.data_control.clear_cache", @"Очистить кэш изображений"), YES, ^(SettingsListViewController* from) {
+            PresentConfirm(from, L(@"app.settings.data_control.clear_cache", @"Очистить кэш изображений"), L(@"app.settings.data_control.clear_cache.message", @"Обложки и картинки будут загружены заново."), L(@"app.settings.data_control.clear", @"Очистить"), ^{
+                [LoadableImageView clearImageCache];
+                [from reload];
+            });
+        });
+        SettingsRow* history_row = ButtonRow(L(@"app.settings.data_control.clear_history", @"Очистить историю поиска"), YES, ^(SettingsListViewController* from) {
+            PresentConfirm(from, L(@"app.settings.data_control.clear_history", @"Очистить историю поиска"), nil, L(@"app.settings.data_control.clear", @"Очистить"), ^{
+                AppDataController* data = [AppDataController sharedInstance];
+                while ([data getSearchHistoryLength] > 0) {
+                    [data removeSearchHistoryItemAtIndex:0];
+                }
+                [from reload];
+            });
+        });
+        return @[
+            MakeSection(L(@"app.settings.data_control.images", @"Изображения"), nil, @[size_row, limit_row, clear_row]),
+            MakeSection(L(@"app.settings.data_control.history", @"История"), nil, @[history_row])
+        ];
+    }];
+}
+
+static SettingsListViewController* MakePlaybackPage(void) {
+    AppSettingsDataController* settings = [[AppDataController sharedInstance] getSettingsController];
+    NSArray<NSString*>* qualities = @[@"360", @"480", @"720", @"1080"];
+    NSArray<NSNumber*>* skips = @[@10, @30, @60, @85, @90, @120];
+    return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.playback.name", @"Воспроизведение") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        SettingsRow* player_row = ValueRow(L(@"app.settings.playback.player", @"Плеер по умолчанию"), ^NSString*{
+            return [settings getDefaultPlayer] == app_settings::Playback::DefaultPlayer::Internal
+                ? L(@"app.settings.playback.player.internal", @"Встроенный")
+                : L(@"app.settings.playback.player.ask", @"Спрашивать каждый раз");
+        }, ^(SettingsListViewController* from) {
+            NSArray<NSString*>* names = @[L(@"app.settings.playback.player.ask", @"Спрашивать каждый раз"), L(@"app.settings.playback.player.internal", @"Встроенный")];
+            NSInteger selected = (NSInteger)[settings getDefaultPlayer];
+            PresentChoices(from, L(@"app.settings.playback.player", @"Плеер по умолчанию"), names, selected, ^(NSInteger index) {
+                [settings setDefaultPlayer:static_cast<app_settings::Playback::DefaultPlayer>(index)];
+                [from reload];
+            });
+        });
+        SettingsRow* quality_row = ValueRow(L(@"app.settings.playback.quality", @"Предпочитаемое качество"), ^NSString*{
+            NSString* q = [settings getPrefferedQuality];
+            return q.length ? [q stringByAppendingString:@"p"] : @"—";
+        }, ^(SettingsListViewController* from) {
+            NSMutableArray<NSString*>* names = [NSMutableArray new];
+            for (NSString* q in qualities) [names addObject:[q stringByAppendingString:@"p"]];
+            NSInteger selected = (NSInteger)[qualities indexOfObject:[settings getPrefferedQuality] ?: @""];
+            if (selected == NSNotFound) selected = -1;
+            PresentChoices(from, L(@"app.settings.playback.quality", @"Предпочитаемое качество"), names, selected, ^(NSInteger index) {
+                [settings setPrefferedQuality:qualities[index]];
+                [from reload];
+            });
+        });
+        SettingsRow* skip_row = ValueRow(L(@"app.settings.playback.skip", @"Время перемотки"), ^NSString*{
+            long long seconds = std::chrono::duration_cast<std::chrono::seconds>([settings getDefaultSkipTime]).count();
+            return [NSString stringWithFormat:@"%lld %@", seconds, L(@"app.common.seconds_short", @"сек.")];
+        }, ^(SettingsListViewController* from) {
+            NSMutableArray<NSString*>* names = [NSMutableArray new];
+            for (NSNumber* s in skips) [names addObject:[NSString stringWithFormat:@"%@ %@", s, L(@"app.common.seconds_short", @"сек.")]];
+            long long current = std::chrono::duration_cast<std::chrono::seconds>([settings getDefaultSkipTime]).count();
+            NSInteger selected = (NSInteger)[skips indexOfObject:@(current)];
+            if (selected == NSNotFound) selected = -1;
+            PresentChoices(from, L(@"app.settings.playback.skip", @"Время перемотки"), names, selected, ^(NSInteger index) {
+                [settings setDefaultSkipTime:std::chrono::seconds(skips[index].longLongValue)];
+                [from reload];
+            });
+        });
+        SettingsRow* next_row = SwitchRow(L(@"app.settings.playback.auto_next", @"Автоматически следующая серия"), ^BOOL{
+            return [settings getAutoNextVideo];
+        }, ^(BOOL on) {
+            [settings setAutoNextVideo:on];
+        });
+        SettingsRow* source_row = SwitchRow(L(@"app.settings.playback.remember_source", @"Запоминать источник"), ^BOOL{
+            return [settings getRememberSource];
+        }, ^(BOOL on) {
+            [settings setRememberSource:on];
+        });
+        return @[
+            MakeSection(nil, nil, @[player_row, quality_row, skip_row]),
+            MakeSection(nil, nil, @[next_row, source_row])
+        ];
+    }];
+}
+
+static SettingsListViewController* MakeHelpPage(void) {
+    return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.help.name", @"Помощь") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        return @[
+            MakeSection(nil, L(@"app.settings.help.footer", @"При проблемах и идеях создайте issue и максимально подробно опишите вопрос."), @[
+                NavRow(L(@"app.settings.help.telegram", @"Telegram-канал"), @"paperplane.fill", [UIColor systemBlueColor], ^(SettingsListViewController* from) {
+                    OpenURL(kTelegramURL);
+                }),
+                NavRow(L(@"app.settings.help.issue", @"Сообщить о проблеме"), @"exclamationmark.bubble.fill", [UIColor systemOrangeColor], ^(SettingsListViewController* from) {
+                    OpenURL(kGithubIssuesURL);
+                })
+            ])
+        ];
+    }];
+}
+
+static SettingsListViewController* MakeAboutPage(void) {
+    return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.about.name", @"О приложении") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        NSDictionary* info = [NSBundle mainBundle].infoDictionary;
+        NSString* version = [NSString stringWithFormat:@"%@ (%@)", info[@"CFBundleShortVersionString"] ?: @"?", info[@"CFBundleVersion"] ?: @"?"];
+        return @[
+            MakeSection(nil, L(@"app.settings.about.footer", @"Неофициальный клиент Anixart для iOS."), @[
+                ValueRow(L(@"app.settings.about.version", @"Версия"), ^NSString*{ return version; }, nil),
+                NavRow(L(@"app.settings.about.source", @"Исходный код"), @"chevron.left.forwardslash.chevron.right", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                    OpenURL(kGithubURL);
+                })
+            ])
+        ];
+    }];
+}
+
+#pragma mark - Главный экран настроек
+
+@interface SettingsViewController ()
+@property(nonatomic, strong) SettingsListViewController* list_controller;
+@end
+
+@implementation SettingsViewController
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = L(@"app.settings.title", @"Настройки");
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+
+    AppSettingsDataController* settings = [[AppDataController sharedInstance] getSettingsController];
+
+    _list_controller = [[SettingsListViewController alloc] initWithTitle:nil builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        SettingsRow* alt_row = SwitchRow(L(@"app.settings.alternative_connection.name", @"Альтернативное соединение"), ^BOOL{
+            return [settings getAlternativeConnection];
+        }, ^(BOOL on) {
+            [settings setAlternativeConnection:on];
+        });
+        return @[
+            MakeSection(nil, nil, @[
+                NavRow(L(@"app.settings.profile.name", @"Профиль"), @"person.fill", [UIColor systemRedColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:[SettingsProfileViewController new] animated:YES];
+                }),
+                NavRow(L(@"app.settings.privacy_and_security.name", @"Приватность и безопасность"), @"lock.fill", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:[SettingsSecurityViewController new] animated:YES];
+                })
+            ]),
+            MakeSection(nil, nil, @[
+                NavRow(L(@"app.settings.appearance.name", @"Внешний вид"), @"eye.fill", [UIColor systemIndigoColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:[SettingsAppearanceViewController new] animated:YES];
+                }),
+                NavRow(L(@"app.settings.notifications.name", @"Уведомления"), @"bell.fill", [UIColor systemPurpleColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakeNotificationsPage() animated:YES];
+                }),
+                NavRow(L(@"app.settings.data_control.name", @"Управление данными"), @"externaldrive.fill", [UIColor systemGreenColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakeDataControlPage() animated:YES];
+                }),
+                NavRow(L(@"app.settings.playback.name", @"Воспроизведение"), @"play.fill", [UIColor systemBlueColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakePlaybackPage() animated:YES];
+                })
+            ]),
+            MakeSection(nil, L(@"app.settings.alternative_connection.footer", @"Активируйте только если испытываете проблемы с работой приложения, связанные с блокировкой в вашей стране"), @[alt_row]),
+            MakeSection(nil, nil, @[
+                NavRow(L(@"app.settings.help.name", @"Помощь"), @"questionmark", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakeHelpPage() animated:YES];
+                }),
+                NavRow(L(@"app.settings.about.name", @"О приложении"), @"info.circle.fill", [UIColor systemPinkColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakeAboutPage() animated:YES];
+                })
+            ])
+        ];
+    }];
+
+    [self addChildViewController:_list_controller];
+    _list_controller.view.frame = self.view.bounds;
+    _list_controller.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:_list_controller.view];
+    [_list_controller didMoveToParentViewController:self];
 }
 
 @end
