@@ -10,16 +10,16 @@
 
 @implementation AppDefaultDarkTheme
 -(UIColor*)backgroundColor {
-    return [UIColor systemBackgroundColor];
+    return [UIColor colorWithRed:24/255. green:24/255. blue:26/255. alpha:1];
 }
 -(UIColor*)foregroundColor1 {
-    return [UIColor secondarySystemBackgroundColor];
+    return [UIColor colorWithRed:36/255. green:36/255. blue:39/255. alpha:1];
 }
 -(UIColor*)foregroundColor2 {
-    return [UIColor tertiarySystemBackgroundColor];
+    return [UIColor colorWithRed:47/255. green:47/255. blue:51/255. alpha:1];
 }
 -(UIColor*)primaryColor {
-    return [UIColor systemBlueColor];
+    return [UIColor colorWithRed:242/255. green:139/255. blue:48/255. alpha:1];
 }
 -(UIColor*)secondaryColor {
     return [UIColor systemRedColor];
@@ -28,7 +28,7 @@
     return [UIColor systemRedColor];
 }
 -(UIColor*)successColor {
-    return [UIColor systemGreenColor];
+    return [UIColor colorWithRed:76/255. green:175/255. blue:80/255. alpha:1];
 }
 -(UIColor*)idleColor {
     return [UIColor systemOrangeColor];
@@ -37,10 +37,10 @@
     return [UIColor whiteColor];
 }
 -(UIColor*)textSecondaryColor {
-    return [UIColor lightGrayColor];
+    return [UIColor colorWithRed:160/255. green:160/255. blue:168/255. alpha:1];
 }
 -(UIColor*)textShyColor {
-    return [UIColor grayColor];
+    return [UIColor colorWithRed:119/255. green:119/255. blue:127/255. alpha:1];
 }
 @end
 
