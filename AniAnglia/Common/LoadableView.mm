@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "LoadableView.h"
 #import "AppColor.h"
+#import "AppDataController.h"
 
 @interface LoadableView ()
 @property(nonatomic, retain) UIActivityIndicatorView* act_ind_view;
@@ -144,6 +145,21 @@
     return cache;
 }
 
++(NSURLCache*)sharedImageURLCache {
+    static NSURLCache* cache;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSInteger limit = [[[AppDataController sharedInstance] getSettingsController] getMaxCacheSizeBytes];
+        if (limit < 50 * 1024 * 1024) {
+            limit = 250 * 1024 * 1024;
+        }
+        cache = [[NSURLCache alloc] initWithMemoryCapacity:32 * 1024 * 1024
+                                              diskCapacity:(NSUInteger)limit
+                                              directoryURL:nil];
+    });
+    return cache;
+}
+
 +(NSURLSession*)sharedImageSession {
     static NSURLSession* session;
     static dispatch_once_t once;
@@ -151,13 +167,24 @@
         NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
         conf.timeoutIntervalForRequest = 20;
         conf.requestCachePolicy = NSURLRequestReturnCacheDataElseLoad;
-        conf.URLCache = [[NSURLCache alloc] initWithMemoryCapacity:32 * 1024 * 1024
-                                                      diskCapacity:300 * 1024 * 1024
-                                                          directoryURL:nil];
+        conf.URLCache = [LoadableImageView sharedImageURLCache];
         conf.HTTPAdditionalHeaders = @{ @"Accept": @"image/webp,image/*,*/*;q=0.8" };
         session = [NSURLSession sessionWithConfiguration:conf];
     });
     return session;
+}
+
++(NSUInteger)imageCacheDiskUsage {
+    return [LoadableImageView sharedImageURLCache].currentDiskUsage;
+}
+
++(void)setImageCacheDiskLimit:(NSUInteger)bytes {
+    [LoadableImageView sharedImageURLCache].diskCapacity = bytes;
+}
+
++(void)clearImageCache {
+    [[LoadableImageView sharedImageCache] removeAllObjects];
+    [[LoadableImageView sharedImageURLCache] removeAllCachedResponses];
 }
 
 -(void)tryLoadImageWithURL:(NSURL*)url {
