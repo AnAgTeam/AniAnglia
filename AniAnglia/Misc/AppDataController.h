@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "LibanixartApi.h"
+#include <chrono>
 
 namespace app_settings {
     constexpr NSString* notification_name = @"AppSettingsDataControllerValueChanged";
@@ -84,6 +85,7 @@ struct General {
 -(void)setDefaultSkipTime:(std::chrono::system_clock::duration)default_skip_time;
 -(BOOL)getAutoNextVideo;
 -(void)setAutoNextVideo:(BOOL)auto_next_video;
+-(BOOL)getRememberSource;
 -(BOOL)setRememberSource;
 -(void)setRememberSource:(BOOL)remember_source;
 
