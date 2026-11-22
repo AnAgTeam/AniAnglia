@@ -32,7 +32,7 @@
         app_settings::Playback::auto_next_video: @(NO),
         app_settings::Playback::remember_source: @(NO),
         // -- data control
-        app_settings::DataControl::max_cache_size: @(10 * 1024 * 1024),
+        app_settings::DataControl::max_cache_size: @(250 * 1024 * 1024),
         // -- general
         app_settings::General::alternative_connection: @(NO),
     };
@@ -99,7 +99,7 @@
     [self setSettingsObject:preffered_quality atKey:app_settings::Playback::preffered_quality];
 }
 -(std::chrono::system_clock::duration)getDefaultSkipTime {
-    NSNumber* default_skip_time = [self getSettingsObjectAtKey:app_settings::Playback::preffered_quality];
+    NSNumber* default_skip_time = [self getSettingsObjectAtKey:app_settings::Playback::default_skip_time];
     return std::chrono::seconds([default_skip_time longValue]);
 }
 -(void)setDefaultSkipTime:(std::chrono::system_clock::duration)default_skip_time {
@@ -112,6 +112,10 @@
 }
 -(void)setAutoNextVideo:(BOOL)auto_next_video {
     [self setSettingsObject:@(auto_next_video) atKey:app_settings::Playback::auto_next_video];
+}
+-(BOOL)getRememberSource {
+    NSNumber* remember_source = [self getSettingsObjectAtKey:app_settings::Playback::remember_source];
+    return [remember_source boolValue];
 }
 -(BOOL)setRememberSource {
     NSNumber* remember_source = [self getSettingsObjectAtKey:app_settings::Playback::remember_source];
