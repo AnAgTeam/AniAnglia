@@ -33,12 +33,12 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: AniAnglia.ipa
-          path: AniAnglia.ipa
+          name: AniLot.ipa
+          path: AniLot.ipa
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
-          name: AniAnglia ${{ github.ref_type == 'tag' && github.ref_name || format('build {0}', github.run_number) }}
-          files: AniAnglia.ipa
+          name: AniLot ${{ github.ref_type == 'tag' && github.ref_name || format('build {0}', github.run_number) }}
+          files: AniLot.ipa
