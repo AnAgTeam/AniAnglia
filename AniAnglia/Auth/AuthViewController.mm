@@ -157,38 +157,32 @@
     [_login_field resignFirstResponder];
     [_password_field resignFirstResponder];
     [_login_indicator startAnimating];
-    _login_button.enabled = NO;
     
     std::string login = TO_STDSTRING(_login_field.text);
     std::string password = TO_STDSTRING(_password_field.text);
-    __block BOOL has_sign_in_error = NO;
-    __block anixart::codes::auth::SignInCode error_code{};
-    [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
+    __block BOOL errored = NO;
+    __block anixart::codes::auth::SignInCode error_code;
+    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
+        // TODO: change api to always execute UICompletion block and return error
         try {
             auto [profile, token] = api->auth().sign_in(login, password);
             [self->_data_controller setToken:TO_NSSTRING(token.token)];
             [self->_data_controller setMyProfileID:profile->id];
             self->_api_proxy.api->set_token(token.token);
         }
-        catch (const anixart::SignInError& e) {
-            has_sign_in_error = YES;
+        catch (anixart::SignInError& e) {
+            errored = YES;
             error_code = e.code;
-            return YES;
         }
-        return NO;
-    } completion:^(BOOL errored) {
+        return YES;
+    } withUICompletion:^{
         [self->_login_indicator stopAnimating];
-        self->_login_button.enabled = YES;
-
         if (errored) {
-            if (has_sign_in_error && error_code == anixart::codes::auth::SignInCode::InvalidLogin) {
+            if (error_code == anixart::codes::auth::SignInCode::InvalidLogin) {
                 [self->_login_view showError:NSLocalizedString(@"app.auth.error.invalid_username_or_email", "")];
             }
-            else if (has_sign_in_error && error_code == anixart::codes::auth::SignInCode::InvalidPassword) {
+            else if (error_code == anixart::codes::auth::SignInCode::InvalidPassword) {
                 [self->_password_view showError:NSLocalizedString(@"app.auth.error.invalid_password", "")];
-            }
-            else {
-                [self->_login_view showError:NSLocalizedString(@"app.auth.error.unknown", "")];
             }
         } else {
             [self setRootViewControllerToMain];
