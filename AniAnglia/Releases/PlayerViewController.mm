@@ -75,25 +75,157 @@ static UIViewController* TopViewController(void) {
     return controller;
 }
 
-static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, void (^completion)(NSDictionary<NSString*, NSURL*>* urls)) {
-    LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
-    __block NSDictionary<NSString*, NSURL*>* result = nil;
-    [api_proxy asyncCall:^BOOL(anixart::Api* api) {
-        auto ep_target = api->episodes().get_episode_target(release_id, source_id, position);
-        auto streams = api_proxy.parsers->extract_info(ep_target->url);
-        NSMutableDictionary<NSString*, NSURL*>* dict = [NSMutableDictionary new];
-        for (auto& kv : streams) {
-            std::string q = kv.first;
-            std::string u = kv.second;
-            NSURL* url = [NSURL URLWithString:TO_NSSTRING(u)];
-            if (url) {
-                dict[TO_NSSTRING(q)] = url;
+#pragma mark - AniLibria / AniLiberty (новый API v1)
+
+/* Парсер Libria внутри libanixart ходит на api.anilibria.tv/v2, который отключён (HTTP 410).
+   Поэтому ссылки на потоки Libria/Liberty получаем напрямую из нового API AniLiberty. */
+
+static NSData* SyncGET(NSURL* url, NSInteger* status, NSString** error_text) {
+    __block NSData* body = nil;
+    __block NSInteger code = 0;
+    __block NSString* err = nil;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+    request.timeoutInterval = 12;
+    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+    [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        body = data;
+        code = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 0;
+        err = error.localizedDescription;
+        dispatch_semaphore_signal(semaphore);
+    }] resume];
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)));
+    if (status) *status = code;
+    if (error_text) *error_text = err;
+    return body;
+}
+
+static NSString* FirstMatch(NSString* pattern, NSString* text) {
+    NSRegularExpression* regex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+    NSTextCheckingResult* match = [regex firstMatchInString:text options:0 range:NSMakeRange(0, text.length)];
+    if (match && match.numberOfRanges > 1 && [match rangeAtIndex:1].location != NSNotFound) {
+        return [text substringWithRange:[match rangeAtIndex:1]];
+    }
+    return nil;
+}
+
+static NSDictionary<NSString*, NSURL*>* ResolveLibriaStreams(NSString* target, NSMutableString* detail) {
+    NSString* release_key = FirstMatch(@"[?&]id=(\\d+)", target);
+    if (!release_key) {
+        release_key = FirstMatch(@"/release/([a-z0-9_-]+)", target);
+    }
+    NSString* ep_text = FirstMatch(@"[?&]ep=(\\d+)", target);
+    double episode_number = ep_text ? ep_text.doubleValue : 1;
+    [detail appendFormat:@"Libria: %@\n", target];
+    if (!release_key) {
+        [detail appendString:@"Не удалось определить релиз из ссылки\n"];
+        return nil;
+    }
+    
+    NSDictionary* release = nil;
+    for (NSString* base in @[@"https://aniliberty.top/api/v1", @"https://anilibria.top/api/v1"]) {
+        NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/anime/releases/%@", base, release_key]];
+        NSInteger status = 0;
+        NSString* error_text = nil;
+        NSData* data = SyncGET(url, &status, &error_text);
+        [detail appendFormat:@"%@ → HTTP %ld %@\n", url.host, (long)status, error_text ?: @""];
+        if (status == 200 && data) {
+            id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            if ([json isKindOfClass:[NSDictionary class]]) {
+                release = json;
+                break;
             }
         }
-        result = dict;
+    }
+    NSArray* episodes = [release[@"episodes"] isKindOfClass:[NSArray class]] ? release[@"episodes"] : nil;
+    if (episodes.count == 0) {
+        [detail appendString:@"В ответе нет списка серий\n"];
+        return nil;
+    }
+    
+    NSDictionary* chosen = nil;
+    for (NSDictionary* episode in episodes) {
+        if ([episode isKindOfClass:[NSDictionary class]] && [episode[@"ordinal"] respondsToSelector:@selector(doubleValue)] && [episode[@"ordinal"] doubleValue] == episode_number) {
+            chosen = episode;
+            break;
+        }
+    }
+    if (!chosen) {
+        NSInteger index = (NSInteger)episode_number - 1;
+        if (index >= 0 && index < (NSInteger)episodes.count && [episodes[index] isKindOfClass:[NSDictionary class]]) {
+            chosen = episodes[index];
+        }
+    }
+    if (!chosen) {
+        [detail appendFormat:@"Серия %g не найдена среди %lu\n", episode_number, (unsigned long)episodes.count];
+        return nil;
+    }
+    
+    NSMutableDictionary<NSString*, NSURL*>* streams = [NSMutableDictionary new];
+    for (NSString* key in @[@"hls_480", @"hls_720", @"hls_1080"]) {
+        NSString* link = chosen[key];
+        if (![link isKindOfClass:[NSString class]] || link.length == 0) {
+            continue;
+        }
+        if ([link hasPrefix:@"/"]) {
+            link = [@"https://aniliberty.top" stringByAppendingString:link];
+        }
+        NSURL* url = [NSURL URLWithString:link];
+        if (url) {
+            streams[[key substringFromIndex:4]] = url;
+        }
+    }
+    if (streams.count == 0) {
+        [detail appendString:@"У серии нет HLS-ссылок\n"];
+    }
+    return streams.count ? streams : nil;
+}
+
+static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, void (^completion)(NSDictionary<NSString*, NSURL*>* urls, NSString* detail)) {
+    LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
+    __block NSDictionary<NSString*, NSURL*>* result = nil;
+    NSMutableString* detail = [NSMutableString new];
+    [api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        auto ep_target = api->episodes().get_episode_target(release_id, source_id, position);
+        std::string target_std = ep_target->url;
+        NSString* target = TO_NSSTRING(target_std);
+        NSString* lower = target.lowercaseString;
+        
+        if ([lower containsString:@"libria"] || [lower containsString:@"libert"]) {
+            result = ResolveLibriaStreams(target, detail);
+            if (result.count) {
+                return NO;
+            }
+        }
+        if ([lower containsString:@".m3u8"]) {
+            NSURL* direct = [NSURL URLWithString:target];
+            if (direct) {
+                result = @{@"auto": direct};
+                return NO;
+            }
+        }
+        
+        [detail appendFormat:@"Ссылка источника: %@\n", target];
+        try {
+            auto streams = api_proxy.parsers->extract_info(target_std);
+            NSMutableDictionary<NSString*, NSURL*>* dict = [NSMutableDictionary new];
+            for (auto& kv : streams) {
+                std::string q = kv.first;
+                std::string u = kv.second;
+                NSURL* url = [NSURL URLWithString:TO_NSSTRING(u)];
+                if (url) {
+                    dict[TO_NSSTRING(q)] = url;
+                }
+            }
+            result = dict;
+        } catch (const std::exception& e) {
+            [detail appendFormat:@"Парсер: %s\n", e.what()];
+        } catch (...) {
+            [detail appendString:@"Парсер: неизвестная ошибка\n"];
+        }
         return NO; // asyncCall: YES означает ошибку
     } completion:^(BOOL errored) {
-        completion((errored || result.count == 0) ? nil : result);
+        completion((errored || result.count == 0) ? nil : result, [detail copy]);
     }];
 }
 
@@ -148,6 +280,8 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     BOOL _scrubbing;
     float _rate;
     BOOL _overlay_visible;
+    BOOL _error_shown;
+    NSTimer* _poll_timer;
     NSURL* _pending_url;
 }
 @property(nonatomic, strong) PlayerLayerView* video_view;
@@ -369,7 +503,12 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     [session setActive:YES error:nil];
     
     [self stopPlayback];
-    _player = [AVPlayer playerWithURL:url];
+    _error_shown = NO;
+    if (url.isFileURL) {
+        _player = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:[AVURLAsset URLAssetWithURL:url options:nil]]];
+    } else {
+        _player = [AVPlayer playerWithURL:url];
+    }
     _video_view.playerLayer.player = _player;
     
     __weak AniLotPlayerViewController* weak_self = self;
@@ -384,12 +523,17 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         [strong_self setOverlayVisible:YES];
         [strong_self updateUI];
     }];
+    _poll_timer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer* timer) {
+        [weak_self updateUI];
+    }];
     [_player playImmediatelyAtRate:_rate];
     [self updateUI];
     [self scheduleHide];
 }
 
 -(void)stopPlayback {
+    [_poll_timer invalidate];
+    _poll_timer = nil;
     if (_time_observer) {
         [_player removeTimeObserver:_time_observer];
         _time_observer = nil;
@@ -412,7 +556,14 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     }
     _duration_label.text = has_duration ? FormatTime(duration) : @"--:--";
     
-    BOOL waiting = _player.timeControlStatus == AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate;
+    if (item.status == AVPlayerItemStatusFailed && !_error_shown) {
+        _error_shown = YES;
+        [_spinner stopAnimating];
+        NSString* reason = item.error.localizedDescription ?: @"";
+        [self showMessage:L(@"app.player.playback_error", @"Не удалось воспроизвести видео") message:reason closeAfter:NO];
+        return;
+    }
+    BOOL waiting = _player.timeControlStatus == AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate || item.status == AVPlayerItemStatusUnknown;
     if (waiting) {
         [_spinner startAnimating];
     } else {
@@ -477,6 +628,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     CMTime time = _player.currentTime;
     BOOL was_paused = _player.timeControlStatus == AVPlayerTimeControlStatusPaused;
     _current_quality = name;
+    _error_shown = NO;
     [_player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithURL:url]];
     [_player seekToTime:time];
     if (!was_paused) {
@@ -556,6 +708,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 }
 
 -(void)showMessage:(NSString*)title message:(NSString*)message closeAfter:(BOOL)close_after {
+    if (self.presentedViewController) {
+        return;
+    }
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         if (close_after) {
@@ -603,13 +758,14 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         [self showViewController:controller];
     }
     
-    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), ^(NSDictionary<NSString*, NSURL*>* urls) {
+    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         BOOL errored = (urls == nil);
         if (completion_handler) {
             completion_handler(errored);
         }
         if (errored) {
-            [controller showMessage:NSLocalizedString(@"app.player.stream_not_found_error.title", "") message:NSLocalizedString(@"app.player.stream_not_found_error.message", "") closeAfter:YES];
+            NSString* message = [NSLocalizedString(@"app.player.stream_not_found_error.message", "") stringByAppendingFormat:@"\n\n%@", detail ?: @""];
+            [controller showMessage:NSLocalizedString(@"app.player.stream_not_found_error.title", "") message:message closeAfter:YES];
             return;
         }
         [controller configureWithQualities:urls preferred:PreferredQuality()];
@@ -624,6 +780,12 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 
 -(void)playLocalURL:(NSURL*)url title:(NSString*)title {
     AniLotPlayerViewController* controller = [self makePlayerWithTitle:title];
+    if (!url || ![[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
+        [TopViewController() presentViewController:controller animated:NO completion:^{
+            [controller showMessage:L(@"app.downloads.file_missing.title", @"Файл не найден") message:L(@"app.downloads.file_missing.message", @"Скачанный файл недоступен. Удалите загрузку в Настройки → Загрузки и скачайте серию заново.") closeAfter:YES];
+        }];
+        return;
+    }
     [self showViewController:controller];
     [controller startWithURL:url];
 }
@@ -651,7 +813,18 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     if (_relative_path.length == 0) {
         return nil;
     }
-    return [NSURL fileURLWithPath:[NSHomeDirectory() stringByAppendingPathComponent:_relative_path]];
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSMutableArray<NSString*>* candidates = [NSMutableArray new];
+    if ([_relative_path hasPrefix:@"/"]) {
+        [candidates addObject:_relative_path];
+    }
+    [candidates addObject:[NSHomeDirectory() stringByAppendingPathComponent:_relative_path]];
+    for (NSString* path in candidates) {
+        if ([fm fileExistsAtPath:path]) {
+            return [NSURL fileURLWithPath:path];
+        }
+    }
+    return nil;
 }
 
 -(NSDictionary*)toDictionary {
@@ -791,7 +964,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     item.progress = 0;
     [self saveAndNotify];
     
-    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), ^(NSDictionary<NSString*, NSURL*>* urls) {
+    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         if (!urls) {
             item.state = DownloadStateFailed;
             [self saveAndNotify];
@@ -859,7 +1032,17 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     if (!item) {
         return;
     }
-    item.relative_path = location.relativePath;
+    // храним путь относительно домашней папки приложения (абсолютный путь меняется между запусками)
+    NSString* home = [NSHomeDirectory() stringByResolvingSymlinksInPath];
+    NSString* full = [location.path stringByResolvingSymlinksInPath];
+    NSString* relative = location.relativePath;
+    if ([full hasPrefix:home]) {
+        relative = [full substringFromIndex:home.length];
+        while ([relative hasPrefix:@"/"]) {
+            relative = [relative substringFromIndex:1];
+        }
+    }
+    item.relative_path = relative;
     item.progress = 1.0;
 }
 
