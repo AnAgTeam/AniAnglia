@@ -157,35 +157,87 @@
     [_login_field resignFirstResponder];
     [_password_field resignFirstResponder];
     [_login_indicator startAnimating];
+    _login_button.enabled = NO;
     
     std::string login = TO_STDSTRING(_login_field.text);
     std::string password = TO_STDSTRING(_password_field.text);
-    __block BOOL errored = NO;
-    __block anixart::codes::auth::SignInCode error_code;
-    [_api_proxy performAsyncBlock:^BOOL(anixart::Api* api) {
-        // TODO: change api to always execute UICompletion block and return error
-        try {
+    __block BOOL has_sign_in_error = NO;
+    __block anixart::codes::auth::SignInCode error_code{};
+    BOOL alternative_connection_enabled = [[_data_controller getSettingsController] getAlternativeConnection];
+
+    [_api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        auto perform_sign_in = [&]() {
             auto [profile, token] = api->auth().sign_in(login, password);
             [self->_data_controller setToken:TO_NSSTRING(token.token)];
             [self->_data_controller setMyProfileID:profile->id];
             self->_api_proxy.api->set_token(token.token);
+        };
+
+        auto retry_with_alternative_connection = [&]() -> BOOL {
+            if (alternative_connection_enabled) {
+                return YES;
+            }
+
+            api->get_session().set_base_url(std::string(anixart::requests::base_url_alt));
+            try {
+                perform_sign_in();
+                [[self->_data_controller getSettingsController] setAlternativeConnection:YES];
+                return NO;
+            }
+            catch (const anixart::SignInError& e) {
+                has_sign_in_error = YES;
+                error_code = e.code;
+                return YES;
+            }
+        };
+
+        try {
+            perform_sign_in();
+            return NO;
         }
-        catch (anixart::SignInError& e) {
-            errored = YES;
+        catch (const anixart::SignInError& e) {
+            has_sign_in_error = YES;
             error_code = e.code;
+            return YES;
         }
-        return YES;
-    } withUICompletion:^{
+        catch (const network::UrlSessionError&) {
+            return retry_with_alternative_connection();
+        }
+        catch (const network::JsonError&) {
+            return retry_with_alternative_connection();
+        }
+    } completion:^(BOOL errored) {
         [self->_login_indicator stopAnimating];
-        if (errored) {
-            if (error_code == anixart::codes::auth::SignInCode::InvalidLogin) {
-                [self->_login_view showError:NSLocalizedString(@"app.auth.error.invalid_username_or_email", "")];
-            }
-            else if (error_code == anixart::codes::auth::SignInCode::InvalidPassword) {
-                [self->_password_view showError:NSLocalizedString(@"app.auth.error.invalid_password", "")];
-            }
-        } else {
+        self->_login_button.enabled = YES;
+
+        if (!errored) {
             [self setRootViewControllerToMain];
+            return;
+        }
+
+        if (!has_sign_in_error) {
+            [self->_login_view showError:NSLocalizedString(@"app.auth.error.connection_failed", "")];
+            return;
+        }
+
+        switch (error_code) {
+            case anixart::codes::auth::SignInCode::InvalidLogin:
+                [self->_login_view showError:NSLocalizedString(@"app.auth.error.invalid_username_or_email", "")];
+                break;
+            case anixart::codes::auth::SignInCode::InvalidPassword:
+                [self->_password_view showError:NSLocalizedString(@"app.auth.error.invalid_password", "")];
+                break;
+            case anixart::codes::auth::SignInCode::Banned:
+                [self->_login_view showError:NSLocalizedString(@"app.auth.error.account_banned", "")];
+                break;
+            case anixart::codes::auth::SignInCode::PermBanned:
+                [self->_login_view showError:NSLocalizedString(@"app.auth.error.account_permanently_banned", "")];
+                break;
+            case anixart::codes::auth::SignInCode::Failed:
+            case anixart::codes::auth::SignInCode::Unathorized:
+            default:
+                [self->_login_view showError:NSLocalizedString(@"app.auth.error.server_rejected", "")];
+                break;
         }
     }];
 }
