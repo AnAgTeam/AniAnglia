@@ -5,20 +5,9 @@
 <H1 align="center">-==[ AniAnglia ]==-</H1>
 
 <p align="center">
-  AniAnglia - Неофициальный клиент Anixart, разработанный для IOS.
+  AniLot - Неофициальный клиент Anixart, разработанный для IOS.
   <br> В данный момент клиент находится в стадии разработки.
 </p>
-
----
-
-<p align="center">
-	<a  target="_blank" href="https://t.me/AnAgTeam">[ НАШ ТГК ]</a>
-</p>
-
----
-
-> [!WARNING]  
-> Пожалуйста! При проблемах/Багах/Идеях - Создайте ISSUE и максимально подробно опишите ваш_вопрос/вашу_идею.
 
 ---
 
@@ -47,28 +36,6 @@ git clone https://github.com/AnAgTeam/AniAnglia.git
 
 <p align="center">
   Мы рады любому вашему вкладу в наше приложение.
-  <br> В данный момент у него есть две версии:
-  <a href="https://github.com/AnAgTeam/AniAnglia">AniAnglia</a>
-  и
-  <a href="https://github.com/AniSaturn/AniSaturn">AniSaturn (Форк проекта)</a>
-  <br><br>
-  
-  <!--
-  <a href="https://github.com/AnAgTeam/AniAnglia?tab=contributing-ov-file">Contributing.md file</a> 
-  <br>
-	Если вы хотите поучаствовать в разработке клиента - Пожалуйста, прочитайте Contributing.md
-  -->
-</p>
-
-
-## TODO
-
-```json
-1. Добавить сортировку к страницам
-2. Обновить настройки
-3. Запоминание времени просмотра серии
-4. Кеширование
-```
 
 ---
 
