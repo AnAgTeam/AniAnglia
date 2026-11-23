@@ -78,6 +78,11 @@ jobs:
           echo "::error::Could not push update after 3 attempts."
           exit 1
 
+      # Сохраняем SHA фактического HEAD после применения обновлений и возможного коммита.
+      - name: Capture built commit SHA
+        id: built_commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Build (unsigned)
         run: |
           xcodebuild -project AniAnglia.xcodeproj \
@@ -106,7 +111,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
           name: AniLot build ${{ github.run_number }}
-          target_commitish: ${{ github.sha }}
+          target_commitish: ${{ steps.built_commit.outputs.sha }}
           generate_release_notes: true
           files: AniLot.ipa
           make_latest: true
