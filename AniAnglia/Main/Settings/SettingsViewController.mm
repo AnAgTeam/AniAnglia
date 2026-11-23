@@ -13,6 +13,7 @@
 #import "AppColor.h"
 #import "AppDataController.h"
 #import "LoadableView.h"
+#import "PlayerViewController.h"
 #import "SettingsProfileViewController.h"
 #import "SettingsAppearanceViewController.h"
 #import "SettingsSecurityViewController.h"
@@ -129,8 +130,14 @@ static void PresentConfirm(UIViewController* from, NSString* title, NSString* me
 @interface SettingsListViewController : UITableViewController
 @property(nonatomic, copy) NSArray<SettingsSection*>* (^builder)(SettingsListViewController* controller);
 @property(nonatomic, copy) NSArray<SettingsSection*>* sections;
+@property(nonatomic, copy) NSString* reload_notification_name;
 -(instancetype)initWithTitle:(NSString*)title builder:(NSArray<SettingsSection*>* (^)(SettingsListViewController* controller))builder;
 -(void)reload;
+@end
+
+@interface SettingsListViewController () {
+    id _reload_observer;
+}
 @end
 
 @implementation SettingsListViewController
@@ -153,6 +160,20 @@ static void PresentConfirm(UIViewController* from, NSString* title, NSString* me
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self reload];
+    if (_reload_notification_name && !_reload_observer) {
+        __weak SettingsListViewController* weak_self = self;
+        _reload_observer = [[NSNotificationCenter defaultCenter] addObserverForName:_reload_notification_name object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification* note) {
+            [weak_self reload];
+        }];
+    }
+}
+
+-(void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    if (_reload_observer) {
+        [[NSNotificationCenter defaultCenter] removeObserver:_reload_observer];
+        _reload_observer = nil;
+    }
 }
 
 -(void)reload {
@@ -338,6 +359,62 @@ static SettingsListViewController* MakePlaybackPage(void) {
     }];
 }
 
+static NSString* DownloadStateText(DownloadItem* item) {
+    switch (item.state) {
+        case DownloadStateQueued:
+            return L(@"app.downloads.state.queued", @"В очереди");
+        case DownloadStateDownloading:
+            return [NSString stringWithFormat:@"%d%%", (int)(item.progress * 100)];
+        case DownloadStateCompleted:
+            return L(@"app.downloads.state.done", @"Скачано");
+        case DownloadStateFailed:
+            return L(@"app.downloads.state.failed", @"Ошибка");
+    }
+    return @"";
+}
+
+static SettingsListViewController* MakeDownloadsPage(void) {
+    SettingsListViewController* page = [[SettingsListViewController alloc] initWithTitle:L(@"app.downloads.title", @"Загрузки") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        NSArray<DownloadItem*>* items = [[DownloadManager sharedInstance] items];
+        if (items.count == 0) {
+            return @[MakeSection(nil, L(@"app.downloads.empty", @"Здесь пока пусто. В списке серий проведите по серии влево и нажмите кнопку загрузки."), @[])];
+        }
+        NSMutableArray<SettingsRow*>* rows = [NSMutableArray new];
+        for (DownloadItem* item in items) {
+            NSString* title = item.title.length ? item.title : item.identifier;
+            [rows addObject:ValueRow(title, ^NSString*{
+                return DownloadStateText(item);
+            }, ^(SettingsListViewController* from) {
+                NSArray<NSString*>* names;
+                switch (item.state) {
+                    case DownloadStateCompleted:
+                        names = @[L(@"app.downloads.watch", @"Смотреть"), L(@"app.downloads.delete", @"Удалить")];
+                        break;
+                    case DownloadStateFailed:
+                        names = @[L(@"app.downloads.retry", @"Повторить"), L(@"app.downloads.delete", @"Удалить")];
+                        break;
+                    default:
+                        names = @[L(@"app.downloads.cancel", @"Отменить загрузку")];
+                        break;
+                }
+                PresentChoices(from, title, names, -1, ^(NSInteger index) {
+                    DownloadManager* manager = [DownloadManager sharedInstance];
+                    if (item.state == DownloadStateCompleted && index == 0) {
+                        [[PlayerController sharedInstance] playLocalURL:item.localURL title:item.title];
+                    } else if (item.state == DownloadStateFailed && index == 0) {
+                        [manager downloadReleaseID:static_cast<anixart::ReleaseID>(item.release_id) sourceID:static_cast<anixart::EpisodeSourceID>(item.source_id) position:item.position title:item.title completion:nil];
+                    } else {
+                        [manager deleteItem:item];
+                    }
+                });
+            })];
+        }
+        return @[MakeSection(nil, nil, rows)];
+    }];
+    page.reload_notification_name = DownloadManagerDidUpdateNotification;
+    return page;
+}
+
 static SettingsListViewController* MakeHelpPage(void) {
     return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.help.name", @"Помощь") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
         return @[
@@ -358,9 +435,9 @@ static SettingsListViewController* MakeAboutPage(void) {
         NSDictionary* info = [NSBundle mainBundle].infoDictionary;
         NSString* version = [NSString stringWithFormat:@"%@ (%@)", info[@"CFBundleShortVersionString"] ?: @"?", info[@"CFBundleVersion"] ?: @"?"];
         return @[
-            MakeSection(nil, L(@"app.settings.about.footer", @"Неофициальный клиент Anixart для iOS."), @[
+            MakeSection(nil, L(@"app.settings.about.footer", @"AniLot — неофициальный клиент Anixart для iOS, форк проекта AniAnglia."), @[
                 ValueRow(L(@"app.settings.about.version", @"Версия"), ^NSString*{ return version; }, nil),
-                NavRow(L(@"app.settings.about.source", @"Исходный код"), @"chevron.left.forwardslash.chevron.right", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.about.source", @"Исходный код оригинала (AniAnglia)"), @"chevron.left.forwardslash.chevron.right", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
                     OpenURL(kGithubURL);
                 })
             ])
@@ -410,6 +487,9 @@ static SettingsListViewController* MakeAboutPage(void) {
                 }),
                 NavRow(L(@"app.settings.playback.name", @"Воспроизведение"), @"play.fill", [UIColor systemBlueColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakePlaybackPage() animated:YES];
+                }),
+                NavRow(L(@"app.downloads.title", @"Загрузки"), @"arrow.down.circle.fill", [UIColor systemTealColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakeDownloadsPage() animated:YES];
                 })
             ]),
             MakeSection(nil, L(@"app.settings.alternative_connection.footer", @"Активируйте только если испытываете проблемы с работой приложения, связанные с блокировкой в вашей стране"), @[alt_row]),

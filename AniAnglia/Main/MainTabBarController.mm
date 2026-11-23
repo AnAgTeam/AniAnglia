@@ -44,6 +44,19 @@
 -(void)setQuery:(NSString*)query;
 @end
 
+#ifndef L
+#define L(key, def) NSLocalizedStringWithDefaultValue(key, nil, [NSBundle mainBundle], def, @"")
+#endif
+
+@interface BookmarksSearchController : NSObject <SearchViewControllerDataSource, SearchViewControllerDelegate>
+@property(nonatomic, strong) LibanixartApi* api_proxy;
+@property(nonatomic, retain) SearchViewController* search_view_controller;
+@property(nonatomic, retain) ReleasesViewController* view_controller;
+@property(nonatomic) anixart::Profile::ListStatus status;
+
+-(instancetype)initWithQuery:(NSString*)query status:(anixart::Profile::ListStatus)status title:(NSString*)title;
+@end
+
 @interface MainTabBarController ()
 @property(nonatomic, strong) LibanixartApi* api_proxy;
 @property(nonatomic, strong) AppDataController* app_data_controller;
@@ -59,6 +72,7 @@
 @property(nonatomic, retain) ReleasesSearchController* main_releases_search_controller;
 @property(nonatomic, retain) ReleasesSearchController* discover_releases_search_controller;
 @property(nonatomic, retain) ProfilesSearchController* profiles_search_controller;
+@property(nonatomic, retain) BookmarksSearchController* bookmarks_search_controller;
 @end
 
 @implementation ReleasesSearchController
@@ -147,6 +161,43 @@
     request.query = TO_STDSTRING(query);
 
     [_view_controller setPages:_api_proxy.api->search().profile_search(request, 0)];
+}
+
+@end
+
+@implementation BookmarksSearchController
+
+-(instancetype)initWithQuery:(NSString*)query status:(anixart::Profile::ListStatus)status title:(NSString*)title {
+    self = [super init];
+    
+    _api_proxy = [LibanixartApi sharedInstance];
+    _status = status;
+    
+    anixart::requests::SearchRequest request;
+    request.query = TO_STDSTRING(query);
+    anixart::ProfileListSearchPages::UPtr pages = _api_proxy.api->search().profile_list_search(status, request, 0);
+    
+    _view_controller = [[ReleasesViewController alloc] initWithPages:std::move(pages)];
+    
+    _search_view_controller = [[SearchViewController alloc] initWithContentViewController:_view_controller];
+    _search_view_controller.title = title;
+    _search_view_controller.search_bar_placeholder = NSLocalizedString(@"app.bookmarks.search_bar.placeholder", "");
+    [_search_view_controller setSearchText:query];
+    _search_view_controller.data_source = self;
+    _search_view_controller.delegate = self;
+    
+    return self;
+}
+
+-(UIViewController*)inlineViewControllerForSearchViewController:(SearchViewController*)search_view_controller {
+    return nil;
+}
+-(void)searchViewController:(SearchViewController*)search_view_controller didSearchWithQuery:(NSString*)query {
+    anixart::requests::SearchRequest request;
+    request.query = TO_STDSTRING(query);
+    anixart::ProfileListSearchPages::UPtr pages = _api_proxy.api->search().profile_list_search(_status, request, 0);
+    
+    [_view_controller setPages:std::move(pages)];
 }
 
 @end
@@ -257,6 +308,28 @@
     }
     return nil;
 }
+-(void)presentBookmarksListChoiceForQuery:(NSString*)query from:(SearchViewController*)source {
+    NSArray<NSString*>* names = @[
+        L(@"app.bookmarks.list.watching", @"Смотрю"),
+        L(@"app.bookmarks.list.plan", @"В планах"),
+        L(@"app.bookmarks.list.watched", @"Просмотрено"),
+        L(@"app.bookmarks.list.holdon", @"Отложено"),
+        L(@"app.bookmarks.list.dropped", @"Брошено")
+    ];
+    NSArray<NSNumber*>* status_values = @[@1, @2, @3, @4, @5];
+    UIAlertController* sheet = [UIAlertController alertControllerWithTitle:L(@"app.bookmarks.search.choose_list", @"Искать в списке") message:query preferredStyle:UIAlertControllerStyleActionSheet];
+    for (NSUInteger i = 0; i < names.count; i++) {
+        [sheet addAction:[UIAlertAction actionWithTitle:names[i] style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            anixart::Profile::ListStatus status = static_cast<anixart::Profile::ListStatus>(status_values[i].intValue);
+            self.bookmarks_search_controller = [[BookmarksSearchController alloc] initWithQuery:query status:status title:names[i]];
+            [source.navigationController pushViewController:self.bookmarks_search_controller.search_view_controller animated:YES];
+        }]];
+    }
+    [sheet addAction:[UIAlertAction actionWithTitle:L(@"app.common.cancel", @"Отмена") style:UIAlertActionStyleCancel handler:nil]];
+    sheet.popoverPresentationController.sourceView = source.view;
+    sheet.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(source.view.bounds), CGRectGetMidY(source.view.bounds), 1, 1);
+    [source presentViewController:sheet animated:YES completion:nil];
+}
 -(void)searchViewController:(SearchViewController*)search_view_controller didSearchWithQuery:(NSString*)query {
     [search_view_controller setSearchText:@""];
     if (search_view_controller == _main_search_view_controller) {
@@ -283,6 +356,7 @@
         return;
     }
     if (search_view_controller == _bookmarks_search_view_controller) {
+        [self presentBookmarksListChoiceForQuery:query from:search_view_controller];
         return;
     }
     if (search_view_controller == _profile_search_view_controller) {

@@ -191,6 +191,13 @@
     [self tryLoadImageWithURL:url attempt:0];
 }
 
++(NSURL*)proxyURLForURL:(NSURL*)url {
+    NSMutableCharacterSet* allowed = [NSMutableCharacterSet alphanumericCharacterSet];
+    [allowed addCharactersInString:@"-._~"];
+    NSString* encoded = [url.absoluteString stringByAddingPercentEncodingWithAllowedCharacters:allowed];
+    return [NSURL URLWithString:[@"https://wsrv.nl/?url=" stringByAppendingString:encoded ?: @""]];
+}
+
 -(void)tryLoadImageWithURL:(NSURL*)url attempt:(int)attempt {
     if (_url_load_task) {
         [_url_load_task cancel];
@@ -214,8 +221,16 @@
         return;
     }
     [_loadable_view startLoading];
+
+    // Порядок попыток: прямой запрос и запасной путь через прокси-кэш картинок.
+    // При включённом «альтернативном соединении» сначала идёт прокси (когда CDN заблокирован).
+    BOOL proxy_first = [[[AppDataController sharedInstance] getSettingsController] getAlternativeConnection];
+    BOOL use_proxy = proxy_first ? (attempt % 2 == 0) : (attempt % 2 == 1);
+    NSURL* request_url = use_proxy ? ([LoadableImageView proxyURLForURL:url] ?: url) : url;
+
     __weak LoadableImageView* weak_self = self;
-    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithURL:url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+    NSURL* original_url = url;
+    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithURL:request_url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
         if (error.code == NSURLErrorCancelled) {
             return;
         }
@@ -225,7 +240,7 @@
             // декодируем в фоне, чтобы не тормозила прокрутка
             UIGraphicsImageRenderer* r = [[UIGraphicsImageRenderer alloc] initWithSize:image.size];
             image = [r imageWithActions:^(UIGraphicsImageRendererContext* ctx) { [image drawAtPoint:CGPointZero]; }];
-            [[LoadableImageView sharedImageCache] setObject:image forKey:url];
+            [[LoadableImageView sharedImageCache] setObject:image forKey:original_url];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             LoadableImageView* strong_self = weak_self;
@@ -233,9 +248,9 @@
             if (image) {
                 strong_self.image = image;
                 [strong_self->_loadable_view endLoading];
-            } else if (attempt < 2) {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((attempt + 1) * 0.7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [weak_self tryLoadImageWithURL:url attempt:attempt + 1];
+            } else if (attempt < 3) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [weak_self tryLoadImageWithURL:original_url attempt:attempt + 1];
                 });
             } else {
                 [strong_self->_loadable_view endLoadingWithErrored:YES];

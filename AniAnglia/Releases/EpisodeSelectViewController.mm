@@ -239,7 +239,10 @@
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
     anixart::Episode::Ptr episode = _episodes[index];
-    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position autoShow:YES completion:^(BOOL errored){
+    std::string episode_name_std = episode->name;
+    NSString* title = [NSString stringWithFormat:@"%@ · %@", TO_NSSTRING(episode_name_std), _source_name ?: @""];
+    
+    void (^started)(BOOL errored) = ^(BOOL errored){
         if (errored) {
             return;
         }
@@ -254,11 +257,52 @@
             episode->is_watched = YES;
             [cell setWatchedStatus:YES];
         }];
-    }];
+    };
+    
+    /* если серия скачана — играем локальный файл */
+    DownloadItem* local = [[DownloadManager sharedInstance] itemForReleaseID:_release_id sourceID:_source_id position:episode->position];
+    if (local && local.state == DownloadStateCompleted && local.localURL) {
+        [[PlayerController sharedInstance] playLocalURL:local.localURL title:title];
+        started(NO);
+        return;
+    }
+    [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position title:title autoShow:YES completion:started];
+}
+
+static void ShowToast(UIViewController* from, NSString* message) {
+    if (from.presentedViewController) {
+        return;
+    }
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:nil message:message preferredStyle:UIAlertControllerStyleAlert];
+    [from presentViewController:alert animated:YES completion:nil];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [alert dismissViewControllerAnimated:YES completion:nil];
+    });
 }
 
 -(void)cellDownloadButtonActionPressed:(NSIndexPath*)index_path {
-    NSLog(@"cellDownloadButtonActionPressed:%@", index_path);
+    NSInteger index = [index_path item];
+    anixart::Episode::Ptr episode = _episodes[index];
+    std::string episode_name_std = episode->name;
+    NSString* title = [NSString stringWithFormat:@"%@ · %@", TO_NSSTRING(episode_name_std), _source_name ?: @""];
+    
+    DownloadItem* existing = [[DownloadManager sharedInstance] itemForReleaseID:_release_id sourceID:_source_id position:episode->position];
+    if (existing && existing.state == DownloadStateCompleted) {
+        ShowToast(self, NSLocalizedStringWithDefaultValue(@"app.downloads.already_downloaded", nil, [NSBundle mainBundle], @"Серия уже скачана", @""));
+        return;
+    }
+    if (existing && (existing.state == DownloadStateDownloading || existing.state == DownloadStateQueued)) {
+        ShowToast(self, NSLocalizedStringWithDefaultValue(@"app.downloads.already_downloading", nil, [NSBundle mainBundle], @"Серия уже загружается", @""));
+        return;
+    }
+    ShowToast(self, NSLocalizedStringWithDefaultValue(@"app.downloads.started", nil, [NSBundle mainBundle], @"Загрузка началась. Прогресс: Настройки → Загрузки", @""));
+    [[DownloadManager sharedInstance] downloadReleaseID:_release_id sourceID:_source_id position:episode->position title:title completion:^(BOOL errored) {
+        if (errored) {
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:NSLocalizedStringWithDefaultValue(@"app.downloads.failed", nil, [NSBundle mainBundle], @"Не удалось начать загрузку", @"") message:nil preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
+        }
+    }];
 }
 -(void)cellChangeViewedActionPressed:(NSIndexPath*)index_path {
     NSInteger index = [index_path item];
