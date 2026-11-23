@@ -10,10 +10,6 @@
 "app.auth.forgot_password" = "Забыли пароль?";
 "app.auth.error.invalid_username_or_email" = "Неверное имя пользователя или Email";
 "app.auth.error.invalid_password" = "Неверный пароль";
-"app.auth.error.connection_failed" = "Не удалось подключиться к серверу. Проверьте интернет и попробуйте ещё раз.";
-"app.auth.error.account_banned" = "Этот аккаунт заблокирован.";
-"app.auth.error.account_permanently_banned" = "Этот аккаунт заблокирован навсегда.";
-"app.auth.error.server_rejected" = "Сервер отклонил вход. Попробуйте позже.";
 "app.auth.login.confirm" = "Войти";
 "app.auth.action_ok" =  "ОК";
 
