@@ -10,6 +10,10 @@
 "app.auth.forgot_password" = "Forgot password?";
 "app.auth.error.invalid_username_or_email" = "Invalid username or email.";
 "app.auth.error.invalid_password" = "Invalid password";
+"app.auth.error.connection_failed" = "Could not connect to the server. Check your internet connection and try again.";
+"app.auth.error.account_banned" = "This account is suspended.";
+"app.auth.error.account_permanently_banned" = "This account is permanently suspended.";
+"app.auth.error.server_rejected" = "The server rejected the sign-in request. Try again later.";
 "app.auth.login.confirm" = "Confirm";
 "app.auth.action_ok" =  "OK";
 
