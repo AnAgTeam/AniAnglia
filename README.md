@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="#"><img width="100px" height="100px" src="https://github.com/AnAgTeam/AniAnglia/raw/master/repo/app_icon.jpg"></a>
+  <a href="#"><img width="100px" height="100px" src="https://github.com/vilefex/AniLot/raw/master/repo/app_icon.jpg"></a>
 </p>
 
 <H1 align="center">-==[ AniLot ]==-</H1>
