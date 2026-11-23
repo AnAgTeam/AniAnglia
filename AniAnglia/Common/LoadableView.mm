@@ -112,6 +112,29 @@
 
 @end
 
+static NSString* const kPreferProxyKey = @"anilot_images_prefer_proxy";
+static BOOL gPreferProxy = NO;
+static int gDirectFailures = 0;
+
+static void LoadPreferProxyOnce(void) {
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        gPreferProxy = [[NSUserDefaults standardUserDefaults] boolForKey:kPreferProxyKey];
+    });
+}
+
+static void NoteDirectResult(BOOL success) {
+    if (success) {
+        gDirectFailures = 0;
+        return;
+    }
+    gDirectFailures++;
+    if (gDirectFailures >= 2 && !gPreferProxy) {
+        gPreferProxy = YES;
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kPreferProxyKey];
+    }
+}
+
 @implementation LoadableImageView
 
 -(instancetype)init {
@@ -165,7 +188,8 @@
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
-        conf.timeoutIntervalForRequest = 20;
+        conf.timeoutIntervalForRequest = 25;
+        conf.HTTPMaximumConnectionsPerHost = 12;
         conf.requestCachePolicy = NSURLRequestReturnCacheDataElseLoad;
         conf.URLCache = [LoadableImageView sharedImageURLCache];
         conf.HTTPAdditionalHeaders = @{ @"Accept": @"image/webp,image/*,*/*;q=0.8" };
@@ -195,7 +219,7 @@
     NSMutableCharacterSet* allowed = [NSMutableCharacterSet alphanumericCharacterSet];
     [allowed addCharactersInString:@"-._~"];
     NSString* encoded = [url.absoluteString stringByAddingPercentEncodingWithAllowedCharacters:allowed];
-    return [NSURL URLWithString:[@"https://wsrv.nl/?url=" stringByAppendingString:encoded ?: @""]];
+    return [NSURL URLWithString:[@"https://wsrv.nl/?w=600&q=80&url=" stringByAppendingString:encoded ?: @""]];
 }
 
 -(void)tryLoadImageWithURL:(NSURL*)url attempt:(int)attempt {
@@ -224,18 +248,24 @@
 
     // Порядок попыток: прямой запрос и запасной путь через прокси-кэш картинок.
     // При включённом «альтернативном соединении» сначала идёт прокси (когда CDN заблокирован).
-    BOOL proxy_first = [[[AppDataController sharedInstance] getSettingsController] getAlternativeConnection];
+    LoadPreferProxyOnce();
+    BOOL proxy_first = gPreferProxy || [[[AppDataController sharedInstance] getSettingsController] getAlternativeConnection];
     BOOL use_proxy = proxy_first ? (attempt % 2 == 0) : (attempt % 2 == 1);
     NSURL* request_url = use_proxy ? ([LoadableImageView proxyURLForURL:url] ?: url) : url;
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:request_url];
+    request.timeoutInterval = use_proxy ? 25 : 7; // прямой путь при блокировке не должен висеть долго
 
     __weak LoadableImageView* weak_self = self;
     NSURL* original_url = url;
-    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithURL:request_url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
         if (error.code == NSURLErrorCancelled) {
             return;
         }
         NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 200;
         UIImage* image = (error == nil && data != nil && status < 400) ? [UIImage imageWithData:data] : nil;
+        if (!use_proxy) {
+            NoteDirectResult(image != nil);
+        }
         if (image) {
             // декодируем в фоне, чтобы не тормозила прокрутка
             UIGraphicsImageRenderer* r = [[UIGraphicsImageRenderer alloc] initWithSize:image.size];

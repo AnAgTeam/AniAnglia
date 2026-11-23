@@ -91,7 +91,7 @@ static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSource
             }
         }
         result = dict;
-        return YES;
+        return NO; // asyncCall: YES означает ошибку
     } completion:^(BOOL errored) {
         completion((errored || result.count == 0) ? nil : result);
     }];
