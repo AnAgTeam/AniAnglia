@@ -13,8 +13,8 @@
 
 <H2 align="center">-==[ Скачать ]==-</H2>
 <p align="center">
-    <a href="https://github.com/AnAgTeam/AniAnglia/actions">Actions</a> или с 
-    <a href="https://github.com/AnAgTeam/AniAnglia/releases/latest">релизов</a> 
+    <a href="https://github.com/vilefex/AniLot/actions">Actions</a> или с 
+    <a href="https://github.com/vilefex/AniLot/releases/latest">релизов</a> 
   <br><br>
   Установка выполняется через TrollStore/Sideloadly, а так же подобные методы.
 </p>
