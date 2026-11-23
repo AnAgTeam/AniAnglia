@@ -63,6 +63,7 @@
 		EFA1F9402CB497D600555A26 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F93F2CB497D500555A26 /* AVKit.framework */; };
 		EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */; };
 		EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */; };
+		A1B2C3D4E5F60718293A4B5C /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* CoreMedia.framework */; };
 		EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA4D6712D59146B00005139 /* libnetsess.xcframework */; };
 		EFA7322F2DFE25A900FBC12C /* NamedSectionsStackView.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */; };
 		EFB158AB2C80F65D0070E833 /* ReleaseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFB158AA2C80F65D0070E833 /* ReleaseViewController.mm */; };
@@ -1368,6 +1369,7 @@
 		EFA1F93F2CB497D500555A26 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		A1B2C3D4E5F60718293A4B5D /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		EFA4D6712D59146B00005139 /* libnetsess.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libnetsess.xcframework; path = AniAnglia/Libraries/aateam/libnetsess/libnetsess.xcframework; sourceTree = "<group>"; };
 		EFA7322D2DFE259600FBC12C /* NamedSectionsStackView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NamedSectionsStackView.h; sourceTree = "<group>"; };
 		EFA7322E2DFE25A900FBC12C /* NamedSectionsStackView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NamedSectionsStackView.mm; sourceTree = "<group>"; };
@@ -1439,6 +1441,7 @@
 				EFA1F9422CB8EA7300555A26 /* AVFAudio.framework in Frameworks */,
 				EF0D7D192D26F0E7000E516A /* libanixart.xcframework in Frameworks */,
 				EFA1F9442CB8EA8000555A26 /* AVFoundation.framework in Frameworks */,
+				A1B2C3D4E5F60718293A4B5C /* CoreMedia.framework in Frameworks */,
 				EF8097D02D15DC05006F18DF /* try_signal.xcframework in Frameworks */,
 				EFA4D6722D59146B00005139 /* libnetsess.xcframework in Frameworks */,
 			);
@@ -3552,6 +3555,7 @@
 				EFE474962CFA42B500508136 /* MediaPlayer.framework */,
 				EF5F02B62CCE956700EA11BB /* Libraries */,
 				EFA1F9432CB8EA7F00555A26 /* AVFoundation.framework */,
+				A1B2C3D4E5F60718293A4B5D /* CoreMedia.framework */,
 				EFA1F9412CB8EA7300555A26 /* AVFAudio.framework */,
 				EFA1F93F2CB497D500555A26 /* AVKit.framework */,
 				EF875C7F2C78FB7400DAECB1 /* Security.framework */,
