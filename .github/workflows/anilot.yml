@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches: ['master']
-    tags: ['v*']
+
+concurrency:
+  group: anilot-build
+  cancel-in-progress: false
+  queue: max
 
 permissions:
   contents: write
@@ -24,7 +28,6 @@ jobs:
           if [ -f anilot-update.zip ]; then
             unzip -o anilot-update.zip
             rm anilot-update.zip
-            echo "UPDATE_APPLIED=1" >> "$GITHUB_ENV"
           fi
 
       # Если в корне лежит anilot-icon.png (квадрат, лучше 1024x1024) — делаем из него все размеры иконки.
@@ -43,12 +46,10 @@ jobs:
               subprocess.run(['sips', '-z', str(px), str(px), 'anilot-icon.png', '--out', d + '/' + name], check=True)
               print('icon', name, px)
           PY
-            echo "UPDATE_APPLIED=1" >> "$GITHUB_ENV"
           fi
 
       - name: Commit changes
         if: github.ref_type == 'branch'
-        continue-on-error: true
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
@@ -106,10 +107,10 @@ jobs:
           path: AniLot.ipa
 
       - name: Publish release
-        if: github.ref_type == 'tag' || github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
+          tag_name: ${{ format('build-{0}', github.run_number) }}
           name: AniLot build ${{ github.run_number }}
           target_commitish: ${{ steps.built_commit.outputs.sha }}
           generate_release_notes: true
