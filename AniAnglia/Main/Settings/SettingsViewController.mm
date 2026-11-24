@@ -352,9 +352,40 @@ static SettingsListViewController* MakePlaybackPage(void) {
         }, ^(BOOL on) {
             [settings setRememberSource:on];
         });
+        SettingsRow* external_row = ValueRow(L(@"app.settings.playback.external", @"Внешний плеер"), ^NSString*{
+            return AniLotExternalPlayerName(AniLotExternalPlayerID());
+        }, ^(SettingsListViewController* from) {
+            NSArray<NSString*>* ids = AniLotExternalPlayerIDs();
+            NSMutableArray<NSString*>* names = [NSMutableArray new];
+            for (NSString* identifier in ids) {
+                [names addObject:AniLotExternalPlayerName(identifier)];
+            }
+            NSInteger selected = (NSInteger)[ids indexOfObject:AniLotExternalPlayerID()];
+            PresentChoices(from, L(@"app.settings.playback.external", @"Внешний плеер"), names, selected, ^(NSInteger index) {
+                AniLotSetExternalPlayerID(ids[index]);
+                [from reload];
+            });
+        });
+        SettingsRow* resume_row = SwitchRow(L(@"app.settings.playback.resume", @"Запоминать позицию серии"), ^BOOL{
+            return AniLotSettingBool(AniLotSettingResumeKey, YES);
+        }, ^(BOOL on) {
+            AniLotSetSettingBool(AniLotSettingResumeKey, on);
+        });
+        SettingsRow* skip_buttons_row = SwitchRow(L(@"app.settings.playback.skip_buttons", @"Кнопка пропуска опенинга/эндинга"), ^BOOL{
+            return AniLotSettingBool(AniLotSettingSkipButtonsKey, YES);
+        }, ^(BOOL on) {
+            AniLotSetSettingBool(AniLotSettingSkipButtonsKey, on);
+        });
+        SettingsRow* auto_skip_row = SwitchRow(L(@"app.settings.playback.auto_skip", @"Автоматически пропускать опенинг/эндинг"), ^BOOL{
+            return AniLotSettingBool(AniLotSettingAutoSkipKey, NO);
+        }, ^(BOOL on) {
+            AniLotSetSettingBool(AniLotSettingAutoSkipKey, on);
+        });
         return @[
             MakeSection(nil, nil, @[player_row, quality_row, skip_row]),
-            MakeSection(nil, nil, @[next_row, source_row])
+            MakeSection(nil, nil, @[next_row, source_row, resume_row]),
+            MakeSection(L(@"app.settings.playback.skip.header", @"Опенинги и эндинги"), L(@"app.settings.playback.skip.footer", @"Метки опенингов и эндингов приходят из источника Libria/Liberty. Если меток нет, кнопка перематывает на заданное время."), @[skip_buttons_row, auto_skip_row]),
+            MakeSection(L(@"app.settings.playback.external.header", @"Внешний плеер"), L(@"app.settings.playback.external.footer", @"Серия откроется в выбранном приложении. Скачанные серии всегда играют во встроенном плеере."), @[external_row])
         ];
     }];
 }
@@ -379,37 +410,67 @@ static SettingsListViewController* MakeDownloadsPage(void) {
         if (items.count == 0) {
             return @[MakeSection(nil, L(@"app.downloads.empty", @"Здесь пока пусто. В списке серий проведите по серии влево и нажмите кнопку загрузки."), @[])];
         }
-        NSMutableArray<SettingsRow*>* rows = [NSMutableArray new];
+        // группируем серии по аниме
+        NSMutableArray<NSNumber*>* order = [NSMutableArray new];
+        NSMutableDictionary<NSNumber*, NSMutableArray<DownloadItem*>*>* groups = [NSMutableDictionary new];
         for (DownloadItem* item in items) {
-            NSString* title = item.title.length ? item.title : item.identifier;
-            [rows addObject:ValueRow(title, ^NSString*{
-                return DownloadStateText(item);
-            }, ^(SettingsListViewController* from) {
-                NSArray<NSString*>* names;
-                switch (item.state) {
-                    case DownloadStateCompleted:
-                        names = @[L(@"app.downloads.watch", @"Смотреть"), L(@"app.downloads.delete", @"Удалить")];
-                        break;
-                    case DownloadStateFailed:
-                        names = @[L(@"app.downloads.retry", @"Повторить"), L(@"app.downloads.delete", @"Удалить")];
-                        break;
-                    default:
-                        names = @[L(@"app.downloads.cancel", @"Отменить загрузку")];
-                        break;
-                }
-                PresentChoices(from, title, names, -1, ^(NSInteger index) {
-                    DownloadManager* manager = [DownloadManager sharedInstance];
-                    if (item.state == DownloadStateCompleted && index == 0) {
-                        [[PlayerController sharedInstance] playLocalURL:item.localURL title:item.title];
-                    } else if (item.state == DownloadStateFailed && index == 0) {
-                        [manager downloadReleaseID:static_cast<anixart::ReleaseID>(item.release_id) sourceID:static_cast<anixart::EpisodeSourceID>(item.source_id) position:item.position title:item.title completion:nil];
-                    } else {
-                        [manager deleteItem:item];
-                    }
-                });
-            })];
+            NSNumber* key = @(item.release_id);
+            if (!groups[key]) {
+                groups[key] = [NSMutableArray new];
+                [order addObject:key];
+            }
+            [groups[key] addObject:item];
         }
-        return @[MakeSection(nil, nil, rows)];
+        NSMutableArray<SettingsSection*>* sections = [NSMutableArray new];
+        for (NSNumber* key in order) {
+            NSArray<DownloadItem*>* group = [groups[key] sortedArrayUsingComparator:^NSComparisonResult(DownloadItem* a, DownloadItem* b) {
+                return [@(a.position) compare:@(b.position)];
+            }];
+            NSString* header = nil;
+            for (DownloadItem* item in group) {
+                if (item.release_title.length) {
+                    header = item.release_title;
+                    break;
+                }
+            }
+            if (!header) {
+                header = [NSString stringWithFormat:@"%@ #%lld", L(@"app.downloads.release", @"Аниме"), key.longLongValue];
+            }
+            NSMutableArray<SettingsRow*>* rows = [NSMutableArray new];
+            for (DownloadItem* item in group) {
+                NSString* title = item.title.length ? item.title : [NSString stringWithFormat:@"%@ %ld", L(@"app.downloads.episode", @"Серия"), item.position];
+                [rows addObject:ValueRow(title, ^NSString*{
+                    return DownloadStateText(item);
+                }, ^(SettingsListViewController* from) {
+                    NSArray<NSString*>* names;
+                    switch (item.state) {
+                        case DownloadStateCompleted:
+                            names = @[L(@"app.downloads.watch", @"Смотреть"), L(@"app.downloads.delete", @"Удалить")];
+                            break;
+                        case DownloadStateFailed:
+                            names = @[L(@"app.downloads.retry", @"Повторить"), L(@"app.downloads.delete", @"Удалить")];
+                            break;
+                        default:
+                            names = @[L(@"app.downloads.cancel", @"Отменить загрузку")];
+                            break;
+                    }
+                    NSString* sheet_title = (item.state == DownloadStateFailed && item.error_text.length) ? [NSString stringWithFormat:@"%@\n%@", title, item.error_text] : title;
+                    PresentChoices(from, sheet_title, names, -1, ^(NSInteger index) {
+                        DownloadManager* manager = [DownloadManager sharedInstance];
+                        if (item.state == DownloadStateCompleted && index == 0) {
+                            NSString* player_title = item.release_title.length ? [NSString stringWithFormat:@"%@ — %@", item.release_title, item.title ?: @""] : item.title;
+                            [[PlayerController sharedInstance] playLocalURL:item.localURL title:player_title resumeKey:item.identifier];
+                        } else if (item.state == DownloadStateFailed && index == 0) {
+                            [manager downloadReleaseID:static_cast<anixart::ReleaseID>(item.release_id) sourceID:static_cast<anixart::EpisodeSourceID>(item.source_id) position:item.position title:item.title completion:nil];
+                        } else {
+                            [manager deleteItem:item];
+                        }
+                    });
+                })];
+            }
+            [sections addObject:MakeSection(header, nil, rows)];
+        }
+        return sections;
     }];
     page.reload_notification_name = DownloadManagerDidUpdateNotification;
     return page;

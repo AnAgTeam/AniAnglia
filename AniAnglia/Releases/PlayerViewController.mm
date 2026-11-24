@@ -19,6 +19,65 @@
 
 NSString* const DownloadManagerDidUpdateNotification = @"AniLotDownloadManagerDidUpdate";
 
+NSString* const AniLotSettingResumeKey = @"anilot_resume_enabled";
+NSString* const AniLotSettingSkipButtonsKey = @"anilot_skip_buttons";
+NSString* const AniLotSettingAutoSkipKey = @"anilot_auto_skip";
+static NSString* const kExternalPlayerKey = @"anilot_external_player";
+static NSString* const kPositionsKey = @"anilot_positions";
+
+BOOL AniLotSettingBool(NSString* key, BOOL default_value) {
+    id value = [[NSUserDefaults standardUserDefaults] objectForKey:key];
+    return value ? [value boolValue] : default_value;
+}
+
+void AniLotSetSettingBool(NSString* key, BOOL value) {
+    [[NSUserDefaults standardUserDefaults] setBool:value forKey:key];
+}
+
+NSArray<NSString*>* AniLotExternalPlayerIDs(void) {
+    return @[@"internal", @"vlc", @"outplayer", @"infuse", @"nplayer", @"share"];
+}
+
+NSString* AniLotExternalPlayerName(NSString* identifier) {
+    NSDictionary<NSString*, NSString*>* names = @{
+        @"internal": L(@"app.player.external.internal", @"Встроенный плеер"),
+        @"vlc": @"VLC",
+        @"outplayer": @"OutPlayer",
+        @"infuse": @"Infuse",
+        @"nplayer": @"nPlayer",
+        @"share": L(@"app.player.external.share", @"Поделиться ссылкой…")
+    };
+    return names[identifier] ?: identifier;
+}
+
+NSString* AniLotExternalPlayerID(void) {
+    NSString* value = [[NSUserDefaults standardUserDefaults] stringForKey:kExternalPlayerKey];
+    return (value && [AniLotExternalPlayerIDs() containsObject:value]) ? value : @"internal";
+}
+
+void AniLotSetExternalPlayerID(NSString* identifier) {
+    [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:kExternalPlayerKey];
+}
+
+static double SavedPosition(NSString* key) {
+    NSDictionary* positions = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kPositionsKey];
+    return [positions[key] doubleValue];
+}
+
+static void SavePosition(NSString* key, double seconds) {
+    NSMutableDictionary* positions = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:kPositionsKey] mutableCopy] ?: [NSMutableDictionary new];
+    positions[key] = @(seconds);
+    [[NSUserDefaults standardUserDefaults] setObject:positions forKey:kPositionsKey];
+}
+
+static void ClearPosition(NSString* key) {
+    NSMutableDictionary* positions = [[[NSUserDefaults standardUserDefaults] dictionaryForKey:kPositionsKey] mutableCopy];
+    if (positions[key]) {
+        [positions removeObjectForKey:key];
+        [[NSUserDefaults standardUserDefaults] setObject:positions forKey:kPositionsKey];
+    }
+}
+
 #pragma mark - Помощники
 
 static NSArray<NSString*>* SortedQualityNames(NSDictionary<NSString*, NSURL*>* urls) {
@@ -80,24 +139,30 @@ static UIViewController* TopViewController(void) {
 /* Парсер Libria внутри libanixart ходит на api.anilibria.tv/v2, который отключён (HTTP 410).
    Поэтому ссылки на потоки Libria/Liberty получаем напрямую из нового API AniLiberty. */
 
-static NSData* SyncGET(NSURL* url, NSInteger* status, NSString** error_text) {
+static NSData* SyncRequest(NSURL* url, NSDictionary<NSString*, NSString*>* headers, NSInteger* status, NSString** error_text) {
     __block NSData* body = nil;
     __block NSInteger code = 0;
     __block NSString* err = nil;
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
-    request.timeoutInterval = 12;
-    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+    request.timeoutInterval = 15;
+    for (NSString* key in headers) {
+        [request setValue:headers[key] forHTTPHeaderField:key];
+    }
     [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
         body = data;
         code = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 0;
         err = error.localizedDescription;
         dispatch_semaphore_signal(semaphore);
     }] resume];
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)));
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(18 * NSEC_PER_SEC)));
     if (status) *status = code;
     if (error_text) *error_text = err;
     return body;
+}
+
+static NSData* SyncGET(NSURL* url, NSInteger* status, NSString** error_text) {
+    return SyncRequest(url, @{@"Accept": @"application/json"}, status, error_text);
 }
 
 static NSString* FirstMatch(NSString* pattern, NSString* text) {
@@ -109,7 +174,74 @@ static NSString* FirstMatch(NSString* pattern, NSString* text) {
     return nil;
 }
 
-static NSDictionary<NSString*, NSURL*>* ResolveLibriaStreams(NSString* target, NSMutableString* detail) {
+static NSString* QualityFromKey(NSString* key) {
+    NSString* lower = key.lowercaseString;
+    if ([lower isEqualToString:@"fhd"]) return @"1080";
+    if ([lower isEqualToString:@"hd"]) return @"720";
+    if ([lower isEqualToString:@"sd"]) return @"480";
+    return lower;
+}
+
+/* Источник Liberty отдаёт ссылку на iframe-страницу (anixart.libria.fun/public/iframe.php?...).
+   Загружаем страницу и достаём из неё HLS-ссылки. */
+static NSDictionary<NSString*, NSURL*>* ResolveIframeStreams(NSString* target, NSMutableString* detail) {
+    NSURL* url = [NSURL URLWithString:target];
+    if (!url) {
+        return nil;
+    }
+    NSDictionary* headers = @{
+        @"Accept": @"text/html,application/xhtml+xml,*/*",
+        @"User-Agent": @"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+        @"Referer": [NSString stringWithFormat:@"%@://%@/", url.scheme, url.host]
+    };
+    NSInteger status = 0;
+    NSString* error_text = nil;
+    NSData* data = SyncRequest(url, headers, &status, &error_text);
+    NSString* html = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+    [detail appendFormat:@"iframe %@ → HTTP %ld %@\n", url.host, (long)status, error_text ?: @""];
+    if (html.length == 0) {
+        return nil;
+    }
+    html = [html stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+    
+    NSMutableDictionary<NSString*, NSURL*>* streams = [NSMutableDictionary new];
+    void (^add)(NSString*, NSString*) = ^(NSString* quality, NSString* link) {
+        if ([link hasPrefix:@"//"]) {
+            link = [@"https:" stringByAppendingString:link];
+        }
+        NSURL* link_url = [link hasPrefix:@"http"] ? [NSURL URLWithString:link] : nil;
+        if (link_url && quality.length && !streams[quality]) {
+            streams[quality] = link_url;
+        }
+    };
+    
+    // 1) [1080p]https://....m3u8
+    NSRegularExpression* bracket = [NSRegularExpression regularExpressionWithPattern:@"\\[(\\d{3,4})p?\\]\\s*((?:https?:)?//[^,\\s\"'<>\\]]+)" options:0 error:nil];
+    for (NSTextCheckingResult* m in [bracket matchesInString:html options:0 range:NSMakeRange(0, html.length)]) {
+        add([html substringWithRange:[m rangeAtIndex:1]], [html substringWithRange:[m rangeAtIndex:2]]);
+    }
+    // 2) "hls_1080":"...", "fhd":"..."
+    NSRegularExpression* keyed = [NSRegularExpression regularExpressionWithPattern:@"\"(?:hls_)?(1080|720|480|360|fhd|hd|sd)\"\\s*:\\s*\"((?:https?:)?//[^\"]+)\"" options:0 error:nil];
+    for (NSTextCheckingResult* m in [keyed matchesInString:html options:0 range:NSMakeRange(0, html.length)]) {
+        add(QualityFromKey([html substringWithRange:[m rangeAtIndex:1]]), [html substringWithRange:[m rangeAtIndex:2]]);
+    }
+    // 3) любые .m3u8-ссылки
+    NSRegularExpression* bare = [NSRegularExpression regularExpressionWithPattern:@"((?:https?:)?//[^\"'\\s<>\\\\]+?\\.m3u8[^\"'\\s<>\\\\]*)" options:0 error:nil];
+    NSUInteger index = 0;
+    for (NSTextCheckingResult* m in [bare matchesInString:html options:0 range:NSMakeRange(0, html.length)]) {
+        NSString* link = [html substringWithRange:[m rangeAtIndex:1]];
+        NSString* quality = FirstMatch(@"(1080|720|480|360)", link);
+        add(quality ?: [NSString stringWithFormat:@"auto%lu", (unsigned long)index++], link);
+    }
+    
+    if (streams.count == 0) {
+        NSString* compact = [[html componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] componentsJoinedByString:@" "];
+        [detail appendFormat:@"В странице нет HLS-ссылок (%lu байт). Начало: %@\n", (unsigned long)html.length, [compact substringToIndex:MIN((NSUInteger)500, compact.length)]];
+    }
+    return streams.count ? streams : nil;
+}
+
+static NSDictionary<NSString*, NSURL*>* ResolveLibriaStreams(NSString* target, NSMutableString* detail, NSMutableDictionary* markers) {
     NSString* release_key = FirstMatch(@"[?&]id=(\\d+)", target);
     if (!release_key) {
         release_key = FirstMatch(@"/release/([a-z0-9_-]+)", target);
@@ -161,6 +293,21 @@ static NSDictionary<NSString*, NSURL*>* ResolveLibriaStreams(NSString* target, N
         return nil;
     }
     
+    // Метки опенинга и эндинга (секунды), если источник их отдаёт
+    if (markers) {
+        for (NSString* name in @[@"opening", @"ending"]) {
+            NSDictionary* marker = chosen[name];
+            if (![marker isKindOfClass:[NSDictionary class]]) {
+                continue;
+            }
+            id start = marker[@"start"];
+            id stop = marker[@"stop"];
+            if ([start respondsToSelector:@selector(doubleValue)] && [stop respondsToSelector:@selector(doubleValue)] && [stop doubleValue] > [start doubleValue]) {
+                markers[name] = @[@([start doubleValue]), @([stop doubleValue])];
+            }
+        }
+    }
+    
     NSMutableDictionary<NSString*, NSURL*>* streams = [NSMutableDictionary new];
     for (NSString* key in @[@"hls_480", @"hls_720", @"hls_1080"]) {
         NSString* link = chosen[key];
@@ -181,7 +328,7 @@ static NSDictionary<NSString*, NSURL*>* ResolveLibriaStreams(NSString* target, N
     return streams.count ? streams : nil;
 }
 
-static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, void (^completion)(NSDictionary<NSString*, NSURL*>* urls, NSString* detail)) {
+static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, NSMutableDictionary* markers, void (^completion)(NSDictionary<NSString*, NSURL*>* urls, NSString* detail)) {
     LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
     __block NSDictionary<NSString*, NSURL*>* result = nil;
     NSMutableString* detail = [NSMutableString new];
@@ -192,7 +339,18 @@ static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSource
         NSString* lower = target.lowercaseString;
         
         if ([lower containsString:@"libria"] || [lower containsString:@"libert"]) {
-            result = ResolveLibriaStreams(target, detail);
+            BOOL is_fun = [lower containsString:@"libria.fun"] || [lower containsString:@"iframe.php"];
+            if (is_fun) {
+                result = ResolveIframeStreams(target, detail);
+                if (!result.count) {
+                    result = ResolveLibriaStreams(target, detail, markers);
+                }
+            } else {
+                result = ResolveLibriaStreams(target, detail, markers);
+                if (!result.count) {
+                    result = ResolveIframeStreams(target, detail);
+                }
+            }
             if (result.count) {
                 return NO;
             }
@@ -240,6 +398,50 @@ static NSTimeInterval DefaultSkipSeconds(void) {
 
 #pragma mark - Собственный плеер (UI)
 
+static void ShowTopAlert(NSString* title, NSString* message) {
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleDefault handler:nil]];
+    [TopViewController() presentViewController:alert animated:YES completion:nil];
+}
+
+static void OpenInExternalPlayer(NSString* identifier, NSURL* url) {
+    NSMutableCharacterSet* allowed = [NSMutableCharacterSet alphanumericCharacterSet];
+    [allowed addCharactersInString:@"-._~"];
+    NSString* raw = url.absoluteString;
+    NSString* encoded = [raw stringByAddingPercentEncodingWithAllowedCharacters:allowed] ?: raw;
+    
+    if ([identifier isEqualToString:@"share"]) {
+        UIViewController* top = TopViewController();
+        UIActivityViewController* sheet = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+        sheet.popoverPresentationController.sourceView = top.view;
+        sheet.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(top.view.bounds), CGRectGetMidY(top.view.bounds), 1, 1);
+        [top presentViewController:sheet animated:YES completion:nil];
+        return;
+    }
+    
+    NSString* link = nil;
+    if ([identifier isEqualToString:@"vlc"]) {
+        link = [@"vlc-x-callback://x-callback-url/stream?url=" stringByAppendingString:encoded];
+    } else if ([identifier isEqualToString:@"outplayer"]) {
+        link = [@"outplayer://" stringByAppendingString:raw];
+    } else if ([identifier isEqualToString:@"infuse"]) {
+        link = [@"infuse://x-callback-url/play?url=" stringByAppendingString:encoded];
+    } else if ([identifier isEqualToString:@"nplayer"]) {
+        link = [@"nplayer-" stringByAppendingString:raw];
+    }
+    NSURL* scheme_url = link ? [NSURL URLWithString:link] : nil;
+    if (!scheme_url) {
+        ShowTopAlert(L(@"app.player.external.error", @"Не удалось открыть плеер"), raw);
+        return;
+    }
+    NSString* player_name = AniLotExternalPlayerName(identifier);
+    [[UIApplication sharedApplication] openURL:scheme_url options:@{} completionHandler:^(BOOL success) {
+        if (!success) {
+            ShowTopAlert(L(@"app.player.external.error", @"Не удалось открыть плеер"), [NSString stringWithFormat:@"%@: %@", player_name, L(@"app.player.external.not_installed", @"приложение не установлено или не поддерживает эту ссылку.")]);
+        }
+    }];
+}
+
 @interface PlayerLayerView : UIView
 @property(nonatomic, readonly) AVPlayerLayer* playerLayer;
 @end
@@ -267,6 +469,11 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 @property(nonatomic) NSTimeInterval skip_seconds;
 @property(nonatomic, copy) NSDictionary<NSString*, NSURL*>* quality_urls;
 @property(nonatomic, copy) NSString* current_quality;
+@property(nonatomic, copy) NSString* resume_key;
+@property(nonatomic, copy) NSDictionary<NSString*, NSArray<NSNumber*>*>* markers;
+@property(nonatomic, copy) void (^pip_will_start)(AniLotPlayerViewController* controller);
+@property(nonatomic, copy) void (^pip_restore)(AniLotPlayerViewController* controller, void (^completion)(BOOL restored));
+@property(nonatomic, copy) void (^pip_did_stop)(AniLotPlayerViewController* controller);
 
 -(void)startWithURL:(NSURL*)url;
 -(void)configureWithQualities:(NSDictionary<NSString*, NSURL*>*)urls preferred:(NSString*)preferred;
@@ -274,7 +481,12 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 -(void)stopPlayback;
 @end
 
-@interface AniLotPlayerViewController () {
+@interface AniLotPlayerViewController () <AVPictureInPictureControllerDelegate> {
+    AVPictureInPictureController* _pip;
+    double _skip_target;
+    double _last_saved;
+    BOOL _resume_applied;
+    NSMutableSet<NSString*>* _auto_skipped;
     id _time_observer;
     id _end_observer;
     BOOL _scrubbing;
@@ -297,6 +509,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 @property(nonatomic, strong) UILabel* current_label;
 @property(nonatomic, strong) UILabel* duration_label;
 @property(nonatomic, strong) UIActivityIndicatorView* spinner;
+@property(nonatomic, strong) UIButton* pip_button;
+@property(nonatomic, strong) UIButton* skip_button;
+@property(nonatomic, strong) UILabel* toast_label;
 @end
 
 @implementation AniLotPlayerViewController
@@ -306,6 +521,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     _rate = 1.0f;
     _skip_seconds = 90;
     _overlay_visible = YES;
+    _auto_skipped = [NSMutableSet new];
     self.modalPresentationStyle = UIModalPresentationFullScreen;
     return self;
 }
@@ -368,6 +584,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     _speed_button.showsMenuAsPrimaryAction = YES;
     _quality_button = IconButton(@"gearshape.fill", 20);
     _quality_button.showsMenuAsPrimaryAction = YES;
+    _pip_button = IconButton(@"pip.enter", 20);
+    [_pip_button addTarget:self action:@selector(onPiP) forControlEvents:UIControlEventTouchUpInside];
+    _pip_button.hidden = ![AVPictureInPictureController isPictureInPictureSupported];
     
     // центр
     _back_button = IconButton(@"gobackward", 34);
@@ -412,11 +631,36 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     [_overlay addSubview:_close_button];
     [_overlay addSubview:_title_label];
     [_overlay addSubview:_speed_button];
+    [_overlay addSubview:_pip_button];
     [_overlay addSubview:_quality_button];
     [_overlay addSubview:center_stack];
     [_overlay addSubview:_current_label];
     [_overlay addSubview:_slider];
     [_overlay addSubview:_duration_label];
+    
+    _skip_button = [UIButton buttonWithType:UIButtonTypeSystem];
+    _skip_button.translatesAutoresizingMaskIntoConstraints = NO;
+    _skip_button.tintColor = [UIColor whiteColor];
+    _skip_button.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
+    _skip_button.backgroundColor = [UIColor colorWithWhite:0 alpha:0.65];
+    _skip_button.layer.cornerRadius = 18;
+    _skip_button.layer.borderWidth = 1;
+    _skip_button.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.5].CGColor;
+    _skip_button.contentEdgeInsets = UIEdgeInsetsMake(0, 16, 0, 16);
+    _skip_button.hidden = YES;
+    [_skip_button addTarget:self action:@selector(onSkipTapped) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_skip_button];
+    
+    _toast_label = [UILabel new];
+    _toast_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _toast_label.textColor = [UIColor whiteColor];
+    _toast_label.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+    _toast_label.textAlignment = NSTextAlignmentCenter;
+    _toast_label.backgroundColor = [UIColor colorWithWhite:0 alpha:0.7];
+    _toast_label.layer.cornerRadius = 14;
+    _toast_label.layer.masksToBounds = YES;
+    _toast_label.alpha = 0;
+    [self.view addSubview:_toast_label];
     
     UILayoutGuide* safe = self.view.safeAreaLayoutGuide;
     [NSLayoutConstraint activateConstraints:@[
@@ -449,7 +693,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         
         [_title_label.centerYAnchor constraintEqualToAnchor:_close_button.centerYAnchor],
         [_title_label.leadingAnchor constraintEqualToAnchor:_close_button.trailingAnchor constant:8],
-        [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:_speed_button.leadingAnchor constant:-8],
+        [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:_pip_button.leadingAnchor constant:-8],
         
         [center_stack.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
         [center_stack.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
@@ -460,7 +704,21 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         [_duration_label.bottomAnchor constraintEqualToAnchor:_current_label.bottomAnchor],
         [_slider.leadingAnchor constraintEqualToAnchor:_current_label.trailingAnchor constant:10],
         [_slider.trailingAnchor constraintEqualToAnchor:_duration_label.leadingAnchor constant:-10],
-        [_slider.centerYAnchor constraintEqualToAnchor:_current_label.centerYAnchor]
+        [_slider.centerYAnchor constraintEqualToAnchor:_current_label.centerYAnchor],
+        
+        [_pip_button.centerYAnchor constraintEqualToAnchor:_close_button.centerYAnchor],
+        [_pip_button.trailingAnchor constraintEqualToAnchor:_speed_button.leadingAnchor constant:-4],
+        [_pip_button.widthAnchor constraintEqualToConstant:44],
+        [_pip_button.heightAnchor constraintEqualToConstant:44],
+        
+        [_skip_button.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-16],
+        [_skip_button.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-68],
+        [_skip_button.heightAnchor constraintEqualToConstant:36],
+        
+        [_toast_label.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_toast_label.topAnchor constraintEqualToAnchor:_close_button.bottomAnchor constant:10],
+        [_toast_label.heightAnchor constraintEqualToConstant:28],
+        [_toast_label.widthAnchor constraintGreaterThanOrEqualToConstant:120]
     ]];
     
     UITapGestureRecognizer* double_tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onDoubleTap:)];
@@ -504,12 +762,25 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     
     [self stopPlayback];
     _error_shown = NO;
+    _resume_applied = NO;
+    _last_saved = 0;
+    [_auto_skipped removeAllObjects];
     if (url.isFileURL) {
         _player = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:[AVURLAsset URLAssetWithURL:url options:nil]]];
     } else {
         _player = [AVPlayer playerWithURL:url];
     }
     _video_view.playerLayer.player = _player;
+    
+    _pip = nil;
+    if ([AVPictureInPictureController isPictureInPictureSupported]) {
+        _pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:_video_view.playerLayer];
+        _pip.delegate = self;
+        if (@available(iOS 14.2, *)) {
+            _pip.canStartPictureInPictureAutomaticallyFromInline = YES;
+        }
+    }
+    _pip_button.hidden = (_pip == nil);
     
     __weak AniLotPlayerViewController* weak_self = self;
     _time_observer = [_player addPeriodicTimeObserverForInterval:CMTimeMake(1, 2) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
@@ -519,6 +790,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         AniLotPlayerViewController* strong_self = weak_self;
         if (!strong_self || note.object != strong_self.player.currentItem) {
             return;
+        }
+        if (strong_self.resume_key.length) {
+            ClearPosition(strong_self.resume_key);
         }
         [strong_self setOverlayVisible:YES];
         [strong_self updateUI];
@@ -532,6 +806,17 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 }
 
 -(void)stopPlayback {
+    if (_player && _resume_key.length && AniLotSettingBool(AniLotSettingResumeKey, YES)) {
+        double current = CMTimeGetSeconds(_player.currentTime);
+        double duration = CMTimeGetSeconds(_player.currentItem.duration);
+        if (isfinite(current) && isfinite(duration) && duration > 0 && current > 5) {
+            if (duration - current < 30) {
+                ClearPosition(_resume_key);
+            } else {
+                SavePosition(_resume_key, current);
+            }
+        }
+    }
     [_poll_timer invalidate];
     _poll_timer = nil;
     if (_time_observer) {
@@ -572,6 +857,119 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     BOOL playing = _player.timeControlStatus == AVPlayerTimeControlStatusPlaying;
     UIImageSymbolConfiguration* conf = [UIImageSymbolConfiguration configurationWithPointSize:46 weight:UIImageSymbolWeightSemibold];
     [_play_button setImage:[UIImage systemImageNamed:(playing || waiting) ? @"pause.fill" : @"play.fill" withConfiguration:conf] forState:UIControlStateNormal];
+    [self handleSkipAndResumeWithCurrent:current duration:duration hasDuration:has_duration playing:playing];
+}
+
+#pragma mark Позиция, пропуск, PiP
+
+-(void)showToast:(NSString*)text {
+    _toast_label.text = [NSString stringWithFormat:@"  %@  ", text];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideToast) object:nil];
+    [UIView animateWithDuration:0.2 animations:^{
+        self.toast_label.alpha = 1;
+    }];
+    [self performSelector:@selector(hideToast) withObject:nil afterDelay:2.5];
+}
+-(void)hideToast {
+    [UIView animateWithDuration:0.3 animations:^{
+        self.toast_label.alpha = 0;
+    }];
+}
+
+-(void)handleSkipAndResumeWithCurrent:(double)current duration:(double)duration hasDuration:(BOOL)has_duration playing:(BOOL)playing {
+    AVPlayerItem* item = _player.currentItem;
+    BOOL resume_enabled = AniLotSettingBool(AniLotSettingResumeKey, YES);
+    
+    // возобновление с сохранённой позиции
+    if (!_resume_applied && item.status == AVPlayerItemStatusReadyToPlay && has_duration) {
+        _resume_applied = YES;
+        if (resume_enabled && _resume_key.length) {
+            double saved = SavedPosition(_resume_key);
+            if (saved > 10 && saved < duration - 30) {
+                [_player seekToTime:CMTimeMakeWithSeconds(saved, 600)];
+                [self showToast:[NSString stringWithFormat:@"%@ %@", L(@"app.player.resumed", @"Продолжено с"), FormatTime(saved)]];
+                return;
+            }
+        }
+    }
+    
+    // сохранение позиции каждые несколько секунд
+    if (resume_enabled && _resume_key.length && has_duration && playing && current > 5 && fabs(current - _last_saved) >= 5) {
+        _last_saved = current;
+        if (duration - current < 30) {
+            ClearPosition(_resume_key);
+        } else {
+            SavePosition(_resume_key, current);
+        }
+    }
+    
+    // пропуск опенинга / эндинга
+    BOOL show_buttons = AniLotSettingBool(AniLotSettingSkipButtonsKey, YES);
+    BOOL auto_skip = AniLotSettingBool(AniLotSettingAutoSkipKey, NO);
+    NSString* title = nil;
+    NSString* marker_name = nil;
+    double target = 0;
+    for (NSString* name in @[@"opening", @"ending"]) {
+        NSArray<NSNumber*>* range = _markers[name];
+        if (range.count == 2 && range[1].doubleValue > range[0].doubleValue && current >= range[0].doubleValue - 0.5 && current < range[1].doubleValue - 1) {
+            marker_name = name;
+            target = range[1].doubleValue;
+            title = [name isEqualToString:@"opening"] ? L(@"app.player.skip_opening", @"Пропустить опенинг") : L(@"app.player.skip_ending", @"Пропустить эндинг");
+            break;
+        }
+    }
+    if (!marker_name && _markers.count == 0 && current > 3 && current < 270 && _skip_seconds > 0) {
+        // меток нет (источник их не отдаёт): кнопка перематывает на заданное время
+        title = [NSString stringWithFormat:@"%@ +%ld %@", L(@"app.player.skip", @"Пропустить"), (long)_skip_seconds, L(@"app.common.seconds_short", @"сек.")];
+        target = current + _skip_seconds;
+    }
+    if (marker_name && auto_skip && ![_auto_skipped containsObject:marker_name]) {
+        [_auto_skipped addObject:marker_name];
+        [_player seekToTime:CMTimeMakeWithSeconds(target, 600)];
+        [self showToast:title];
+        _skip_button.hidden = YES;
+        return;
+    }
+    if (title && show_buttons) {
+        [_skip_button setTitle:title forState:UIControlStateNormal];
+        _skip_target = target;
+        _skip_button.hidden = NO;
+    } else {
+        _skip_button.hidden = YES;
+    }
+}
+
+-(void)onSkipTapped {
+    [_player seekToTime:CMTimeMakeWithSeconds(_skip_target, 600)];
+    _skip_button.hidden = YES;
+}
+
+-(void)onPiP {
+    if (_pip.isPictureInPictureActive) {
+        [_pip stopPictureInPicture];
+    } else if (_pip.isPictureInPicturePossible) {
+        [_pip startPictureInPicture];
+    } else {
+        [self showToast:L(@"app.player.pip_unavailable", @"Картинка в картинке пока недоступна")];
+    }
+}
+
+-(void)pictureInPictureControllerWillStartPictureInPicture:(AVPictureInPictureController*)controller {
+    if (_pip_will_start) {
+        _pip_will_start(self);
+    }
+}
+-(void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController*)controller {
+    if (_pip_did_stop) {
+        _pip_did_stop(self);
+    }
+}
+-(void)pictureInPictureController:(AVPictureInPictureController*)controller restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL restored))completion_handler {
+    if (_pip_restore) {
+        _pip_restore(self, completion_handler);
+    } else {
+        completion_handler(YES);
+    }
 }
 
 -(void)seekBy:(NSTimeInterval)delta {
@@ -727,6 +1125,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 
 @interface PlayerController ()
 @property(nonatomic, weak) AniLotPlayerViewController* player_view_controller;
+@property(nonatomic, strong) AniLotPlayerViewController* pip_holder;
 @end
 
 @implementation PlayerController
@@ -736,11 +1135,31 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     return self;
 }
 
--(AniLotPlayerViewController*)makePlayerWithTitle:(NSString*)title {
+-(AniLotPlayerViewController*)makePlayerWithTitle:(NSString*)title resumeKey:(NSString*)resume_key {
     AniLotPlayerViewController* controller = [AniLotPlayerViewController new];
     controller.video_title = title;
+    controller.resume_key = resume_key;
     controller.skip_seconds = DefaultSkipSeconds();
     _player_view_controller = controller;
+    
+    // Картинка в картинке: при старте закрываем полноэкранный плеер, но держим его в памяти
+    __weak PlayerController* weak_self = self;
+    controller.pip_will_start = ^(AniLotPlayerViewController* vc) {
+        weak_self.pip_holder = vc;
+        [vc dismissViewControllerAnimated:YES completion:nil];
+    };
+    controller.pip_restore = ^(AniLotPlayerViewController* vc, void (^completion)(BOOL restored)) {
+        [TopViewController() presentViewController:vc animated:YES completion:^{
+            weak_self.pip_holder = nil;
+            completion(YES);
+        }];
+    };
+    controller.pip_did_stop = ^(AniLotPlayerViewController* vc) {
+        if (vc.view.window == nil && weak_self.pip_holder == vc) {
+            [vc stopPlayback];
+            weak_self.pip_holder = nil;
+        }
+    };
     return controller;
 }
 
@@ -753,33 +1172,51 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 }
 
 -(void)playWithReleaseID:(anixart::ReleaseID)release_id sourceID:(anixart::EpisodeSourceID)source_id position:(long)position title:(NSString*)title autoShow:(BOOL)auto_show completion:(void(^)(BOOL errored))completion_handler {
-    AniLotPlayerViewController* controller = [self makePlayerWithTitle:title];
-    if (auto_show) {
+    NSString* external = AniLotExternalPlayerID();
+    BOOL use_external = ![external isEqualToString:@"internal"];
+    NSString* resume_key = [NSString stringWithFormat:@"%lld-%lld-%ld", (long long)static_cast<int64_t>(release_id), (long long)static_cast<int64_t>(source_id), position];
+    
+    AniLotPlayerViewController* controller = use_external ? nil : [self makePlayerWithTitle:title resumeKey:resume_key];
+    if (controller && auto_show) {
         [self showViewController:controller];
     }
     
-    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
+    NSMutableDictionary* markers = [NSMutableDictionary new];
+    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), markers, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         BOOL errored = (urls == nil);
         if (completion_handler) {
             completion_handler(errored);
         }
-        if (errored) {
-            NSString* message = [NSLocalizedString(@"app.player.stream_not_found_error.message", "") stringByAppendingFormat:@"\n\n%@", detail ?: @""];
-            [controller showMessage:NSLocalizedString(@"app.player.stream_not_found_error.title", "") message:message closeAfter:YES];
+        NSString* error_message = [NSLocalizedString(@"app.player.stream_not_found_error.message", "") stringByAppendingFormat:@"\n\n%@", detail ?: @""];
+        if (use_external) {
+            if (errored) {
+                ShowTopAlert(NSLocalizedString(@"app.player.stream_not_found_error.title", ""), error_message);
+            } else {
+                OpenInExternalPlayer(external, urls[ChooseQualityName(urls, PreferredQuality())]);
+            }
             return;
         }
+        if (errored) {
+            [controller showMessage:NSLocalizedString(@"app.player.stream_not_found_error.title", "") message:error_message closeAfter:YES];
+            return;
+        }
+        controller.markers = markers;
         [controller configureWithQualities:urls preferred:PreferredQuality()];
     });
 }
 
 -(void)playWithURL:(NSURL*)url {
-    AniLotPlayerViewController* controller = [self makePlayerWithTitle:nil];
+    AniLotPlayerViewController* controller = [self makePlayerWithTitle:nil resumeKey:nil];
     [self showViewController:controller];
     [controller startWithURL:url];
 }
 
 -(void)playLocalURL:(NSURL*)url title:(NSString*)title {
-    AniLotPlayerViewController* controller = [self makePlayerWithTitle:title];
+    [self playLocalURL:url title:title resumeKey:nil];
+}
+
+-(void)playLocalURL:(NSURL*)url title:(NSString*)title resumeKey:(NSString*)resume_key {
+    AniLotPlayerViewController* controller = [self makePlayerWithTitle:title resumeKey:resume_key];
     if (!url || ![[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
         [TopViewController() presentViewController:controller animated:NO completion:^{
             [controller showMessage:L(@"app.downloads.file_missing.title", @"Файл не найден") message:L(@"app.downloads.file_missing.message", @"Скачанный файл недоступен. Удалите загрузку в Настройки → Загрузки и скачайте серию заново.") closeAfter:YES];
@@ -807,6 +1244,23 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 
 #pragma mark - Загрузки
 
+static NSString* RelativeToHome(NSString* absolute_path) {
+    NSString* home = [NSHomeDirectory() stringByResolvingSymlinksInPath];
+    NSString* full = [absolute_path stringByResolvingSymlinksInPath];
+    if ([full hasPrefix:home]) {
+        NSString* relative = [full substringFromIndex:home.length];
+        while ([relative hasPrefix:@"/"]) {
+            relative = [relative substringFromIndex:1];
+        }
+        return relative;
+    }
+    return absolute_path;
+}
+
+static NSURL* ResolveRelativeURL(NSString* reference, NSURL* base) {
+    return [NSURL URLWithString:reference relativeToURL:base].absoluteURL;
+}
+
 @implementation DownloadItem
 
 -(NSURL*)localURL {
@@ -831,6 +1285,8 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     return @{
         @"id": _identifier ?: @"",
         @"title": _title ?: @"",
+        @"release_title": _release_title ?: @"",
+        @"error": _error_text ?: @"",
         @"release_id": @(_release_id),
         @"source_id": @(_source_id),
         @"position": @(_position),
@@ -844,6 +1300,8 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     DownloadItem* item = [DownloadItem new];
     item.identifier = dict[@"id"];
     item.title = dict[@"title"];
+    item.release_title = dict[@"release_title"];
+    item.error_text = dict[@"error"];
     item.release_id = [dict[@"release_id"] longLongValue];
     item.source_id = [dict[@"source_id"] longLongValue];
     item.position = [dict[@"position"] longValue];
@@ -859,6 +1317,8 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 @interface DownloadManager () <AVAssetDownloadDelegate, NSURLSessionDownloadDelegate>
 @property(nonatomic, strong) NSMutableArray<DownloadItem*>* mutable_items;
 @property(nonatomic, strong) NSMutableDictionary<NSString*, NSURLSessionTask*>* tasks;
+@property(nonatomic, strong) NSMutableDictionary<NSString*, NSURL*>* source_urls;
+@property(nonatomic, strong) NSMutableSet<NSString*>* fallback_started;
 @property(nonatomic, strong) AVAssetDownloadURLSession* hls_session;
 @property(nonatomic, strong) NSURLSession* file_session;
 @end
@@ -879,6 +1339,8 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     
     _mutable_items = [NSMutableArray new];
     _tasks = [NSMutableDictionary new];
+    _source_urls = [NSMutableDictionary new];
+    _fallback_started = [NSMutableSet new];
     NSArray* saved = [[NSUserDefaults standardUserDefaults] arrayForKey:@"anilot_downloads"];
     for (NSDictionary* dict in saved) {
         DownloadItem* item = [DownloadItem fromDictionary:dict];
@@ -902,6 +1364,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
             for (DownloadItem* item in self->_mutable_items) {
                 if ((item.state == DownloadStateDownloading || item.state == DownloadStateQueued) && !self->_tasks[item.identifier]) {
                     item.state = DownloadStateFailed;
+                    item.error_text = @"Загрузка была прервана";
                 }
             }
             [self saveAndNotify];
@@ -941,6 +1404,25 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     [[NSNotificationCenter defaultCenter] postNotificationName:DownloadManagerDidUpdateNotification object:self];
 }
 
+-(void)fetchReleaseTitleForItem:(DownloadItem*)item releaseID:(anixart::ReleaseID)release_id {
+    if (item.release_title.length) {
+        return;
+    }
+    LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
+    __block NSString* name = nil;
+    [api_proxy asyncCall:^BOOL(anixart::Api* api) {
+        auto release = api->releases().get_release(release_id);
+        std::string title = release->title_ru.empty() ? release->title_original : release->title_ru;
+        name = TO_NSSTRING(title);
+        return NO;
+    } completion:^(BOOL errored) {
+        if (!errored && name.length) {
+            item.release_title = name;
+            [self saveAndNotify];
+        }
+    }];
+}
+
 -(void)downloadReleaseID:(anixart::ReleaseID)release_id sourceID:(anixart::EpisodeSourceID)source_id position:(long)position title:(NSString*)title completion:(void(^)(BOOL errored))completion {
     long long release_value = static_cast<int64_t>(release_id);
     long long source_value = static_cast<int64_t>(source_id);
@@ -962,11 +1444,16 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     item.title = title;
     item.state = DownloadStateQueued;
     item.progress = 0;
+    item.cancelled = NO;
+    item.error_text = nil;
+    [_fallback_started removeObject:identifier];
     [self saveAndNotify];
+    [self fetchReleaseTitleForItem:item releaseID:release_id];
     
-    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
+    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), nil, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         if (!urls) {
             item.state = DownloadStateFailed;
+            item.error_text = [@"Не найден источник серии\n" stringByAppendingString:detail ?: @""];
             [self saveAndNotify];
             if (completion) completion(YES);
             return;
@@ -978,20 +1465,37 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 }
 
 -(void)startTaskForItem:(DownloadItem*)item url:(NSURL*)url {
-    NSURLSessionTask* task = nil;
-    if ([url.absoluteString.lowercaseString containsString:@".m3u8"]) {
-        item.is_hls = YES;
+    _source_urls[item.identifier] = url;
+    BOOL is_hls = [url.absoluteString.lowercaseString containsString:@".m3u8"];
+    item.is_hls = is_hls;
+    
+    if (is_hls) {
+        // Системная загрузка HLS; если не стартует или падает — переходим на собственный загрузчик
         AVURLAsset* asset = [AVURLAsset URLAssetWithURL:url options:nil];
-        task = [_hls_session assetDownloadTaskWithURLAsset:asset assetTitle:item.title ?: @"AniLot" assetArtworkData:nil options:nil];
-    } else {
-        item.is_hls = NO;
-        task = [_file_session downloadTaskWithURL:url];
-    }
-    if (!task) {
-        item.state = DownloadStateFailed;
+        NSURLSessionTask* task = [_hls_session assetDownloadTaskWithURLAsset:asset assetTitle:item.title ?: @"AniLot" assetArtworkData:nil options:nil];
+        if (!task) {
+            [self startFallbackForItem:item url:url];
+            return;
+        }
+        task.taskDescription = item.identifier;
+        _tasks[item.identifier] = task;
+        item.state = DownloadStateDownloading;
         [self saveAndNotify];
+        [task resume];
+        
+        NSString* identifier = item.identifier;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            DownloadItem* current = [self itemWithIdentifier:identifier];
+            if (current && current.state == DownloadStateDownloading && current.progress <= 0.0001 && ![self->_fallback_started containsObject:identifier]) {
+                NSURLSessionTask* stuck = self->_tasks[identifier];
+                [self startFallbackForItem:current url:url];
+                [stuck cancel];
+            }
+        });
         return;
     }
+    
+    NSURLSessionTask* task = [_file_session downloadTaskWithURL:url];
     task.taskDescription = item.identifier;
     _tasks[item.identifier] = task;
     item.state = DownloadStateDownloading;
@@ -1000,22 +1504,218 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 }
 
 -(void)deleteItem:(DownloadItem*)item {
+    item.cancelled = YES;
     NSURLSessionTask* task = _tasks[item.identifier];
     [_tasks removeObjectForKey:item.identifier];
     [task cancel];
+    NSFileManager* fm = [NSFileManager defaultManager];
     NSURL* local = item.localURL;
     if (local) {
-        [[NSFileManager defaultManager] removeItemAtURL:local error:nil];
+        if ([local.lastPathComponent isEqualToString:@"index.m3u8"]) {
+            [fm removeItemAtURL:[local URLByDeletingLastPathComponent] error:nil];
+        } else {
+            [fm removeItemAtURL:local error:nil];
+        }
     }
+    NSURL* documents = [[fm URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+    [fm removeItemAtURL:[[documents URLByAppendingPathComponent:@"Downloads" isDirectory:YES] URLByAppendingPathComponent:item.identifier isDirectory:YES] error:nil];
     [_mutable_items removeObject:item];
     [self saveAndNotify];
+}
+
+#pragma mark Собственный загрузчик HLS (запасной путь)
+
+-(void)startFallbackForItem:(DownloadItem*)item url:(NSURL*)url {
+    if ([_fallback_started containsObject:item.identifier]) {
+        return;
+    }
+    [_fallback_started addObject:item.identifier];
+    item.state = DownloadStateDownloading;
+    item.progress = 0;
+    item.error_text = nil;
+    [self saveAndNotify];
+    
+    UIBackgroundTaskIdentifier background_task = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:nil];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        NSString* error = nil;
+        NSString* relative = [self fallbackDownloadURL:url item:item error:&error];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!item.cancelled) {
+                if (relative) {
+                    item.relative_path = relative;
+                    item.state = DownloadStateCompleted;
+                    item.progress = 1.0;
+                    item.error_text = nil;
+                } else {
+                    item.state = DownloadStateFailed;
+                    item.error_text = error ?: @"Не удалось скачать серию";
+                }
+                [self saveAndNotify];
+            }
+            if (background_task != UIBackgroundTaskInvalid) {
+                [[UIApplication sharedApplication] endBackgroundTask:background_task];
+            }
+        });
+    });
+}
+
+-(void)fetchURL:(NSURL*)url toFile:(NSURL*)destination session:(NSURLSession*)session attempt:(int)attempt completion:(void(^)(BOOL ok))completion {
+    [[session dataTaskWithURL:url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 200;
+        if (data && !error && status < 400 && [data writeToURL:destination atomically:YES]) {
+            completion(YES);
+            return;
+        }
+        if (attempt < 2) {
+            [self fetchURL:url toFile:destination session:session attempt:attempt + 1 completion:completion];
+            return;
+        }
+        completion(NO);
+    }] resume];
+}
+
+-(NSString*)fallbackDownloadURL:(NSURL*)url item:(DownloadItem*)item error:(NSString**)error {
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSURL* documents = [[fm URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
+    NSURL* directory = [[documents URLByAppendingPathComponent:@"Downloads" isDirectory:YES] URLByAppendingPathComponent:item.identifier isDirectory:YES];
+    [fm removeItemAtURL:directory error:nil];
+    [fm createDirectoryAtURL:directory withIntermediateDirectories:YES attributes:nil error:nil];
+    
+    NSCharacterSet* whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    NSInteger status = 0;
+    NSString* net_error = nil;
+    NSData* data = SyncRequest(url, @{}, &status, &net_error);
+    NSString* text = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+    if (![text hasPrefix:@"#EXTM3U"]) {
+        *error = [NSString stringWithFormat:@"Плейлист недоступен (HTTP %ld %@)", (long)status, net_error ?: @""];
+        return nil;
+    }
+    
+    NSURL* base = url;
+    if ([text containsString:@"#EXT-X-STREAM-INF"]) {
+        NSArray<NSString*>* lines = [text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        long long best_bandwidth = -1;
+        NSString* best_uri = nil;
+        for (NSUInteger i = 0; i < lines.count; i++) {
+            NSString* line = [lines[i] stringByTrimmingCharactersInSet:whitespace];
+            if (![line hasPrefix:@"#EXT-X-STREAM-INF"]) {
+                continue;
+            }
+            long long bandwidth = FirstMatch(@"BANDWIDTH=(\\d+)", line).longLongValue;
+            for (NSUInteger j = i + 1; j < lines.count; j++) {
+                NSString* next = [lines[j] stringByTrimmingCharactersInSet:whitespace];
+                if (next.length == 0 || [next hasPrefix:@"#"]) {
+                    continue;
+                }
+                if (bandwidth > best_bandwidth) {
+                    best_bandwidth = bandwidth;
+                    best_uri = next;
+                }
+                break;
+            }
+        }
+        if (!best_uri) {
+            *error = @"В мастер-плейлисте нет потоков";
+            return nil;
+        }
+        base = ResolveRelativeURL(best_uri, url);
+        data = SyncRequest(base, @{}, &status, &net_error);
+        text = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+        if (![text hasPrefix:@"#EXTM3U"]) {
+            *error = [NSString stringWithFormat:@"Плейлист потока недоступен (HTTP %ld %@)", (long)status, net_error ?: @""];
+            return nil;
+        }
+    }
+    
+    NSMutableArray<NSString*>* output = [NSMutableArray new];
+    NSMutableArray<NSArray*>* resources = [NSMutableArray new];
+    int segment_index = 0, aux_index = 0;
+    for (NSString* raw in [text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]) {
+        NSString* line = [raw stringByTrimmingCharactersInSet:whitespace];
+        if (line.length == 0) {
+            continue;
+        }
+        if ([line hasPrefix:@"#"]) {
+            if ([line hasPrefix:@"#EXT-X-KEY"] || [line hasPrefix:@"#EXT-X-MAP"]) {
+                NSString* uri = FirstMatch(@"URI=\"([^\"]+)\"", line);
+                if (uri) {
+                    NSString* extension = [line hasPrefix:@"#EXT-X-KEY"] ? @"key" : @"mp4";
+                    NSString* local = [NSString stringWithFormat:@"aux_%d.%@", aux_index++, extension];
+                    [resources addObject:@[ResolveRelativeURL(uri, base), local]];
+                    line = [line stringByReplacingOccurrencesOfString:uri withString:local];
+                }
+            }
+            [output addObject:line];
+        } else {
+            NSURL* remote = ResolveRelativeURL(line, base);
+            NSString* extension = remote.pathExtension;
+            if (extension.length == 0 || extension.length > 5) {
+                extension = @"ts";
+            }
+            NSString* local = [NSString stringWithFormat:@"seg_%05d.%@", segment_index++, extension];
+            [resources addObject:@[remote, local]];
+            [output addObject:local];
+        }
+    }
+    if (segment_index == 0) {
+        *error = @"В плейлисте нет сегментов";
+        return nil;
+    }
+    
+    NSUInteger total = resources.count;
+    __block NSUInteger done = 0;
+    __block BOOL failed = NO;
+    dispatch_semaphore_t slots = dispatch_semaphore_create(4);
+    dispatch_group_t group = dispatch_group_create();
+    NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    for (NSArray* resource in resources) {
+        dispatch_semaphore_wait(slots, DISPATCH_TIME_FOREVER);
+        if (item.cancelled || failed) {
+            dispatch_semaphore_signal(slots);
+            break;
+        }
+        dispatch_group_enter(group);
+        NSURL* destination = [directory URLByAppendingPathComponent:resource[1]];
+        [self fetchURL:resource[0] toFile:destination session:session attempt:0 completion:^(BOOL ok) {
+            if (!ok) {
+                failed = YES;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                done++;
+                item.progress = (double)done / (double)total;
+                [[NSNotificationCenter defaultCenter] postNotificationName:DownloadManagerDidUpdateNotification object:self];
+            });
+            dispatch_semaphore_signal(slots);
+            dispatch_group_leave(group);
+        }];
+    }
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    [session finishTasksAndInvalidate];
+    
+    if (item.cancelled) {
+        [fm removeItemAtURL:directory error:nil];
+        return nil;
+    }
+    if (failed) {
+        *error = @"Не удалось скачать часть сегментов";
+        return nil;
+    }
+    if (![output containsObject:@"#EXT-X-ENDLIST"]) {
+        [output addObject:@"#EXT-X-ENDLIST"];
+    }
+    NSURL* index = [directory URLByAppendingPathComponent:@"index.m3u8"];
+    if (![[output componentsJoinedByString:@"\n"] writeToURL:index atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
+        *error = @"Не удалось сохранить плейлист";
+        return nil;
+    }
+    return RelativeToHome(index.path);
 }
 
 #pragma mark HLS (AVAssetDownloadDelegate)
 
 -(void)URLSession:(NSURLSession*)session assetDownloadTask:(AVAssetDownloadTask*)task didLoadTimeRange:(CMTimeRange)time_range totalTimeRangesLoaded:(NSArray<NSValue*>*)loaded timeRangeExpectedToLoad:(CMTimeRange)expected {
     DownloadItem* item = [self itemWithIdentifier:task.taskDescription];
-    if (!item) {
+    if (!item || [_fallback_started containsObject:item.identifier]) {
         return;
     }
     double done = 0;
@@ -1023,26 +1723,17 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         done += CMTimeGetSeconds(value.CMTimeRangeValue.duration);
     }
     double total = CMTimeGetSeconds(expected.duration);
-    item.progress = total > 0 ? MIN(1.0, done / total) : 0;
+    item.progress = total > 0 ? MIN(1.0, done / total) : 0.001;
     [[NSNotificationCenter defaultCenter] postNotificationName:DownloadManagerDidUpdateNotification object:self];
 }
 
 -(void)URLSession:(NSURLSession*)session assetDownloadTask:(AVAssetDownloadTask*)task didFinishDownloadingToURL:(NSURL*)location {
     DownloadItem* item = [self itemWithIdentifier:task.taskDescription];
-    if (!item) {
+    if (!item || [_fallback_started containsObject:item.identifier]) {
         return;
     }
     // храним путь относительно домашней папки приложения (абсолютный путь меняется между запусками)
-    NSString* home = [NSHomeDirectory() stringByResolvingSymlinksInPath];
-    NSString* full = [location.path stringByResolvingSymlinksInPath];
-    NSString* relative = location.relativePath;
-    if ([full hasPrefix:home]) {
-        relative = [full substringFromIndex:home.length];
-        while ([relative hasPrefix:@"/"]) {
-            relative = [relative substringFromIndex:1];
-        }
-    }
-    item.relative_path = relative;
+    item.relative_path = RelativeToHome(location.path);
     item.progress = 1.0;
 }
 
@@ -1053,7 +1744,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     if (!item) {
         return;
     }
-    item.progress = expected > 0 ? (double)written / (double)expected : 0;
+    item.progress = expected > 0 ? (double)written / (double)expected : 0.001;
     [[NSNotificationCenter defaultCenter] postNotificationName:DownloadManagerDidUpdateNotification object:self];
 }
 
@@ -1070,10 +1761,11 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     [fm removeItemAtURL:destination error:nil];
     NSError* error = nil;
     if ([fm moveItemAtURL:location toURL:destination error:&error]) {
-        item.relative_path = [@"Documents/Downloads" stringByAppendingPathComponent:destination.lastPathComponent];
+        item.relative_path = RelativeToHome(destination.path);
         item.progress = 1.0;
     } else {
         item.state = DownloadStateFailed;
+        item.error_text = error.localizedDescription;
     }
 }
 
@@ -1086,15 +1778,25 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         return;
     }
     [_tasks removeObjectForKey:identifier];
+    if ([_fallback_started containsObject:identifier]) {
+        return; // этим элементом уже управляет собственный загрузчик
+    }
     if (error) {
-        if (item.state != DownloadStateFailed) {
-            item.state = DownloadStateFailed;
+        NSURL* source_url = _source_urls[identifier];
+        if (item.is_hls && source_url && error.code != NSURLErrorCancelled) {
+            item.error_text = error.localizedDescription;
+            [self startFallbackForItem:item url:source_url];
+            return;
         }
+        item.state = DownloadStateFailed;
+        item.error_text = error.localizedDescription;
     } else if (item.state != DownloadStateFailed && item.relative_path.length > 0) {
         item.state = DownloadStateCompleted;
         item.progress = 1.0;
-    } else {
+        item.error_text = nil;
+    } else if (item.state != DownloadStateFailed) {
         item.state = DownloadStateFailed;
+        item.error_text = @"Файл не был сохранён";
     }
     [self saveAndNotify];
 }

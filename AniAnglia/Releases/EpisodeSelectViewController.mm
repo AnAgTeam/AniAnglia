@@ -262,7 +262,7 @@
     /* если серия скачана — играем локальный файл */
     DownloadItem* local = [[DownloadManager sharedInstance] itemForReleaseID:_release_id sourceID:_source_id position:episode->position];
     if (local && local.state == DownloadStateCompleted && local.localURL) {
-        [[PlayerController sharedInstance] playLocalURL:local.localURL title:title];
+        [[PlayerController sharedInstance] playLocalURL:local.localURL title:title resumeKey:local.identifier];
         started(NO);
         return;
     }
