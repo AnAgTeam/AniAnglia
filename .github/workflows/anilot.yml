@@ -8,14 +8,13 @@ on:
 concurrency:
   group: anilot-build
   cancel-in-progress: false
-  queue: max
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-26-intel
     steps:
       - uses: actions/checkout@v4
         with:
