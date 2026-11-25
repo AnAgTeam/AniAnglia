@@ -580,6 +580,15 @@ static NSData* SyncGETRetryWithHeaders(NSURL* url, int tries, NSDictionary<NSStr
     return nil;
 }
 
+/* Повторные GET для AniSkip: тот же User-Agent, что использует клиент Aniko. */
+static NSData* SyncGETRetry(NSURL* url, int tries, NSInteger* status) {
+    NSDictionary* headers = @{
+        @"Accept": @"application/json",
+        @"User-Agent": @"AniLot"
+    };
+    return SyncGETRetryWithHeaders(url, tries, headers, status);
+}
+
 static NSString* NormalizeTitle(NSString* title) {
     NSMutableString* result = [NSMutableString new];
     NSString* lower = title.lowercaseString;
@@ -659,7 +668,7 @@ static NSString* ChooseShikimoriCandidate(NSArray<NSDictionary*>* candidates, NS
         }
 
         // Два равноценных разных MAL ID — неоднозначность, а не повод брать первый.
-        return best_ids.count == 1 ? best_ids.anyObject.stringValue : nil;
+        return best_ids.count == 1 ? [best_ids.anyObject stringValue] : nil;
     }
 
     // Совпадение по названию не нашлось: допускаем только единственный результат с точными годом и числом серий.
@@ -673,7 +682,7 @@ static NSString* ChooseShikimoriCandidate(NSArray<NSDictionary*>* candidates, NS
             }
         }
         if (metadata_ids.count == 1) {
-            return metadata_ids.anyObject.stringValue;
+            return [metadata_ids.anyObject stringValue];
         }
     }
     return nil;
