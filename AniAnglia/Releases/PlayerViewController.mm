@@ -10,6 +10,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #include <chrono>
 #include <climits>
+#include <cstdlib>
 #import "PlayerViewController.h"
 #import "AppColor.h"
 #import "AppDataController.h"
@@ -636,7 +637,7 @@ static NSString* ChooseShikimoriCandidate(NSArray<NSDictionary*>* candidates, NS
         NSInteger candidate_year = [candidate[@"year"] integerValue];
         NSInteger candidate_episodes = [candidate[@"episodes"] integerValue];
 
-        if (year > 0 && candidate_year > 0 && labs((long)candidate_year - (long)year) > 1) {
+        if (year > 0 && candidate_year > 0 && std::labs((long)candidate_year - (long)year) > 1) {
             continue;
         }
         if (episodes_total > 0 && candidate_episodes > 0 && candidate_episodes != episodes_total) {
@@ -806,6 +807,10 @@ static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSStrin
     NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?types=op&types=ed&episodeLength=0", mal_id, episode]];
     NSInteger status = 0;
     NSData* data = url ? SyncGETRetry(url, 3, &status) : nil;
+    if (status == 404) {
+        NSLog(@"[AniLot AniSkip] no timestamps: MAL=%@ episode=%ld", mal_id, (long)episode);
+        return nil;
+    }
     if (status != 200 || !data) {
         NSLog(@"[AniLot AniSkip] skip-times request failed: MAL=%@ episode=%ld HTTP=%ld",
               mal_id, (long)episode, (long)status);
@@ -821,25 +826,18 @@ static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSStrin
         return nil;
     }
     NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* markers = [NSMutableDictionary new];
-    NSMutableDictionary<NSString*, NSString*>* chosen_types = [NSMutableDictionary new];
     for (NSDictionary* item in results) {
         if (![item isKindOfClass:[NSDictionary class]] || ![item[@"interval"] isKindOfClass:[NSDictionary class]]) {
             continue;
         }
         NSString* type = [item[@"skipType"] description];
-        NSString* name = [type hasSuffix:@"op"] ? @"opening" : ([type hasSuffix:@"ed"] ? @"ending" : nil);
+        NSString* name = [type isEqualToString:@"op"] ? @"opening" : ([type isEqualToString:@"ed"] ? @"ending" : nil);
         double start = [item[@"interval"][@"startTime"] doubleValue];
         double end = [item[@"interval"][@"endTime"] doubleValue];
-        if (!name || end <= start) {
+        if (!name || end <= start || markers[name]) {
             continue;
         }
-        // обычные op/ed важнее mixed-op/mixed-ed
-        BOOL is_plain = ([type isEqualToString:@"op"] || [type isEqualToString:@"ed"]);
-        BOOL chosen_plain = ([chosen_types[name] isEqualToString:@"op"] || [chosen_types[name] isEqualToString:@"ed"]);
-        if (!markers[name] || (is_plain && !chosen_plain)) {
-            markers[name] = @[@(start), @(end)];
-            chosen_types[name] = type;
-        }
+        markers[name] = @[@(start), @(end)];
     }
     return markers.count ? markers : nil;
 }
