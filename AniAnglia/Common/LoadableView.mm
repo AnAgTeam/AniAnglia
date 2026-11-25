@@ -17,8 +17,16 @@
 @property(nonatomic, retain) UIButton* error_button;
 @end
 
-@interface LoadableImageView ()
-@property(nonatomic, retain) NSURLSessionTask* url_load_task;
+@interface LoadableImageRequest ()
+-(instancetype)initWithCompletion:(void(^)(UIImage* image))completion;
+-(void)setTask:(NSURLSessionTask*)task;
+-(BOOL)isCancelled;
+-(void)finishWithImage:(UIImage*)image;
+@end
+
+@interface LoadableImageView () <LoadableViewDelegate>
+@property(nonatomic, retain) LoadableImageRequest* image_request;
+@property(nonatomic, retain) NSURL* current_url;
 @property(nonatomic, retain) LoadableView* loadable_view;
 @end
 
@@ -112,6 +120,8 @@
 
 @end
 
+#pragma mark - Загрузчик изображений (https-апгрейд + прокси-fallback + альтернативное соединение)
+
 static NSString* const kPreferProxyKey = @"anilot_images_prefer_proxy";
 static BOOL gPreferProxy = NO;
 static int gDirectFailures = 0;
@@ -135,6 +145,65 @@ static void NoteDirectResult(BOOL success) {
     }
 }
 
+static UIImage* PrepareImage(UIImage* image) {
+    // декодируем в фоновом потоке, чтобы не тормозила прокрутка
+    UIImage* prepared = [image imageByPreparingForDisplay];
+    return prepared ?: image;
+}
+
+@implementation LoadableImageRequest {
+    NSURLSessionTask* _task;
+    BOOL _cancelled;
+    void (^_completion)(UIImage* image);
+}
+
+-(instancetype)initWithCompletion:(void(^)(UIImage* image))completion {
+    self = [super init];
+    _completion = [completion copy];
+    return self;
+}
+
+-(void)setTask:(NSURLSessionTask*)task {
+    @synchronized (self) {
+        _task = task;
+    }
+}
+
+-(BOOL)isCancelled {
+    @synchronized (self) {
+        return _cancelled;
+    }
+}
+
+-(void)cancel {
+    NSURLSessionTask* task = nil;
+    @synchronized (self) {
+        _cancelled = YES;
+        task = _task;
+        _task = nil;
+        _completion = nil;
+    }
+    [task cancel];
+}
+
+/* вызывается на главной очереди */
+-(void)finishWithImage:(UIImage*)image {
+    void (^completion)(UIImage*) = nil;
+    @synchronized (self) {
+        if (_cancelled) {
+            return;
+        }
+        completion = _completion;
+        _completion = nil;
+        _task = nil;
+    }
+    if (completion) {
+        completion(image);
+    }
+}
+
+@end
+
 @implementation LoadableImageView
 
 -(instancetype)init {
@@ -147,6 +216,7 @@ static void NoteDirectResult(BOOL success) {
 
 -(void)setup {
     _loadable_view = [LoadableView new];
+    _loadable_view.delegate = self;
     [self addSubview:_loadable_view];
     _loadable_view.translatesAutoresizingMaskIntoConstraints = NO;
     [_loadable_view.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
@@ -155,15 +225,15 @@ static void NoteDirectResult(BOOL success) {
     [_loadable_view.trailingAnchor constraintEqualToAnchor:self.trailingAnchor].active = YES;
     
     self.image = nil;
-
 }
 
-+(NSCache<NSURL*, UIImage*>*)sharedImageCache {
++(NSCache<NSString*, UIImage*>*)sharedImageCache {
     static NSCache* cache;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         cache = [NSCache new];
         cache.countLimit = 300;
+        cache.totalCostLimit = 160 * 1024 * 1024;
     });
     return cache;
 }
@@ -188,7 +258,7 @@ static void NoteDirectResult(BOOL success) {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         NSURLSessionConfiguration* conf = [NSURLSessionConfiguration defaultSessionConfiguration];
-        conf.timeoutIntervalForRequest = 25;
+        conf.timeoutIntervalForRequest = 40;
         conf.HTTPMaximumConnectionsPerHost = 12;
         conf.requestCachePolicy = NSURLRequestReturnCacheDataElseLoad;
         conf.URLCache = [LoadableImageView sharedImageURLCache];
@@ -211,84 +281,147 @@ static void NoteDirectResult(BOOL success) {
     [[LoadableImageView sharedImageURLCache] removeAllCachedResponses];
 }
 
--(void)tryLoadImageWithURL:(NSURL*)url {
-    [self tryLoadImageWithURL:url attempt:0];
+/* ATS блокирует http://, поэтому поднимаем схему до https (в том числе для //host/path) */
++(NSURL*)secureURLForURL:(NSURL*)url {
+    if (url == nil) {
+        return nil;
+    }
+    NSString* scheme = url.scheme.lowercaseString;
+    if ([scheme isEqualToString:@"https"]) {
+        return url;
+    }
+    if (scheme.length == 0 || [scheme isEqualToString:@"http"]) {
+        NSURLComponents* comps = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+        if (comps.host.length == 0) {
+            return url;
+        }
+        comps.scheme = @"https";
+        return comps.URL ?: url;
+    }
+    return url;
 }
 
-+(NSURL*)proxyURLForURL:(NSURL*)url {
++(NSURL*)proxyURLForURL:(NSURL*)url fullSize:(BOOL)full_size {
     NSMutableCharacterSet* allowed = [NSMutableCharacterSet alphanumericCharacterSet];
     [allowed addCharactersInString:@"-._~"];
     NSString* encoded = [url.absoluteString stringByAddingPercentEncodingWithAllowedCharacters:allowed];
-    return [NSURL URLWithString:[@"https://wsrv.nl/?w=600&q=80&url=" stringByAppendingString:encoded ?: @""]];
+    NSString* prefix = full_size ? @"https://wsrv.nl/?we&w=2400&q=90&url=" : @"https://wsrv.nl/?we&w=600&q=80&url=";
+    return [NSURL URLWithString:[prefix stringByAppendingString:encoded ?: @""]];
 }
 
--(void)tryLoadImageWithURL:(NSURL*)url attempt:(int)attempt {
-    if (_url_load_task) {
-        [_url_load_task cancel];
-        _url_load_task = nil;
++(NSURL*)proxyURLForURL:(NSURL*)url {
+    return [self proxyURLForURL:url fullSize:NO];
+}
+
++(void)performLoadForRequest:(LoadableImageRequest*)request url:(NSURL*)url fullSize:(BOOL)full_size attempt:(int)attempt {
+    if ([request isCancelled]) {
+        return;
     }
+    // Порядок попыток: прямой запрос и запасной путь через прокси-кэш картинок.
+    // При включённом «альтернативном соединении» сначала идёт прокси (когда CDN заблокирован).
+    LoadPreferProxyOnce();
+    BOOL proxy_first = gPreferProxy || [[[AppDataController sharedInstance] getSettingsController] getAlternativeConnection];
+    BOOL use_proxy = proxy_first ? (attempt % 2 == 0) : (attempt % 2 == 1);
+    NSURL* request_url = use_proxy ? ([LoadableImageView proxyURLForURL:url fullSize:full_size] ?: url) : url;
+    NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:request_url];
+    // прямой путь при блокировке не должен висеть долго
+    url_request.timeoutInterval = use_proxy ? (full_size ? 40 : 25) : (full_size ? 15 : 7);
+    NSString* cache_key = [LoadableImageView cacheKeyForURL:url fullSize:full_size];
+    
+    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithRequest:url_request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        if (error.code == NSURLErrorCancelled || [request isCancelled]) {
+            return;
+        }
+        NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 200;
+        UIImage* image = (error == nil && data.length > 0 && status < 400) ? [UIImage imageWithData:data] : nil;
+        if (!use_proxy) {
+            NoteDirectResult(image != nil);
+        }
+        if (image) {
+            image = PrepareImage(image);
+            NSUInteger cost = (NSUInteger)(image.size.width * image.scale * image.size.height * image.scale * 4);
+            [[LoadableImageView sharedImageCache] setObject:image forKey:cache_key cost:cost];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([request isCancelled]) {
+                return;
+            }
+            if (image) {
+                [request finishWithImage:image];
+            } else if (attempt < 3) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [LoadableImageView performLoadForRequest:request url:url fullSize:full_size attempt:attempt + 1];
+                });
+            } else {
+                [request finishWithImage:nil];
+            }
+        });
+    }];
+    [request setTask:task];
+    [task resume];
+}
+
++(NSString*)cacheKeyForURL:(NSURL*)url fullSize:(BOOL)full_size {
+    return full_size ? [url.absoluteString stringByAppendingString:@"#full"] : url.absoluteString;
+}
+
++(LoadableImageRequest*)loadImageWithURL:(NSURL*)url fullSize:(BOOL)full_size completion:(void(^)(UIImage* image))completion {
+    LoadableImageRequest* request = [[LoadableImageRequest alloc] initWithCompletion:completion];
+    NSURL* secure = [LoadableImageView secureURLForURL:url];
+    if (secure == nil) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [request finishWithImage:nil];
+        });
+        return request;
+    }
+    UIImage* cached = [[LoadableImageView sharedImageCache] objectForKey:[LoadableImageView cacheKeyForURL:secure fullSize:full_size]];
+    if (cached) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [request finishWithImage:cached];
+        });
+        return request;
+    }
+    [LoadableImageView performLoadForRequest:request url:secure fullSize:full_size attempt:0];
+    return request;
+}
+
+-(void)tryLoadImageWithURL:(NSURL*)url {
+    [_image_request cancel];
+    _image_request = nil;
+    _current_url = url;
     self.image = nil;
     if (url == nil) {
         [_loadable_view endLoadingWithErrored:YES];
         return;
     }
-    // ATS блокирует http://, поэтому поднимаем схему до https
-    if ([url.scheme isEqualToString:@"http"]) {
-        NSURLComponents* comps = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
-        comps.scheme = @"https";
-        url = comps.URL ?: url;
-    }
-    UIImage* cached = [[LoadableImageView sharedImageCache] objectForKey:url];
+    NSURL* secure = [LoadableImageView secureURLForURL:url];
+    UIImage* cached = [[LoadableImageView sharedImageCache] objectForKey:[LoadableImageView cacheKeyForURL:secure fullSize:NO]];
     if (cached) {
         self.image = cached;
         [_loadable_view endLoading];
         return;
     }
     [_loadable_view startLoading];
-
-    // Порядок попыток: прямой запрос и запасной путь через прокси-кэш картинок.
-    // При включённом «альтернативном соединении» сначала идёт прокси (когда CDN заблокирован).
-    LoadPreferProxyOnce();
-    BOOL proxy_first = gPreferProxy || [[[AppDataController sharedInstance] getSettingsController] getAlternativeConnection];
-    BOOL use_proxy = proxy_first ? (attempt % 2 == 0) : (attempt % 2 == 1);
-    NSURL* request_url = use_proxy ? ([LoadableImageView proxyURLForURL:url] ?: url) : url;
-    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:request_url];
-    request.timeoutInterval = use_proxy ? 25 : 7; // прямой путь при блокировке не должен висеть долго
-
+    
     __weak LoadableImageView* weak_self = self;
-    NSURL* original_url = url;
-    NSURLSessionDataTask* task = [[LoadableImageView sharedImageSession] dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
-        if (error.code == NSURLErrorCancelled) {
+    _image_request = [LoadableImageView loadImageWithURL:url fullSize:NO completion:^(UIImage* image) {
+        LoadableImageView* strong_self = weak_self;
+        if (!strong_self) {
             return;
         }
-        NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 200;
-        UIImage* image = (error == nil && data != nil && status < 400) ? [UIImage imageWithData:data] : nil;
-        if (!use_proxy) {
-            NoteDirectResult(image != nil);
-        }
+        strong_self.image_request = nil;
         if (image) {
-            // декодируем в фоне, чтобы не тормозила прокрутка
-            UIGraphicsImageRenderer* r = [[UIGraphicsImageRenderer alloc] initWithSize:image.size];
-            image = [r imageWithActions:^(UIGraphicsImageRendererContext* ctx) { [image drawAtPoint:CGPointZero]; }];
-            [[LoadableImageView sharedImageCache] setObject:image forKey:original_url];
+            strong_self.image = image;
+            [strong_self->_loadable_view endLoading];
+        } else {
+            [strong_self->_loadable_view endLoadingWithErrored:YES];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            LoadableImageView* strong_self = weak_self;
-            if (!strong_self) return;
-            if (image) {
-                strong_self.image = image;
-                [strong_self->_loadable_view endLoading];
-            } else if (attempt < 3) {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [weak_self tryLoadImageWithURL:original_url attempt:attempt + 1];
-                });
-            } else {
-                [strong_self->_loadable_view endLoadingWithErrored:YES];
-            }
-        });
     }];
-    _url_load_task = task;
-    [task resume];
+}
+
+// кнопка «Повторить» в состоянии ошибки
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
+    [self tryLoadImageWithURL:_current_url];
 }
 
 @end

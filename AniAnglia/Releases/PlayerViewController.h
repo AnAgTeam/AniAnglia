@@ -11,6 +11,9 @@
 
 @interface PlayerController : NSObject
 @property(nonatomic, readonly, retain, getter = getPlayer) UIViewController* player;
+/* Список серий текущего источника (@{@"position": NSNumber, @"title": NSString}, по возрастанию).
+   Берётся при следующем запуске серии и нужен для «Автоматически следующая серия». */
+@property(nonatomic, copy) NSArray<NSDictionary*>* pending_playlist;
 
 -(instancetype)init;
 
@@ -44,6 +47,8 @@ void AniLotSetExternalPlayerID(NSString* identifier);
 #pragma mark - Загрузки
 
 extern NSString* const DownloadManagerDidUpdateNotification;
+/* серия отмечена просмотренной автопереходом. userInfo: release_id, source_id, position (NSNumber) */
+extern NSString* const AniLotEpisodeWatchedNotification;
 
 typedef NS_ENUM(NSInteger, DownloadState) {
     DownloadStateQueued = 0,

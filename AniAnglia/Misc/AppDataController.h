@@ -86,7 +86,6 @@ struct General {
 -(BOOL)getAutoNextVideo;
 -(void)setAutoNextVideo:(BOOL)auto_next_video;
 -(BOOL)getRememberSource;
--(BOOL)setRememberSource;
 -(void)setRememberSource:(BOOL)remember_source;
 
 // -- notifications
@@ -119,6 +118,12 @@ struct General {
 -(NSArray<AppDataReleaseTypeObject*>*)getSavedReleaseTypes:(NSInteger)release_id;
 
 -(AppSettingsDataController*)getSettingsController;
+
+/* «Запоминать источник»: последний выбранный тип (озвучка) и источник для релиза.
+   Словарь: type_id, type_name, source_id, source_name (NSNumber/NSString) или nil. */
+-(NSDictionary*)getRememberedSourceForRelease:(NSInteger)release_id;
+-(void)rememberSourceForRelease:(NSInteger)release_id typeID:(NSInteger)type_id typeName:(NSString*)type_name sourceID:(NSInteger)source_id sourceName:(NSString*)source_name;
+-(void)forgetRememberedSourceForRelease:(NSInteger)release_id;
 
 +(instancetype)sharedInstance;
 @end

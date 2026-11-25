@@ -42,7 +42,18 @@
     self = [super init];
     
     _user_defaults = user_defaults;
-    _settings_dict = [[_user_defaults objectForKey:@"settings"] mutableCopy];
+    // Поверх значений по умолчанию накладываем сохранённые: если в сохранённых настройках нет
+    // какого-то ключа (например, добавленного в новой версии), getter не должен возвращать nil.
+    _settings_dict = [[AppSettingsDataController getDefaults] mutableCopy];
+    NSDictionary* stored = [_user_defaults objectForKey:@"settings"];
+    if ([stored isKindOfClass:[NSDictionary class]]) {
+        for (NSString* key in stored) {
+            id value = stored[key];
+            if (value != nil && ![value isKindOfClass:[NSNull class]]) {
+                _settings_dict[key] = value;
+            }
+        }
+    }
     
     return self;
 }
@@ -114,10 +125,6 @@
     [self setSettingsObject:@(auto_next_video) atKey:app_settings::Playback::auto_next_video];
 }
 -(BOOL)getRememberSource {
-    NSNumber* remember_source = [self getSettingsObjectAtKey:app_settings::Playback::remember_source];
-    return [remember_source boolValue];
-}
--(BOOL)setRememberSource {
     NSNumber* remember_source = [self getSettingsObjectAtKey:app_settings::Playback::remember_source];
     return [remember_source boolValue];
 }
@@ -212,6 +219,31 @@
 
 -(AppSettingsDataController*)getSettingsController {
     return _settings_controller;
+}
+
+static NSString* const kRememberedSourcesKey = @"anilot_remembered_sources";
+
+-(NSDictionary*)getRememberedSourceForRelease:(NSInteger)release_id {
+    NSDictionary* all = [_user_defaults dictionaryForKey:kRememberedSourcesKey];
+    id entry = all[[NSString stringWithFormat:@"%ld", (long)release_id]];
+    return [entry isKindOfClass:[NSDictionary class]] ? entry : nil;
+}
+-(void)rememberSourceForRelease:(NSInteger)release_id typeID:(NSInteger)type_id typeName:(NSString*)type_name sourceID:(NSInteger)source_id sourceName:(NSString*)source_name {
+    NSMutableDictionary* all = [[_user_defaults dictionaryForKey:kRememberedSourcesKey] mutableCopy] ?: [NSMutableDictionary new];
+    all[[NSString stringWithFormat:@"%ld", (long)release_id]] = @{
+        @"type_id": @(type_id),
+        @"type_name": type_name ?: @"",
+        @"source_id": @(source_id),
+        @"source_name": source_name ?: @""
+    };
+    [_user_defaults setObject:all forKey:kRememberedSourcesKey];
+}
+-(void)forgetRememberedSourceForRelease:(NSInteger)release_id {
+    NSMutableDictionary* all = [[_user_defaults dictionaryForKey:kRememberedSourcesKey] mutableCopy];
+    if (all[[NSString stringWithFormat:@"%ld", (long)release_id]]) {
+        [all removeObjectForKey:[NSString stringWithFormat:@"%ld", (long)release_id]];
+        [_user_defaults setObject:all forKey:kRememberedSourcesKey];
+    }
 }
 
 +(instancetype)sharedInstance {

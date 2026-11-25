@@ -765,9 +765,13 @@ static void AniLotOpenExternalLink(UIViewController* from, NSString* string) {
 @interface AniLotGalleryPageView : UIScrollView <UIScrollViewDelegate>
 @property(nonatomic, strong) UIImageView* page_image_view;
 @property(nonatomic, strong) UIActivityIndicatorView* page_spinner;
+@property(nonatomic, strong) UIStackView* page_error_view;
 @property(nonatomic, strong) NSURL* page_url;
+@property(nonatomic, strong) LoadableImageRequest* page_request;
+@property(nonatomic) BOOL page_failed;
 @property(nonatomic, readonly) UIImage* loaded_image;
 -(void)loadIfNeeded;
+-(void)reload;
 @end
 
 @implementation AniLotGalleryPageView
@@ -790,6 +794,28 @@ static void AniLotOpenExternalLink(UIViewController* from, NSString* string) {
     _page_spinner.hidesWhenStopped = YES;
     [self addSubview:_page_spinner];
     
+    // состояние ошибки: текст + кнопка «Повторить»
+    UILabel* error_label = [UILabel new];
+    error_label.text = AL(@"app.gallery.load_error", @"Не удалось загрузить изображение");
+    error_label.textColor = [UIColor whiteColor];
+    error_label.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
+    error_label.textAlignment = NSTextAlignmentCenter;
+    error_label.numberOfLines = 0;
+    UIButton* retry_button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [retry_button setTitle:AL(@"app.loadable.reload.title", @"Повторить") forState:UIControlStateNormal];
+    [retry_button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    retry_button.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
+    retry_button.backgroundColor = [AppColorProvider primaryColor];
+    retry_button.layer.cornerRadius = 10;
+    retry_button.contentEdgeInsets = UIEdgeInsetsMake(10, 22, 10, 22);
+    [retry_button addTarget:self action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
+    _page_error_view = [[UIStackView alloc] initWithArrangedSubviews:@[error_label, retry_button]];
+    _page_error_view.axis = UILayoutConstraintAxisVertical;
+    _page_error_view.alignment = UIStackViewAlignmentCenter;
+    _page_error_view.spacing = 14;
+    _page_error_view.hidden = YES;
+    [self addSubview:_page_error_view];
+    
     UITapGestureRecognizer* double_tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onDoubleTap:)];
     double_tap.numberOfTapsRequired = 2;
     [self addGestureRecognizer:double_tap];
@@ -803,6 +829,10 @@ static void AniLotOpenExternalLink(UIViewController* from, NSString* string) {
 -(void)layoutSubviews {
     [super layoutSubviews];
     _page_spinner.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
+    CGFloat error_width = MAX(0, MIN(self.bounds.size.width - 48, 320));
+    CGSize error_size = [_page_error_view systemLayoutSizeFittingSize:CGSizeMake(error_width, UILayoutFittingCompressedSize.height) withHorizontalFittingPriority:UILayoutPriorityRequired verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+    _page_error_view.bounds = CGRectMake(0, 0, error_width, error_size.height);
+    _page_error_view.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
     if (self.zoomScale == 1) {
         _page_image_view.frame = self.bounds;
     }
@@ -830,21 +860,43 @@ static void AniLotOpenExternalLink(UIViewController* from, NSString* string) {
 }
 
 -(void)loadIfNeeded {
-    if (_page_image_view.image || !_page_url) {
+    // не стартуем повторно, пока идёт загрузка; после ошибки ждём нажатия «Повторить»
+    if (_page_image_view.image || !_page_url || _page_request || _page_failed) {
         return;
     }
+    _page_error_view.hidden = YES;
     [_page_spinner startAnimating];
     __weak AniLotGalleryPageView* weak_self = self;
-    [[[NSURLSession sharedSession] dataTaskWithURL:_page_url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
-        UIImage* image = data ? [UIImage imageWithData:data] : nil;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            AniLotGalleryPageView* strong_self = weak_self;
-            [strong_self.page_spinner stopAnimating];
-            if (image) {
-                strong_self.page_image_view.image = image;
-            }
-        });
-    }] resume];
+    // тот же загрузчик, что и в LoadableImageView: https-апгрейд + прокси-fallback + альтернативное соединение
+    _page_request = [LoadableImageView loadImageWithURL:_page_url fullSize:YES completion:^(UIImage* image) {
+        AniLotGalleryPageView* strong_self = weak_self;
+        if (!strong_self) {
+            return;
+        }
+        strong_self.page_request = nil;
+        [strong_self.page_spinner stopAnimating];
+        if (image) {
+            strong_self.page_failed = NO;
+            strong_self.page_image_view.image = image;
+            strong_self.page_error_view.hidden = YES;
+        } else {
+            strong_self.page_failed = YES;
+            strong_self.page_error_view.hidden = NO;
+            [strong_self setNeedsLayout];
+        }
+    }];
+}
+
+-(void)reload {
+    [_page_request cancel];
+    _page_request = nil;
+    _page_failed = NO;
+    _page_error_view.hidden = YES;
+    [self loadIfNeeded];
+}
+
+-(void)dealloc {
+    [_page_request cancel];
 }
 
 @end

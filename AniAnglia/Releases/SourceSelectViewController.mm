@@ -11,6 +11,7 @@
 #import "StringCvt.h"
 #import "EpisodeSelectViewController.h"
 #import "LoadableView.h"
+#import "AppDataController.h"
 
 @interface SourceViewCell : UITableViewCell
 @property(nonatomic, retain) UILabel* name_label;
@@ -22,7 +23,7 @@
 -(void)setName:(NSString*)name;
 @end
 
-@interface SourceSelectViewController () {
+@interface SourceSelectViewController () <LoadableViewDelegate> {
     anixart::ReleaseID _release_id;
     anixart::EpisodeTypeID _type_id;
     std::vector<anixart::EpisodeSource::Ptr> _sources;
@@ -97,6 +98,7 @@
     self.navigationItem.title = NSLocalizedString(@"app.source_select.nav_item.title", "");
     
     _loadable_view = [LoadableView new];
+    _loadable_view.delegate = self;
     
     [self.view addSubview:_loadable_view];
     
@@ -165,8 +167,33 @@
         [self->_loadable_view endLoadingWithErrored:errored];
         if (!errored) {
             [self setup];
+            [self openRememberedSourceIfNeeded];
         }
     }];
+}
+
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
+    [self loadSources];
+}
+
+/* «Запоминать источник»: сразу открываем последний выбранный источник (плеер) этого релиза и типа */
+-(void)openRememberedSourceIfNeeded {
+    AppDataController* data = [AppDataController sharedInstance];
+    if (![[data getSettingsController] getRememberSource] || self.navigationController.topViewController != self) {
+        return;
+    }
+    NSDictionary* saved = [data getRememberedSourceForRelease:(NSInteger)static_cast<int64_t>(_release_id)];
+    if (!saved || [saved[@"type_id"] longLongValue] != static_cast<int64_t>(_type_id)) {
+        return;
+    }
+    int64_t saved_source_id = [saved[@"source_id"] longLongValue];
+    for (anixart::EpisodeSource::Ptr& source : _sources) {
+        if (static_cast<int64_t>(source->id) == saved_source_id) {
+            std::string source_name_std = source->name;
+            [self.navigationController pushViewController:[[EpisodeSelectViewController alloc] initWithReleaseID:_release_id typeID:_type_id typeName:_type_name sourceID:source->id sourceName:TO_NSSTRING(source_name_std)] animated:NO];
+            return;
+        }
+    }
 }
 
 

@@ -21,6 +21,11 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoadsInMedia</key>
+		<true/>
+	</dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>AniLot сохраняет выбранные изображения (обложки, скриншоты) в вашу медиатеку.</string>
 	<key>UIBackgroundModes</key>

@@ -11,6 +11,7 @@
 #import "StringCvt.h"
 #import "SourceSelectViewController.h"
 #import "LoadableView.h"
+#import "AppDataController.h"
 
 @interface TypeViewCell : UITableViewCell
 @property(nonatomic, retain) UILabel* name_label;
@@ -28,7 +29,7 @@
 
 @end
 
-@interface TypeSelectViewController () {
+@interface TypeSelectViewController () <LoadableViewDelegate> {
     anixart::ReleaseID _release_id;
     std::vector<anixart::EpisodeType::Ptr> _types;
 }
@@ -137,6 +138,7 @@
     self.navigationItem.title = NSLocalizedString(@"app.type_select.nav_item.title", "");
     
     _loadable_view = [LoadableView new];
+    _loadable_view.delegate = self;
     
     [self.view addSubview:_loadable_view];
     
@@ -182,8 +184,33 @@
         [self->_loadable_view endLoadingWithErrored:errored];
         if (!errored) {
             [self setup];
+            [self openRememberedSourceIfNeeded];
         }
     }];
+}
+
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
+    [self loadTypes];
+}
+
+/* «Запоминать источник»: сразу открываем последний выбранный тип этого релиза */
+-(void)openRememberedSourceIfNeeded {
+    AppDataController* data = [AppDataController sharedInstance];
+    if (![[data getSettingsController] getRememberSource] || self.navigationController.topViewController != self) {
+        return;
+    }
+    NSDictionary* saved = [data getRememberedSourceForRelease:(NSInteger)static_cast<int64_t>(_release_id)];
+    if (!saved) {
+        return;
+    }
+    int64_t saved_type_id = [saved[@"type_id"] longLongValue];
+    for (anixart::EpisodeType::Ptr& type : _types) {
+        if (static_cast<int64_t>(type->id) == saved_type_id) {
+            std::string type_name_std = type->name;
+            [self.navigationController pushViewController:[[SourceSelectViewController alloc] initWithReleaseID:_release_id typeID:type->id typeName:TO_NSSTRING(type_name_std)] animated:NO];
+            return;
+        }
+    }
 }
 
 -(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {

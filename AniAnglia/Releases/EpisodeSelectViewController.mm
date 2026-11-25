@@ -11,6 +11,7 @@
 #import "StringCvt.h"
 #import "PlayerViewController.h"
 #import "LoadableView.h"
+#import "AppDataController.h"
 
 @interface EpisodeViewCell : UITableViewCell
 @property(nonatomic, retain) UILabel* name_label;
@@ -24,7 +25,8 @@
 -(void)setWatchedStatus:(BOOL)is_wached;
 @end
 
-@interface EpisodeSelectViewController () {
+@interface EpisodeSelectViewController () <LoadableViewDelegate> {
+    id _watched_observer;
     anixart::ReleaseID _release_id;
     anixart::EpisodeTypeID _type_id;
     anixart::EpisodeSourceID _source_id;
@@ -114,12 +116,56 @@
     [self preSetup];
     [self preSetupLayout];
     [self loadEpisodes];
+    
+    // серия, запущенная автопереходом, отмечается просмотренной и в этом списке
+    __weak EpisodeSelectViewController* weak_self = self;
+    _watched_observer = [[NSNotificationCenter defaultCenter] addObserverForName:AniLotEpisodeWatchedNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification* note) {
+        EpisodeSelectViewController* strong_self = weak_self;
+        if (!strong_self) {
+            return;
+        }
+        if ([note.userInfo[@"release_id"] longLongValue] != static_cast<int64_t>(strong_self->_release_id) ||
+            [note.userInfo[@"source_id"] longLongValue] != static_cast<int64_t>(strong_self->_source_id)) {
+            return;
+        }
+        int32_t position = (int32_t)[note.userInfo[@"position"] longValue];
+        for (anixart::Episode::Ptr& episode : strong_self->_episodes) {
+            if (episode->position == position) {
+                episode->is_watched = YES;
+            }
+        }
+        [strong_self->_table_view reloadData];
+    }];
+}
+
+-(void)dealloc {
+    if (_watched_observer) {
+        [[NSNotificationCenter defaultCenter] removeObserver:_watched_observer];
+    }
+}
+
+-(void)didReloadForLoadableView:(LoadableView*)loadable_view {
+    [self loadEpisodes];
+}
+
+/* Список серий (позиция + заголовок) для автоперехода на следующую серию в плеере */
+-(NSArray<NSDictionary*>*)playlistSnapshot {
+    NSMutableArray<NSDictionary*>* playlist = [NSMutableArray new];
+    for (anixart::Episode::Ptr& episode : _episodes) {
+        std::string name_std = episode->name;
+        [playlist addObject:@{
+            @"position": @((long)episode->position),
+            @"title": [NSString stringWithFormat:@"%@ · %@", TO_NSSTRING(name_std), _source_name ?: @""]
+        }];
+    }
+    return playlist;
 }
 
 -(void)preSetup {
     self.navigationItem.title = NSLocalizedString(@"app.episode_select.nav_item.title", "");
     
     _loadable_view = [LoadableView new];
+    _loadable_view.delegate = self;
     
     [self.view addSubview:_loadable_view];
     
@@ -187,6 +233,12 @@
         [self->_loadable_view endLoadingWithErrored:errored];
         if (!errored) {
             [self setup];
+            // «Запоминать источник»: запоминаем выбранные тип и источник для релиза
+            [[AppDataController sharedInstance] rememberSourceForRelease:(NSInteger)static_cast<int64_t>(self->_release_id)
+                                                                  typeID:(NSInteger)static_cast<int64_t>(self->_type_id)
+                                                                typeName:self->_type_name
+                                                                sourceID:(NSInteger)static_cast<int64_t>(self->_source_id)
+                                                              sourceName:self->_source_name];
         }
     }];
 }
@@ -262,10 +314,13 @@
     /* если серия скачана — играем локальный файл */
     DownloadItem* local = [[DownloadManager sharedInstance] itemForReleaseID:_release_id sourceID:_source_id position:episode->position];
     if (local && local.state == DownloadStateCompleted && local.localURL) {
+        [PlayerController sharedInstance].pending_playlist = nil;
         [[PlayerController sharedInstance] playLocalURL:local.localURL title:title resumeKey:local.identifier];
         started(NO);
         return;
     }
+    // «Автоматически следующая серия»: передаём плееру список серий этого источника
+    [PlayerController sharedInstance].pending_playlist = [self playlistSnapshot];
     [[PlayerController sharedInstance] playWithReleaseID:_release_id sourceID:_source_id position:episode->position title:title autoShow:YES completion:started];
 }
 
