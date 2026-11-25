@@ -9,6 +9,7 @@
 #import <AVKit/AVKit.h>
 #import <MediaPlayer/MediaPlayer.h>
 #include <chrono>
+#include <climits>
 #import "PlayerViewController.h"
 #import "AppColor.h"
 #import "AppDataController.h"
@@ -802,7 +803,7 @@ static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSS
 }
 
 /* Возвращает MAL id и локальный номер серии, если AniSkip описывает связь сезонов/тайтлов. */
-static NSDictionary<NSString*, NSNumber*>* ResolveAniSkipEpisodeRule(NSString* mal_id, long episode) {
+static NSDictionary<NSString*, id>* ResolveAniSkipEpisodeRule(NSString* mal_id, long episode) {
     if (mal_id.length == 0 || episode <= 0) {
         return nil;
     }
