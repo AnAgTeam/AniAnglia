@@ -463,64 +463,96 @@ static NSURL* ResolveFinalURL(NSURL* url, NSDictionary<NSString*, NSString*>* he
 /* Парсер Sibnet внутри libanixart устарел: страница плеера теперь отдаёт путь /v/<hash>/<id>.mp4,
    который редиректит на CDN и требует Referer. Разбираем страницу сами. */
 static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, NSMutableString* detail) {
-    NSString* video_id = FirstMatch(@"videoid=(\\d+)", target) ?: FirstMatch(@"/video(\\d+)", target) ?: FirstMatch(@"embed/(\\d+)", target) ?: FirstMatch(@"[?&]id=(\\d+)", target);
-    [detail appendFormat:@"Sibnet: %@\n", target];
-    if (!video_id) {
-        [detail appendString:@"Не удалось определить id видео из ссылки\n"];
-        return nil;
-    }
-    NSString* shell = [NSString stringWithFormat:@"https://video.sibnet.ru/shell.php?videoid=%@", video_id];
+    [detail appendFormat:@"Sibnet: %@\n", target ?: @""];
+
     NSString* user_agent = @"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
-    NSDictionary* page_headers = @{@"User-Agent": user_agent, @"Referer": @"https://video.sibnet.ru/", @"Accept": @"text/html,*/*"};
-    NSInteger status = 0;
-    NSString* error_text = nil;
-    NSData* data = SyncRequest([NSURL URLWithString:shell], page_headers, &status, &error_text);
-    [detail appendFormat:@"shell.php → HTTP %ld %@\n", (long)status, error_text ?: @""];
-    NSString* html = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
-    if (!html) {
-        html = data ? [[NSString alloc] initWithData:data encoding:NSWindowsCP1251StringEncoding] : nil;
-    }
-    if (html.length == 0) {
-        // повторная попытка без лишних заголовков (иногда сервер режет по User-Agent)
-        data = SyncRequest([NSURL URLWithString:shell], @{@"Referer": @"https://video.sibnet.ru/"}, &status, &error_text);
-        [detail appendFormat:@"shell.php (retry) → HTTP %ld %@\n", (long)status, error_text ?: @""];
-        html = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+    NSString* shell = nil;
+    NSString* absolute = nil;
+
+    // Если Anixart уже передал прямую стабильную ссылку Sibnet — не загружаем shell.php повторно.
+    NSString* direct = FirstMatch(@"((?:https?:)?//[^\"'\\s<>]+?/v/[^\"'\\s<>]+?\\.mp4(?:\\?[^\"'\\s<>]*)?)", target)
+        ?: FirstMatch(@"(/v/[^\"'\\s<>]+?\\.mp4(?:\\?[^\"'\\s<>]*)?)", target);
+    if (direct) {
+        if ([direct hasPrefix:@"//"]) {
+            absolute = [@"https:" stringByAppendingString:direct];
+        } else if ([direct hasPrefix:@"/"]) {
+            absolute = [@"https://video.sibnet.ru" stringByAppendingString:direct];
+        } else {
+            absolute = direct;
+        }
+        shell = @"https://video.sibnet.ru/";
+    } else {
+        NSString* video_id = FirstMatch(@"videoid=(\\d+)", target)
+            ?: FirstMatch(@"/video(\\d+)", target)
+            ?: FirstMatch(@"embed/(\\d+)", target)
+            ?: FirstMatch(@"[?&]id=(\\d+)", target);
+        if (!video_id) {
+            [detail appendString:@"Не удалось определить videoid и в ссылке нет прямого /v/...mp4\n"];
+            return nil;
+        }
+
+        shell = [NSString stringWithFormat:@"https://video.sibnet.ru/shell.php?videoid=%@", video_id];
+        NSDictionary* page_headers = @{
+            @"User-Agent": user_agent,
+            @"Referer": @"https://video.sibnet.ru/",
+            @"Accept": @"text/html,application/xhtml+xml,*/*"
+        };
+        NSInteger status = 0;
+        NSString* error_text = nil;
+        NSData* data = SyncRequest([NSURL URLWithString:shell], page_headers, &status, &error_text);
+        [detail appendFormat:@"shell.php → HTTP %ld %@\n", (long)status, error_text ?: @""];
+
+        NSString* html = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
         if (!html) {
             html = data ? [[NSString alloc] initWithData:data encoding:NSWindowsCP1251StringEncoding] : nil;
         }
+        if (html.length == 0) {
+            // Повторяем без User-Agent: некоторые ответы Sibnet зависят от заголовков клиента.
+            data = SyncRequest([NSURL URLWithString:shell], @{@"Referer": @"https://video.sibnet.ru/"}, &status, &error_text);
+            [detail appendFormat:@"shell.php (retry) → HTTP %ld %@\n", (long)status, error_text ?: @""];
+            html = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+            if (!html) {
+                html = data ? [[NSString alloc] initWithData:data encoding:NSWindowsCP1251StringEncoding] : nil;
+            }
+        }
+        if (html.length == 0) {
+            [detail appendString:@"Sibnet вернул пустую страницу shell.php\n"];
+            return nil;
+        }
+
+        html = [html stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+        NSString* media = FirstMatch(@"((?:https?:)?//[^\"'\\s<>]+?\\.mp4(?:\\?[^\"'\\s<>]*)?)", html)
+            ?: FirstMatch(@"(/v/[^\"'\\s<>]+?\\.mp4(?:\\?[^\"'\\s<>]*)?)", html);
+        if (!media) {
+            NSString* compact = [[html componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] componentsJoinedByString:@" "];
+            [detail appendFormat:@"В shell.php не найдена MP4-ссылка (%lu байт). Начало: %@\n",
+                (unsigned long)html.length, [compact substringToIndex:MIN((NSUInteger)350, compact.length)]];
+            return nil;
+        }
+        if ([media hasPrefix:@"//"]) {
+            absolute = [@"https:" stringByAppendingString:media];
+        } else if ([media hasPrefix:@"/"]) {
+            absolute = [@"https://video.sibnet.ru" stringByAppendingString:media];
+        } else {
+            absolute = media;
+        }
     }
-    if (html.length == 0) {
+
+    NSURL* stable_url = SecureURL([NSURL URLWithString:absolute]);
+    if (!stable_url || !stable_url.host.length || ![stable_url.scheme isEqualToString:@"https"]) {
+        [detail appendFormat:@"Некорректная MP4-ссылка: %@\n", absolute ?: @"(пусто)"];
         return nil;
     }
-    html = [html stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
-    NSString* path = FirstMatch(@"src\\s*:\\s*[\"'](/v/[^\"']+?\\.mp4[^\"']*)[\"']", html) ?: FirstMatch(@"[\"'](/v/[^\"']+?\\.mp4[^\"']*)[\"']", html);
-    NSString* absolute = nil;
-    if (path) {
-        absolute = [@"https://video.sibnet.ru" stringByAppendingString:path];
-    } else {
-        absolute = FirstMatch(@"[\"'](https?://[^\"']+?\\.mp4[^\"']*)[\"']", html);
-    }
-    if (!absolute) {
-        NSString* compact = [[html componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] componentsJoinedByString:@" "];
-        [detail appendFormat:@"В странице нет ссылки на mp4 (%lu байт). Начало: %@\n", (unsigned long)html.length, [compact substringToIndex:MIN((NSUInteger)400, compact.length)]];
-        return nil;
-    }
-    if ([absolute hasPrefix:@"//"]) {
-        absolute = [@"https:" stringByAppendingString:absolute];
-    }
-    NSDictionary* media_headers = @{@"User-Agent": user_agent, @"Referer": shell};
-    NSInteger final_status = 0;
-    NSURL* initial_url = [NSURL URLWithString:absolute];
-    NSURL* final_url = ResolveFinalURL(initial_url, media_headers, &final_status);
-    [detail appendFormat:@"mp4 → %@ (HTTP %ld)\n", final_url.host ?: @"?", (long)final_status];
-    // если нас перенаправили на CDN, адрес годится даже при странном статусе на Range-запрос
-    BOOL redirected = final_url && ![final_url isEqual:SecureURL(initial_url)];
-    if (!final_url || (!redirected && (final_status == 0 || final_status >= 400))) {
-        return nil;
-    }
-    RememberStreamHeaders(final_url, media_headers);
-    RememberStreamHeaders([NSURL URLWithString:absolute], media_headers);
-    return @{@"720": final_url};
+
+    // Важно: НЕ разворачиваем 302 здесь. CDN-URL содержит короткоживущую подпись,
+    // поэтому AVPlayer должен получить стабильный /v/...mp4 и сам пройти редирект.
+    NSDictionary* media_headers = @{
+        @"User-Agent": user_agent,
+        @"Referer": shell ?: @"https://video.sibnet.ru/"
+    };
+    RememberStreamHeaders(stable_url, media_headers);
+    [detail appendFormat:@"Используется стабильная ссылка Sibnet: %@\n", stable_url.host];
+    return @{@"720": stable_url};
 }
 
 #pragma mark - AniSkip (метки опенингов и эндингов для любых источников)
@@ -769,15 +801,56 @@ static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSS
     return mal_id;
 }
 
+/* Возвращает MAL id и локальный номер серии, если AniSkip описывает связь сезонов/тайтлов. */
+static NSDictionary<NSString*, NSNumber*>* ResolveAniSkipEpisodeRule(NSString* mal_id, long episode) {
+    if (mal_id.length == 0 || episode <= 0) {
+        return nil;
+    }
+    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/relation-rules/%@", mal_id]];
+    NSInteger status = 0;
+    NSData* data = url ? SyncGETRetry(url, 2, &status) : nil;
+    if (status != 200 || !data) {
+        NSLog(@"[AniLot AniSkip] relation-rules request failed: MAL=%@ HTTP=%ld", mal_id, (long)status);
+        return nil;
+    }
+
+    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![json[@"found"] boolValue] || ![json[@"rules"] isKindOfClass:[NSArray class]]) {
+        return nil;
+    }
+    for (NSDictionary* rule in json[@"rules"]) {
+        NSDictionary* from = [rule[@"from"] isKindOfClass:[NSDictionary class]] ? rule[@"from"] : nil;
+        NSDictionary* to = [rule[@"to"] isKindOfClass:[NSDictionary class]] ? rule[@"to"] : nil;
+        long from_start = [from[@"start"] longValue];
+        long from_end = [from[@"end"] respondsToSelector:@selector(longValue)] ? [from[@"end"] longValue] : LONG_MAX;
+        long to_start = [to[@"start"] longValue];
+        long long target_mal_id = [to[@"malId"] longLongValue];
+        if (from_start > 0 && to_start > 0 && target_mal_id > 0 && episode >= from_start && episode <= from_end) {
+            long mapped_episode = to_start + (episode - from_start);
+            return @{
+                @"mal_id": [NSString stringWithFormat:@"%lld", target_mal_id],
+                @"episode": @(mapped_episode)
+            };
+        }
+    }
+    return nil;
+}
+
 static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSString* mal_id, long episode) {
     // https://api.aniskip.com/v2/skip-times/{malId}/{episodeNumber}; episodeLength=0 — метки для любой длительности
     NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?types=op&types=ed&types=mixed-op&types=mixed-ed&episodeLength=0", mal_id, episode]];
     NSInteger status = 0;
     NSData* data = url ? SyncGETRetry(url, 3, &status) : nil;
     if (status != 200 || !data) {
+        NSLog(@"[AniLot AniSkip] skip-times request failed: MAL=%@ episode=%ld HTTP=%ld",
+              mal_id, (long)episode, (long)status);
         return nil;
     }
     NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![json[@"found"] boolValue]) {
+        NSLog(@"[AniLot AniSkip] API reports no timestamps: MAL=%@ episode=%ld", mal_id, (long)episode);
+        return nil;
+    }
     NSArray* results = [json isKindOfClass:[NSDictionary class]] ? json[@"results"] : nil;
     if (![results isKindOfClass:[NSArray class]]) {
         return nil;
@@ -806,14 +879,28 @@ static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSStrin
     return markers.count ? markers : nil;
 }
 
-/* Номер серии из названия («12 серия · Libria», «Серия 5»). 0, если числа нет. */
+/* Номер серии из названия. Не берём первое произвольное число: оно может быть номером сезона или частью названия. */
 static long EpisodeNumberFromTitle(NSString* title) {
+    if (title.length == 0) {
+        return 0;
+    }
     NSString* name = title;
     NSRange separator = [title rangeOfString:@" · "];
     if (separator.location != NSNotFound) {
         name = [title substringToIndex:separator.location];
     }
-    NSString* digits = FirstMatch(@"(\\d{1,4})", name ?: @"");
+
+    // Сначала явные подписи номера серии.
+    NSString* digits = FirstMatch(@"(?:episode|ep\\.?|series|серия|сер\\.?|эпизод)\\s*#?\\s*(\\d{1,4})", name);
+    if (digits) {
+        return digits.integerValue;
+    }
+
+    // Затем обычный формат «01», «01 - ...», «01. ...», «01 серия».
+    digits = FirstMatch(@"^\\s*(\\d{1,4})(?:\\s*(?:[-.:)]|серия|эпизод|episode|ep\\.?))", name);
+    if (!digits) {
+        digits = FirstMatch(@"^\\s*(\\d{1,4})\\s*$", name);
+    }
     return digits ? digits.integerValue : 0;
 }
 
@@ -831,21 +918,41 @@ static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, NSS
         return NO;
     } completion:^(BOOL errored) {
         if (errored || (title.length == 0 && alt_title.length == 0)) {
+            NSLog(@"[AniLot AniSkip] release metadata unavailable: release=%lld errored=%d title=%@ alt=%@",
+                  (long long)static_cast<int64_t>(release_id), errored, title ?: @"", alt_title ?: @"");
             return;
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
             NSString* mal_id = LookupMalID(release_id, title, alt_title, year);
             if (!mal_id) {
+                NSLog(@"[AniLot AniSkip] MAL id not found: release=%lld title=%@ alt=%@ year=%ld",
+                      (long long)static_cast<int64_t>(release_id), title ?: @"", alt_title ?: @"", (long)year);
                 return;
             }
-            // позиция в Anixart может отличаться от номера серии, поэтому приоритет у номера из названия серии
+
+            // Сначала читаем явный номер серии. В fallback используем позицию Anixart.
             long hint = EpisodeNumberFromTitle(episode_title);
             long episode = hint > 0 ? hint : (position > 0 ? position : 1);
-            NSDictionary* markers = FetchAniSkipMarkers(mal_id, episode);
+            NSString* query_mal_id = mal_id;
+            NSDictionary* mapping = ResolveAniSkipEpisodeRule(mal_id, episode);
+            if (mapping) {
+                query_mal_id = mapping[@"mal_id"] ?: mal_id;
+                episode = [mapping[@"episode"] longValue] > 0 ? [mapping[@"episode"] longValue] : episode;
+                NSLog(@"[AniLot AniSkip] relation rule: MAL %@ → %@, episode=%ld",
+                      mal_id, query_mal_id, (long)episode);
+            }
+
+            NSLog(@"[AniLot AniSkip] lookup: release=%lld MAL=%@ episode=%ld (title=%@)",
+                  (long long)static_cast<int64_t>(release_id), query_mal_id, (long)episode, episode_title ?: @"");
+            NSDictionary* markers = FetchAniSkipMarkers(query_mal_id, episode);
             if (markers.count) {
+                NSLog(@"[AniLot AniSkip] markers received: MAL=%@ episode=%ld opening=%@ ending=%@",
+                      query_mal_id, (long)episode, markers[@"opening"] ?: @"none", markers[@"ending"] ?: @"none");
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(markers);
                 });
+            } else {
+                NSLog(@"[AniLot AniSkip] no markers: MAL=%@ episode=%ld", query_mal_id, (long)episode);
             }
         });
     }];
