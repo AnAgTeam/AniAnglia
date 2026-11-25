@@ -558,34 +558,15 @@ static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, N
 
 #pragma mark - AniSkip (метки опенингов и эндингов для любых источников)
 
-/* v2: старый кэш мог содержать неверные MAL id (поиск Jikan шёл по убыванию popularity) */
-static NSString* const kMalIdsKey = @"anilot_mal_ids_v3";
+/* v4: MAL ID теперь сопоставляется через Shikimori; прежние результаты AniList/Jikan не переиспользуем. */
+static NSString* const kMalIdsKey = @"anilot_mal_ids_v4";
+static NSString* const kMalIdLookupDatesKey = @"anilot_mal_id_lookup_dates_v1";
+static const NSTimeInterval kMalIdNotFoundTTL = 7.0 * 24.0 * 60.0 * 60.0;
 
-static NSData* SyncPOSTJSON(NSURL* url, NSDictionary* body, NSInteger* status) {
-    __block NSData* result = nil;
-    __block NSInteger code = 0;
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
-    request.HTTPMethod = @"POST";
-    request.timeoutInterval = 15;
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:body options:0 error:nil];
-    [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
-        result = data;
-        code = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 0;
-        dispatch_semaphore_signal(semaphore);
-    }] resume];
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(18 * NSEC_PER_SEC)));
-    if (status) *status = code;
-    return result;
-}
-
-/* GET с повторами при сетевой ошибке, 429 и 5xx. 404 — окончательный ответ («меток нет») */
-static NSData* SyncGETRetry(NSURL* url, int tries, NSInteger* status) {
+static NSData* SyncGETRetryWithHeaders(NSURL* url, int tries, NSDictionary<NSString*, NSString*>* headers, NSInteger* status) {
     NSInteger code = 0;
     for (int i = 0; i < tries; i++) {
-        NSData* data = SyncGET(url, &code, nil);
+        NSData* data = SyncRequest(url, headers, &code, nil);
         if (code == 200 && data) {
             if (status) *status = code;
             return data;
@@ -612,224 +593,208 @@ static NSString* NormalizeTitle(NSString* title) {
     return result;
 }
 
-/* Запросы для поиска: оригинальное название и латинские варианты из «альтернативных» */
-static NSArray<NSString*>* SearchQueries(NSString* title, NSString* alt_title) {
-    NSMutableArray<NSString*>* queries = [NSMutableArray new];
-    void (^add)(NSString*) = ^(NSString* candidate) {
-        NSString* trimmed = [candidate stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        if (trimmed.length < 2 || [queries containsObject:trimmed]) {
-            return;
-        }
-        [queries addObject:trimmed];
-    };
-    add(title);
-    NSCharacterSet* separators = [NSCharacterSet characterSetWithCharactersInString:@",;|\n/"];
-    for (NSString* piece in [alt_title componentsSeparatedByCharactersInSet:separators]) {
-        add(piece);
-        if (queries.count >= 4) {
-            break;
-        }
+static NSInteger ShikimoriYear(NSDictionary* anime) {
+    id aired_on = anime[@"aired_on"];
+    if (![aired_on isKindOfClass:[NSString class]]) {
+        return 0;
     }
-    return queries;
+    return [FirstMatch(@"^(\\d{4})", aired_on) integerValue];
 }
 
-/* Выбор наиболее подходящего результата поиска. names — все названия, year — год выхода (0 если неизвестен) */
-static NSDictionary* ChooseBestCandidate(NSArray<NSDictionary*>* candidates, NSString* query, NSInteger year) {
+static BOOL ShikimoriCandidateHasExactTitle(NSDictionary* candidate, NSString* query) {
     NSString* normalized_query = NormalizeTitle(query);
-    NSDictionary* exact_any = nil;
-    NSDictionary* year_match = nil;
-    NSDictionary* partial = nil;
+    if (normalized_query.length == 0) {
+        return NO;
+    }
+    for (NSString* name in candidate[@"names"]) {
+        if ([NormalizeTitle(name) isEqualToString:normalized_query]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+/* Сначала точное название, затем совместимые год и число серий. Не выбираем первый похожий результат. */
+static NSString* ChooseShikimoriCandidate(NSArray<NSDictionary*>* candidates, NSString* query, NSInteger year, NSInteger episodes_total) {
+    NSMutableArray<NSDictionary*>* exact_matches = [NSMutableArray new];
     for (NSDictionary* candidate in candidates) {
-        if (![candidate[@"mal_id"] respondsToSelector:@selector(longLongValue)] || [candidate[@"mal_id"] longLongValue] <= 0) {
+        if (![candidate[@"id"] respondsToSelector:@selector(longLongValue)] ||
+            [candidate[@"id"] longLongValue] <= 0 ||
+            !ShikimoriCandidateHasExactTitle(candidate, query)) {
             continue;
         }
-        BOOL exact = NO, near = NO;
-        for (NSString* name in candidate[@"names"]) {
-            NSString* normalized = NormalizeTitle(name);
-            if (normalized.length == 0) {
-                continue;
-            }
-            if ([normalized isEqualToString:normalized_query]) {
-                exact = YES;
-            } else if (normalized_query.length >= 5 && ([normalized hasPrefix:normalized_query] || [normalized_query hasPrefix:normalized])) {
-                near = YES;
-            }
-        }
+
         NSInteger candidate_year = [candidate[@"year"] integerValue];
-        BOOL year_ok = (year <= 0 || candidate_year <= 0 || candidate_year == year);
-        if (exact && year_ok) {
-            return candidate;
-        }
-        if (exact && !exact_any) {
-            exact_any = candidate;
-        }
-        if ((exact || near) && year > 0 && candidate_year == year && !year_match) {
-            year_match = candidate;
-        }
-        if (near && !partial && year_ok) {
-            partial = candidate;
-        }
-    }
-    return year_match ?: exact_any ?: partial;
-}
+        NSInteger candidate_episodes = [candidate[@"episodes"] integerValue];
 
-static NSString* ResolveMalIDViaAniList(NSString* query, NSInteger year) {
-    NSString* gql = @"query($s:String){Page(perPage:10){media(search:$s,type:ANIME,sort:SEARCH_MATCH){idMal seasonYear startDate{year} title{romaji english native} synonyms}}}";
-    NSInteger status = 0;
-    NSData* data = nil;
-    for (int i = 0; i < 2 && !data; i++) {
-        data = SyncPOSTJSON([NSURL URLWithString:@"https://graphql.anilist.co"], @{@"query": gql, @"variables": @{@"s": query}}, &status);
-        if (status != 200) {
-            data = nil;
-            if (status == 400 || status == 404) {
-                break;
-            }
-            [NSThread sleepForTimeInterval:1.0];
-        }
-    }
-    id json = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
-    id page_data = [json isKindOfClass:[NSDictionary class]] ? json[@"data"] : nil;
-    id page = [page_data isKindOfClass:[NSDictionary class]] ? page_data[@"Page"] : nil;
-    id media = [page isKindOfClass:[NSDictionary class]] ? page[@"media"] : nil;
-    if (![media isKindOfClass:[NSArray class]]) {
-        return nil;
-    }
-    NSMutableArray<NSDictionary*>* candidates = [NSMutableArray new];
-    for (NSDictionary* item in media) {
-        if (![item isKindOfClass:[NSDictionary class]] || ![item[@"idMal"] respondsToSelector:@selector(longLongValue)]) {
+        if (year > 0 && candidate_year > 0 && labs((long)candidate_year - (long)year) > 1) {
             continue;
         }
-        NSMutableArray<NSString*>* names = [NSMutableArray new];
-        NSDictionary* titles = [item[@"title"] isKindOfClass:[NSDictionary class]] ? item[@"title"] : nil;
-        for (NSString* key in @[@"romaji", @"english", @"native"]) {
-            if ([titles[key] isKindOfClass:[NSString class]]) {
-                [names addObject:titles[key]];
-            }
+        if (episodes_total > 0 && candidate_episodes > 0 && candidate_episodes != episodes_total) {
+            continue;
         }
-        for (id synonym in ([item[@"synonyms"] isKindOfClass:[NSArray class]] ? item[@"synonyms"] : @[])) {
-            if ([synonym isKindOfClass:[NSString class]]) {
-                [names addObject:synonym];
-            }
-        }
-        id season_year = item[@"seasonYear"];
-        if (![season_year respondsToSelector:@selector(integerValue)] || [season_year integerValue] <= 0) {
-            season_year = [item[@"startDate"] isKindOfClass:[NSDictionary class]] ? item[@"startDate"][@"year"] : nil;
-        }
-        [candidates addObject:@{@"mal_id": item[@"idMal"], @"names": names, @"year": [season_year respondsToSelector:@selector(integerValue)] ? season_year : @0}];
+        [exact_matches addObject:candidate];
     }
-    NSDictionary* best = ChooseBestCandidate(candidates, query, year);
-    return best ? [best[@"mal_id"] description] : nil;
+
+    if (exact_matches.count > 0) {
+        NSInteger best_year_score = NSIntegerMax;
+        NSInteger best_episode_score = NSIntegerMax;
+        NSMutableSet<NSNumber*>* best_ids = [NSMutableSet new];
+
+        for (NSDictionary* candidate in exact_matches) {
+            NSInteger candidate_year = [candidate[@"year"] integerValue];
+            NSInteger candidate_episodes = [candidate[@"episodes"] integerValue];
+            NSInteger year_score = (year <= 0 || candidate_year <= 0) ? 2 : labs((long)candidate_year - (long)year);
+            NSInteger episode_score = (episodes_total <= 0 || candidate_episodes <= 0) ? 1 : 0;
+
+            if (year_score < best_year_score ||
+                (year_score == best_year_score && episode_score < best_episode_score)) {
+                best_year_score = year_score;
+                best_episode_score = episode_score;
+                [best_ids removeAllObjects];
+                [best_ids addObject:candidate[@"id"]];
+            } else if (year_score == best_year_score && episode_score == best_episode_score) {
+                [best_ids addObject:candidate[@"id"]];
+            }
+        }
+
+        // Два равноценных разных MAL ID — неоднозначность, а не повод брать первый.
+        return best_ids.count == 1 ? best_ids.anyObject.stringValue : nil;
+    }
+
+    // Совпадение по названию не нашлось: допускаем только единственный результат с точными годом и числом серий.
+    if (year > 0 && episodes_total > 0) {
+        NSMutableSet<NSNumber*>* metadata_ids = [NSMutableSet new];
+        for (NSDictionary* candidate in candidates) {
+            if ([candidate[@"id"] longLongValue] > 0 &&
+                [candidate[@"year"] integerValue] == year &&
+                [candidate[@"episodes"] integerValue] == episodes_total) {
+                [metadata_ids addObject:candidate[@"id"]];
+            }
+        }
+        if (metadata_ids.count == 1) {
+            return metadata_ids.anyObject.stringValue;
+        }
+    }
+    return nil;
 }
 
-static NSString* ResolveMalIDViaJikan(NSString* query, NSInteger year) {
-    NSString* encoded = [query stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    // без order_by: сортировка по popularity шла по убыванию и возвращала самые непопулярные тайтлы
-    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.jikan.moe/v4/anime?q=%@&limit=10&sfw=false", encoded]];
-    NSInteger status = 0;
-    NSData* data = url ? SyncGETRetry(url, 3, &status) : nil;
-    id json = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
-    NSArray* items = [json isKindOfClass:[NSDictionary class]] ? json[@"data"] : nil;
-    if (![items isKindOfClass:[NSArray class]]) {
+/* Публичный API Shikimori: поиск по оригинальному названию, как в Aniko. */
+static NSString* ResolveMalIDViaShikimori(NSString* query, NSInteger year, NSInteger episodes_total, BOOL* request_succeeded) {
+    if (request_succeeded) {
+        *request_succeeded = NO;
+    }
+    if (query.length == 0) {
         return nil;
     }
+
+    NSMutableCharacterSet* allowed = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+    [allowed removeCharactersInString:@"&=+#?%"];
+    NSString* encoded = [query stringByAddingPercentEncodingWithAllowedCharacters:allowed];
+    NSURL* url = encoded ? [NSURL URLWithString:[NSString stringWithFormat:@"https://shikimori.one/api/animes?search=%@&limit=8", encoded]] : nil;
+    if (!url) {
+        return nil;
+    }
+
+    NSDictionary* headers = @{
+        @"Accept": @"application/json",
+        @"User-Agent": @"AniLot"
+    };
+    NSInteger status = 0;
+    NSData* data = SyncGETRetryWithHeaders(url, 3, headers, &status);
+    if (status != 200 || !data) {
+        NSLog(@"[AniLot AniSkip] Shikimori search failed: HTTP=%ld title=%@", (long)status, query);
+        return nil;
+    }
+
+    id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![json isKindOfClass:[NSArray class]]) {
+        NSLog(@"[AniLot AniSkip] Shikimori returned an unexpected response for title=%@", query);
+        return nil;
+    }
+    if (request_succeeded) {
+        *request_succeeded = YES;
+    }
+
     NSMutableArray<NSDictionary*>* candidates = [NSMutableArray new];
-    for (NSDictionary* item in items) {
+    for (NSDictionary* item in (NSArray*)json) {
         if (![item isKindOfClass:[NSDictionary class]]) {
             continue;
         }
+        long long mal_id = [item[@"id"] longLongValue];
+        if (mal_id <= 0) {
+            continue;
+        }
+
         NSMutableArray<NSString*>* names = [NSMutableArray new];
-        for (NSString* key in @[@"title", @"title_english", @"title_japanese"]) {
-            if ([item[key] isKindOfClass:[NSString class]]) {
-                [names addObject:item[key]];
+        for (NSString* key in @[@"name", @"russian"]) {
+            id value = item[key];
+            if ([value isKindOfClass:[NSString class]] && [value length] > 0) {
+                [names addObject:value];
             }
         }
-        for (NSDictionary* t in ([item[@"titles"] isKindOfClass:[NSArray class]] ? item[@"titles"] : @[])) {
-            if ([t isKindOfClass:[NSDictionary class]] && [t[@"title"] isKindOfClass:[NSString class]]) {
-                [names addObject:t[@"title"]];
-            }
-        }
-        id item_year = item[@"year"];
-        if (![item_year respondsToSelector:@selector(integerValue)] || [item_year integerValue] <= 0) {
-            NSString* aired_from = @"";
-            NSDictionary* aired = [item[@"aired"] isKindOfClass:[NSDictionary class]] ? item[@"aired"] : nil;
-            if ([aired[@"from"] isKindOfClass:[NSString class]]) {
-                aired_from = aired[@"from"];
-            }
-            item_year = @([FirstMatch(@"^(\\d{4})", aired_from) integerValue]);
-        }
-        [candidates addObject:@{@"mal_id": item[@"mal_id"] ?: @0, @"names": names, @"year": item_year ?: @0}];
+
+        NSInteger candidate_episodes = [item[@"episodes"] respondsToSelector:@selector(integerValue)]
+            ? [item[@"episodes"] integerValue] : 0;
+        [candidates addObject:@{
+            @"id": @(mal_id),
+            @"names": names,
+            @"year": @(ShikimoriYear(item)),
+            @"episodes": @(candidate_episodes)
+        }];
     }
-    NSDictionary* best = ChooseBestCandidate(candidates, query, year);
-    return best ? [best[@"mal_id"] description] : nil;
+
+    NSString* matched = ChooseShikimoriCandidate(candidates, query, year, episodes_total);
+    NSLog(@"[AniLot AniSkip] Shikimori: title=%@ year=%ld episodes=%ld candidates=%lu matched=%@",
+          query, (long)year, (long)episodes_total, (unsigned long)candidates.count, matched ?: @"none");
+    return matched;
 }
 
-/* MAL id аниме: AniList (быстрый и точный) → Jikan (запасной). Результат кэшируется по id релиза. */
-static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSString* alt_title, NSInteger year) {
+/* MAL ID кэшируется по релизу. Отрицательный результат повторно ищется через неделю, сетевой сбой не кэшируется. */
+static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSInteger year, NSInteger episodes_total) {
     NSString* cache_key = [NSString stringWithFormat:@"%lld", (long long)static_cast<int64_t>(release_id)];
-    NSDictionary* cache = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kMalIdsKey];
-    if (cache[cache_key]) {
-        return [cache[cache_key] description];
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSDictionary* cache = [defaults dictionaryForKey:kMalIdsKey];
+    id cached_value = cache[cache_key];
+    long long cached_id = [cached_value respondsToSelector:@selector(longLongValue)] ? [cached_value longLongValue] : -1;
+
+    if (cached_id > 0) {
+        return [NSString stringWithFormat:@"%lld", cached_id];
     }
-    NSArray<NSString*>* queries = SearchQueries(title, alt_title);
-    NSString* mal_id = nil;
-    for (NSString* query in queries) {
-        mal_id = ResolveMalIDViaAniList(query, year);
-        if (mal_id) {
-            break;
+    if (cached_id == 0) {
+        NSDictionary* checked_dates = [defaults dictionaryForKey:kMalIdLookupDatesKey];
+        NSTimeInterval checked_at = [checked_dates[cache_key] doubleValue];
+        NSTimeInterval age = [NSDate date].timeIntervalSince1970 - checked_at;
+        if (checked_at > 0 && age >= 0 && age < kMalIdNotFoundTTL) {
+            return nil;
         }
     }
-    for (NSString* query in queries) {
-        if (mal_id) {
-            break;
-        }
-        mal_id = ResolveMalIDViaJikan(query, year);
-    }
-    if (mal_id) {
+
+    BOOL request_succeeded = NO;
+    NSString* mal_id = ResolveMalIDViaShikimori(title, year, episodes_total, &request_succeeded);
+    if (mal_id.length > 0) {
         NSMutableDictionary* updated = [cache mutableCopy] ?: [NSMutableDictionary new];
         updated[cache_key] = mal_id;
-        [[NSUserDefaults standardUserDefaults] setObject:updated forKey:kMalIdsKey];
-    }
-    return mal_id;
-}
-
-/* Возвращает MAL id и локальный номер серии, если AniSkip описывает связь сезонов/тайтлов. */
-static NSDictionary<NSString*, id>* ResolveAniSkipEpisodeRule(NSString* mal_id, long episode) {
-    if (mal_id.length == 0 || episode <= 0) {
-        return nil;
-    }
-    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/relation-rules/%@", mal_id]];
-    NSInteger status = 0;
-    NSData* data = url ? SyncGETRetry(url, 2, &status) : nil;
-    if (status != 200 || !data) {
-        NSLog(@"[AniLot AniSkip] relation-rules request failed: MAL=%@ HTTP=%ld", mal_id, (long)status);
-        return nil;
+        [defaults setObject:updated forKey:kMalIdsKey];
+        return mal_id;
     }
 
-    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    if (![json[@"found"] boolValue] || ![json[@"rules"] isKindOfClass:[NSArray class]]) {
-        return nil;
-    }
-    for (NSDictionary* rule in json[@"rules"]) {
-        NSDictionary* from = [rule[@"from"] isKindOfClass:[NSDictionary class]] ? rule[@"from"] : nil;
-        NSDictionary* to = [rule[@"to"] isKindOfClass:[NSDictionary class]] ? rule[@"to"] : nil;
-        long from_start = [from[@"start"] longValue];
-        long from_end = [from[@"end"] respondsToSelector:@selector(longValue)] ? [from[@"end"] longValue] : LONG_MAX;
-        long to_start = [to[@"start"] longValue];
-        long long target_mal_id = [to[@"malId"] longLongValue];
-        if (from_start > 0 && to_start > 0 && target_mal_id > 0 && episode >= from_start && episode <= from_end) {
-            long mapped_episode = to_start + (episode - from_start);
-            return @{
-                @"mal_id": [NSString stringWithFormat:@"%lld", target_mal_id],
-                @"episode": @(mapped_episode)
-            };
-        }
+    if (request_succeeded) {
+        NSMutableDictionary* updated = [cache mutableCopy] ?: [NSMutableDictionary new];
+        updated[cache_key] = @0;
+        [defaults setObject:updated forKey:kMalIdsKey];
+
+        NSDictionary* checked_dates = [defaults dictionaryForKey:kMalIdLookupDatesKey];
+        NSMutableDictionary* updated_dates = [checked_dates mutableCopy] ?: [NSMutableDictionary new];
+        updated_dates[cache_key] = @([NSDate date].timeIntervalSince1970);
+        [defaults setObject:updated_dates forKey:kMalIdLookupDatesKey];
     }
     return nil;
 }
 
 static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSString* mal_id, long episode) {
     // https://api.aniskip.com/v2/skip-times/{malId}/{episodeNumber}; episodeLength=0 — метки для любой длительности
-    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?types=op&types=ed&types=mixed-op&types=mixed-ed&episodeLength=0", mal_id, episode]];
+    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?types=op&types=ed&episodeLength=0", mal_id, episode]];
     NSInteger status = 0;
     NSData* data = url ? SyncGETRetry(url, 3, &status) : nil;
     if (status != 200 || !data) {
@@ -897,62 +862,50 @@ static long EpisodeNumberFromTitle(NSString* title) {
 
 static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, NSString* episode_title, void (^completion)(NSDictionary<NSString*, NSArray<NSNumber*>*>* markers)) {
     __block NSString* title = nil;
-    __block NSString* alt_title = nil;
     __block NSInteger year = 0;
+    __block NSInteger episodes_total = 0;
     [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
         auto release = api->releases().get_release(release_id);
         if (release) {
             title = TO_NSSTRING(release->title_original);
-            NSString* russian_title = TO_NSSTRING(release->title_ru);
-            NSString* alternate_titles = TO_NSSTRING(release->title_alt);
-            NSMutableArray<NSString*>* aliases = [NSMutableArray new];
-            if (russian_title.length) {
-                [aliases addObject:russian_title];
-            }
-            if (alternate_titles.length) {
-                [aliases addObject:alternate_titles];
-            }
-            alt_title = [aliases componentsJoinedByString:@","];
             year = TO_NSSTRING(release->year).integerValue;
+            episodes_total = (NSInteger)release->episodes_total;
         }
         return NO;
     } completion:^(BOOL errored) {
-        if (errored || (title.length == 0 && alt_title.length == 0)) {
-            NSLog(@"[AniLot AniSkip] release metadata unavailable: release=%lld errored=%d title=%@ alt=%@",
-                  (long long)static_cast<int64_t>(release_id), errored, title ?: @"", alt_title ?: @"");
+        if (errored || title.length == 0) {
+            NSLog(@"[AniLot AniSkip] release metadata unavailable: release=%lld errored=%d title=%@",
+                  (long long)static_cast<int64_t>(release_id), errored, title ?: @"");
             return;
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-            NSString* mal_id = LookupMalID(release_id, title, alt_title, year);
+            NSString* mal_id = LookupMalID(release_id, title, year, episodes_total);
             if (!mal_id) {
-                NSLog(@"[AniLot AniSkip] MAL id not found: release=%lld title=%@ alt=%@ year=%ld",
-                      (long long)static_cast<int64_t>(release_id), title ?: @"", alt_title ?: @"", (long)year);
+                NSLog(@"[AniLot AniSkip] Shikimori MAL id not found: release=%lld title=%@ year=%ld episodes=%ld",
+                      (long long)static_cast<int64_t>(release_id), title ?: @"", (long)year, (long)episodes_total);
                 return;
             }
 
-            // Сначала читаем явный номер серии. В fallback используем позицию Anixart.
-            long hint = EpisodeNumberFromTitle(episode_title);
-            long episode = hint > 0 ? hint : (position > 0 ? position : 1);
-            NSString* query_mal_id = mal_id;
-            NSDictionary* mapping = ResolveAniSkipEpisodeRule(mal_id, episode);
-            if (mapping) {
-                query_mal_id = mapping[@"mal_id"] ?: mal_id;
-                episode = [mapping[@"episode"] longValue] > 0 ? [mapping[@"episode"] longValue] : episode;
-                NSLog(@"[AniLot AniSkip] relation rule: MAL %@ → %@, episode=%ld",
-                      mal_id, query_mal_id, (long)episode);
+            // Position Anixart у разных источников бывает как с нуля, так и с единицы.
+            // Используем только явно распознанный номер серии из названия, не угадываем по position.
+            long episode = EpisodeNumberFromTitle(episode_title);
+            if (episode <= 0) {
+                NSLog(@"[AniLot AniSkip] episode number unavailable: release=%lld position=%ld title=%@",
+                      (long long)static_cast<int64_t>(release_id), position, episode_title ?: @"");
+                return;
             }
 
-            NSLog(@"[AniLot AniSkip] lookup: release=%lld MAL=%@ episode=%ld (title=%@)",
-                  (long long)static_cast<int64_t>(release_id), query_mal_id, (long)episode, episode_title ?: @"");
-            NSDictionary* markers = FetchAniSkipMarkers(query_mal_id, episode);
+            NSLog(@"[AniLot AniSkip] lookup: release=%lld MAL=%@ episode=%ld title=%@",
+                  (long long)static_cast<int64_t>(release_id), mal_id, (long)episode, episode_title ?: @"");
+            NSDictionary* markers = FetchAniSkipMarkers(mal_id, episode);
             if (markers.count) {
                 NSLog(@"[AniLot AniSkip] markers received: MAL=%@ episode=%ld opening=%@ ending=%@",
-                      query_mal_id, (long)episode, markers[@"opening"] ?: @"none", markers[@"ending"] ?: @"none");
+                      mal_id, (long)episode, markers[@"opening"] ?: @"none", markers[@"ending"] ?: @"none");
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(markers);
                 });
             } else {
-                NSLog(@"[AniLot AniSkip] no markers: MAL=%@ episode=%ld", query_mal_id, (long)episode);
+                NSLog(@"[AniLot AniSkip] no markers: MAL=%@ episode=%ld", mal_id, (long)episode);
             }
         });
     }];
