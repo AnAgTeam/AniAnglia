@@ -1823,6 +1823,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     
     controller.ctx_position = position;
     [controller prepareForNextEpisodeWithTitle:title resumeKey:resume_key];
+    long long release_value = controller.ctx_release_id, source_value = controller.ctx_source_id;
     
     // Сначала убеждаемся, что для следующей серии удалось получить рабочую ссылку.
     // Не отмечаем её просмотренной, если поток не найден или пользователь уже выбрал другую серию.
