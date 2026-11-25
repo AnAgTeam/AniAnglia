@@ -564,6 +564,11 @@ static NSString* const kMalIdsKey = @"anilot_mal_ids_v4";
 static NSString* const kMalIdLookupDatesKey = @"anilot_mal_id_lookup_dates_v1";
 static const NSTimeInterval kMalIdNotFoundTTL = 7.0 * 24.0 * 60.0 * 60.0;
 
+static NSString* const kSkipMarkersKey = @"anilot_skip_markers_v1";
+static const NSTimeInterval kSkipMarkersTTL = 14.0 * 24.0 * 60.0 * 60.0;
+static const NSTimeInterval kSkipMarkersMissTTL = 24.0 * 60.0 * 60.0;
+static const NSTimeInterval kSkipMarkersPruneAge = 60.0 * 24.0 * 60.0 * 60.0;
+
 static NSData* SyncGETRetryWithHeaders(NSURL* url, int tries, NSDictionary<NSString*, NSString*>* headers, NSInteger* status) {
     NSInteger code = 0;
     for (int i = 0; i < tries; i++) {
@@ -802,43 +807,107 @@ static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSI
     return nil;
 }
 
+/* Кэш меток: пропуск работает у скачанных серий без сети и не дёргает AniSkip при каждом запуске. */
+static NSDictionary* SkipMarkersCacheEntry(NSString* mal_id, long episode) {
+    NSDictionary* cache = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSkipMarkersKey];
+    id entry = cache[[NSString stringWithFormat:@"%@-%ld", mal_id, episode]];
+    return [entry isKindOfClass:[NSDictionary class]] ? entry : nil;
+}
+
+static void StoreSkipMarkers(NSString* mal_id, long episode, NSDictionary* markers) {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSMutableDictionary* cache = [[defaults dictionaryForKey:kSkipMarkersKey] mutableCopy] ?: [NSMutableDictionary new];
+    NSTimeInterval now = [NSDate date].timeIntervalSince1970;
+    cache[[NSString stringWithFormat:@"%@-%ld", mal_id, episode]] = @{@"time": @(now), @"markers": markers ?: @{}};
+    if (cache.count > 300) {
+        for (NSString* key in cache.allKeys) {
+            NSDictionary* entry = cache[key];
+            if (![entry isKindOfClass:[NSDictionary class]] || now - [entry[@"time"] doubleValue] > kSkipMarkersPruneAge) {
+                [cache removeObjectForKey:key];
+            }
+        }
+    }
+    [defaults setObject:cache forKey:kSkipMarkersKey];
+}
+
+/* Уже найденный MAL ID релиза (без сети) */
+static NSString* CachedMalID(anixart::ReleaseID release_id) {
+    NSString* cache_key = [NSString stringWithFormat:@"%lld", (long long)static_cast<int64_t>(release_id)];
+    NSDictionary* cache = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kMalIdsKey];
+    id cached_value = cache[cache_key];
+    long long cached_id = [cached_value respondsToSelector:@selector(longLongValue)] ? [cached_value longLongValue] : 0;
+    return cached_id > 0 ? [NSString stringWithFormat:@"%lld", cached_id] : nil;
+}
+
+/* Метки из AniSkip: op/ed, mixed-op/mixed-ed (чистые важнее) и recap */
 static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSString* mal_id, long episode) {
-    // https://api.aniskip.com/v2/skip-times/{malId}/{episodeNumber}; episodeLength=0 — метки для любой длительности
-    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?types=op&types=ed&episodeLength=0", mal_id, episode]];
+    NSDictionary* cached = SkipMarkersCacheEntry(mal_id, episode);
+    NSDictionary* cached_markers = [cached[@"markers"] isKindOfClass:[NSDictionary class]] ? cached[@"markers"] : nil;
+    if (cached) {
+        NSTimeInterval age = [NSDate date].timeIntervalSince1970 - [cached[@"time"] doubleValue];
+        NSTimeInterval ttl = cached_markers.count ? kSkipMarkersTTL : kSkipMarkersMissTTL;
+        if (age >= 0 && age < ttl) {
+            return cached_markers.count ? cached_markers : nil;
+        }
+    }
+    NSString* query = @"types%5B%5D=op&types%5B%5D=ed&types%5B%5D=mixed-op&types%5B%5D=mixed-ed&types%5B%5D=recap&episodeLength=0";
+    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?%@", mal_id, episode, query]];
     NSInteger status = 0;
     NSData* data = url ? SyncGETRetry(url, 3, &status) : nil;
     if (status == 404) {
         NSLog(@"[AniLot AniSkip] no timestamps: MAL=%@ episode=%ld", mal_id, (long)episode);
+        StoreSkipMarkers(mal_id, episode, @{});
         return nil;
     }
     if (status != 200 || !data) {
-        NSLog(@"[AniLot AniSkip] skip-times request failed: MAL=%@ episode=%ld HTTP=%ld",
-              mal_id, (long)episode, (long)status);
-        return nil;
+        NSLog(@"[AniLot AniSkip] skip-times request failed: MAL=%@ episode=%ld HTTP=%ld", mal_id, (long)episode, (long)status);
+        return cached_markers.count ? cached_markers : nil; // нет сети — берём устаревший кэш
     }
-    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![json isKindOfClass:[NSDictionary class]]) {
+        return cached_markers.count ? cached_markers : nil;
+    }
     if (![json[@"found"] boolValue]) {
-        NSLog(@"[AniLot AniSkip] API reports no timestamps: MAL=%@ episode=%ld", mal_id, (long)episode);
+        StoreSkipMarkers(mal_id, episode, @{});
         return nil;
     }
-    NSArray* results = [json isKindOfClass:[NSDictionary class]] ? json[@"results"] : nil;
+    NSArray* results = json[@"results"];
     if (![results isKindOfClass:[NSArray class]]) {
         return nil;
     }
-    NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* markers = [NSMutableDictionary new];
+    NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* primary = [NSMutableDictionary new];
+    NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* mixed = [NSMutableDictionary new];
     for (NSDictionary* item in results) {
         if (![item isKindOfClass:[NSDictionary class]] || ![item[@"interval"] isKindOfClass:[NSDictionary class]]) {
             continue;
         }
         NSString* type = [item[@"skipType"] description];
-        NSString* name = [type isEqualToString:@"op"] ? @"opening" : ([type isEqualToString:@"ed"] ? @"ending" : nil);
+        NSString* name = nil;
+        if ([type isEqualToString:@"op"] || [type isEqualToString:@"mixed-op"]) {
+            name = @"opening";
+        } else if ([type isEqualToString:@"ed"] || [type isEqualToString:@"mixed-ed"]) {
+            name = @"ending";
+        } else if ([type isEqualToString:@"recap"]) {
+            name = @"recap";
+        }
         double start = [item[@"interval"][@"startTime"] doubleValue];
         double end = [item[@"interval"][@"endTime"] doubleValue];
-        if (!name || end <= start || markers[name]) {
+        if (!name || end <= start) {
             continue;
         }
-        markers[name] = @[@(start), @(end)];
+        NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* target = [type hasPrefix:@"mixed-"] ? mixed : primary;
+        if (!target[name]) {
+            target[name] = @[@(start), @(end)];
+        }
     }
+    NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* markers = [NSMutableDictionary new];
+    for (NSString* name in @[@"opening", @"ending", @"recap"]) {
+        NSArray<NSNumber*>* range = primary[name] ?: mixed[name];
+        if (range) {
+            markers[name] = range;
+        }
+    }
+    StoreSkipMarkers(mal_id, episode, markers);
     return markers.count ? markers : nil;
 }
 
@@ -868,6 +937,37 @@ static long EpisodeNumberFromTitle(NSString* title) {
 }
 
 static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, NSString* episode_title, void (^completion)(NSDictionary<NSString*, NSArray<NSNumber*>*>* markers)) {
+    // Position Anixart у разных источников бывает как с нуля, так и с единицы.
+    // Используем только явно распознанный номер серии из названия, не угадываем по position.
+    long episode = EpisodeNumberFromTitle(episode_title);
+    if (episode <= 0) {
+        NSLog(@"[AniLot AniSkip] episode number unavailable: release=%lld position=%ld title=%@",
+              (long long)static_cast<int64_t>(release_id), position, episode_title ?: @"");
+        return;
+    }
+
+    void (^fetch)(NSString*) = ^(NSString* mal_id) {
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            NSDictionary* markers = FetchAniSkipMarkers(mal_id, episode);
+            if (markers.count) {
+                NSLog(@"[AniLot AniSkip] markers: MAL=%@ episode=%ld opening=%@ ending=%@ recap=%@",
+                      mal_id, (long)episode, markers[@"opening"] ?: @"none", markers[@"ending"] ?: @"none", markers[@"recap"] ?: @"none");
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(markers);
+                });
+            } else {
+                NSLog(@"[AniLot AniSkip] no markers: MAL=%@ episode=%ld", mal_id, (long)episode);
+            }
+        });
+    };
+
+    // MAL ID уже известен — метаданные релиза не нужны (работает и без сети, если метки в кэше)
+    NSString* cached_mal_id = CachedMalID(release_id);
+    if (cached_mal_id.length > 0) {
+        fetch(cached_mal_id);
+        return;
+    }
+
     __block NSString* title = nil;
     __block NSInteger year = 0;
     __block NSInteger episodes_total = 0;
@@ -888,32 +988,11 @@ static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, NSS
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
             NSString* mal_id = LookupMalID(release_id, title, year, episodes_total);
             if (!mal_id) {
-                NSLog(@"[AniLot AniSkip] Shikimori MAL id not found: release=%lld title=%@ year=%ld episodes=%ld",
-                      (long long)static_cast<int64_t>(release_id), title ?: @"", (long)year, (long)episodes_total);
+                NSLog(@"[AniLot AniSkip] Shikimori MAL id not found: release=%lld title=%@",
+                      (long long)static_cast<int64_t>(release_id), title ?: @"");
                 return;
             }
-
-            // Position Anixart у разных источников бывает как с нуля, так и с единицы.
-            // Используем только явно распознанный номер серии из названия, не угадываем по position.
-            long episode = EpisodeNumberFromTitle(episode_title);
-            if (episode <= 0) {
-                NSLog(@"[AniLot AniSkip] episode number unavailable: release=%lld position=%ld title=%@",
-                      (long long)static_cast<int64_t>(release_id), position, episode_title ?: @"");
-                return;
-            }
-
-            NSLog(@"[AniLot AniSkip] lookup: release=%lld MAL=%@ episode=%ld title=%@",
-                  (long long)static_cast<int64_t>(release_id), mal_id, (long)episode, episode_title ?: @"");
-            NSDictionary* markers = FetchAniSkipMarkers(mal_id, episode);
-            if (markers.count) {
-                NSLog(@"[AniLot AniSkip] markers received: MAL=%@ episode=%ld opening=%@ ending=%@",
-                      mal_id, (long)episode, markers[@"opening"] ?: @"none", markers[@"ending"] ?: @"none");
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(markers);
-                });
-            } else {
-                NSLog(@"[AniLot AniSkip] no markers: MAL=%@ episode=%ld", mal_id, (long)episode);
-            }
+            fetch(mal_id);
         });
     }];
 }
@@ -1541,18 +1620,24 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         }
     }
     
-    // пропуск опенинга / эндинга
+    // пропуск рекапа / опенинга / эндинга
     BOOL show_buttons = AniLotSettingBool(AniLotSettingSkipButtonsKey, YES);
     BOOL auto_skip = AniLotSettingBool(AniLotSettingAutoSkipKey, NO);
     NSString* title = nil;
     NSString* marker_name = nil;
     double target = 0;
-    for (NSString* name in @[@"opening", @"ending"]) {
+    for (NSString* name in @[@"recap", @"opening", @"ending"]) {
         NSArray<NSNumber*>* range = _markers[name];
         if (range.count == 2 && range[1].doubleValue > range[0].doubleValue && current >= range[0].doubleValue - 0.5 && current < range[1].doubleValue - 1) {
             marker_name = name;
             target = range[1].doubleValue;
-            title = [name isEqualToString:@"opening"] ? L(@"app.player.skip_opening", @"Пропустить опенинг") : L(@"app.player.skip_ending", @"Пропустить эндинг");
+            if ([name isEqualToString:@"opening"]) {
+                title = L(@"app.player.skip_opening", @"Пропустить опенинг");
+            } else if ([name isEqualToString:@"ending"]) {
+                title = L(@"app.player.skip_ending", @"Пропустить эндинг");
+            } else {
+                title = L(@"app.player.skip_recap", @"Пропустить рекап");
+            }
             break;
         }
     }
@@ -1754,6 +1839,27 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 
 @end
 
+/* Метки для скачанной серии: ключ воспроизведения «release-source-position». MAL ID и метки берутся из кэша — работает без сети. */
+static void LoadMarkersForLocalPlayback(AniLotPlayerViewController* controller, NSString* resume_key, NSString* title) {
+    if (!AniLotSettingBool(AniLotSettingSkipButtonsKey, YES) && !AniLotSettingBool(AniLotSettingAutoSkipKey, NO)) {
+        return;
+    }
+    NSArray<NSString*>* parts = [resume_key componentsSeparatedByString:@"-"];
+    if (parts.count != 3 || title.length == 0) {
+        return;
+    }
+    long long release_value = parts[0].longLongValue;
+    long position = parts[2].integerValue;
+    if (release_value <= 0) {
+        return;
+    }
+    anixart::ReleaseID release_id{release_value};
+    __weak AniLotPlayerViewController* weak_controller = controller;
+    LoadAniSkipMarkers(release_id, position, title, ^(NSDictionary<NSString*, NSArray<NSNumber*>*>* found) {
+        [weak_controller mergeMarkers:found overwrite:NO];
+    });
+}
+
 #pragma mark - PlayerController
 
 @interface PlayerController ()
@@ -1936,6 +2042,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     }
     [self showViewController:controller];
     [controller startWithURL:url];
+    LoadMarkersForLocalPlayback(controller, resume_key, title);
 }
 
 -(UIViewController*)getPlayer {
