@@ -559,7 +559,7 @@ static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, N
 #pragma mark - AniSkip (метки опенингов и эндингов для любых источников)
 
 /* v2: старый кэш мог содержать неверные MAL id (поиск Jikan шёл по убыванию popularity) */
-static NSString* const kMalIdsKey = @"anilot_mal_ids_v2";
+static NSString* const kMalIdsKey = @"anilot_mal_ids_v3";
 
 static NSData* SyncPOSTJSON(NSURL* url, NSDictionary* body, NSInteger* status) {
     __block NSData* result = nil;
@@ -612,22 +612,12 @@ static NSString* NormalizeTitle(NSString* title) {
     return result;
 }
 
-static BOOL HasCyrillic(NSString* text) {
-    for (NSUInteger i = 0; i < text.length; i++) {
-        unichar c = [text characterAtIndex:i];
-        if (c >= 0x0400 && c <= 0x04FF) {
-            return YES;
-        }
-    }
-    return NO;
-}
-
 /* Запросы для поиска: оригинальное название и латинские варианты из «альтернативных» */
 static NSArray<NSString*>* SearchQueries(NSString* title, NSString* alt_title) {
     NSMutableArray<NSString*>* queries = [NSMutableArray new];
     void (^add)(NSString*) = ^(NSString* candidate) {
         NSString* trimmed = [candidate stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        if (trimmed.length < 2 || HasCyrillic(trimmed) || [queries containsObject:trimmed]) {
+        if (trimmed.length < 2 || [queries containsObject:trimmed]) {
             return;
         }
         [queries addObject:trimmed];
@@ -913,7 +903,16 @@ static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, NSS
         auto release = api->releases().get_release(release_id);
         if (release) {
             title = TO_NSSTRING(release->title_original);
-            alt_title = TO_NSSTRING(release->title_alt);
+            NSString* russian_title = TO_NSSTRING(release->title_ru);
+            NSString* alternate_titles = TO_NSSTRING(release->title_alt);
+            NSMutableArray<NSString*>* aliases = [NSMutableArray new];
+            if (russian_title.length) {
+                [aliases addObject:russian_title];
+            }
+            if (alternate_titles.length) {
+                [aliases addObject:alternate_titles];
+            }
+            alt_title = [aliases componentsJoinedByString:@","];
             year = TO_NSSTRING(release->year).integerValue;
         }
         return NO;
