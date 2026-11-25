@@ -1261,10 +1261,10 @@ static void AniLotShowGallery(UIViewController* from, NSArray<NSURL*>* urls, NSI
     __weak AniLotReleaseVideosViewController* weak_self = self;
     return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^UIMenu*(NSArray<UIMenuElement*>* suggested) {
         return [UIMenu menuWithChildren:@[
-            [UIAction actionWithTitle:AL(@"app.release.videos.open", @"Открыть видео") image:[UIImage systemImageNamed:@"play.rectangle"] identifier:nil handler:^(UIAction* action) {
+            [UIAction actionWithTitle:AL(@"app.release.videos.open", @"Открыть видео") image:[UIImage systemImageNamed:@"play.fill"] identifier:nil handler:^(UIAction* action) {
                 AniLotOpenExternalLink(weak_self, link);
             }],
-            [UIAction actionWithTitle:AL(@"app.release.videos.preview", @"Превью (галерея)") image:[UIImage systemImageNamed:@"photo.on.rectangle"] identifier:nil handler:^(UIAction* action) {
+            [UIAction actionWithTitle:AL(@"app.release.videos.preview", @"Превью (галерея)") image:[UIImage systemImageNamed:@"photo"] identifier:nil handler:^(UIAction* action) {
                 AniLotShowGallery(weak_self, thumbs, start);
             }],
             [UIAction actionWithTitle:AL(@"app.release.videos.copy", @"Скопировать ссылку") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {

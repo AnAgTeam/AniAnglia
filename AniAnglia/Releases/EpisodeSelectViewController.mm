@@ -268,7 +268,7 @@
         completion_handler(true);
     }];
     download_action.backgroundColor = [UIColor colorWithRed:0.37 green:0.62 blue:0.63 alpha:1.0];
-    download_action.image = [UIImage systemImageNamed:@"arrow.down.to.line"];
+    download_action.image = [UIImage systemImageNamed:@"square.and.arrow.down"];
     UIContextualAction* change_viewed_action = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal title:nil handler:^(UIContextualAction *action, UIView *source_view, void (^completion_handler)(BOOL actionPerformed)) {
         [self cellChangeViewedActionPressed:index_path];
         completion_handler(true);

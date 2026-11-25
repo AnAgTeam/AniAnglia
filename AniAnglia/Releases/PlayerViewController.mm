@@ -1824,20 +1824,26 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     controller.ctx_position = position;
     [controller prepareForNextEpisodeWithTitle:title resumeKey:resume_key];
     
-    // отмечаем серию просмотренной (как при обычном запуске из списка) и сообщаем списку серий
-    long long release_value = controller.ctx_release_id, source_value = controller.ctx_source_id;
-    [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
-        api->episodes().add_watched_episode(release_id, source_id, static_cast<int32_t>(position));
-        return NO;
-    } completion:^(BOOL errored) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:AniLotEpisodeWatchedNotification object:nil userInfo:@{
-            @"release_id": @(release_value),
-            @"source_id": @(source_value),
-            @"position": @(position)
+    // Сначала убеждаемся, что для следующей серии удалось получить рабочую ссылку.
+    // Не отмечаем её просмотренной, если поток не найден или пользователь уже выбрал другую серию.
+    [self loadReleaseID:release_id sourceID:source_id position:position title:title controller:controller external:@"internal" closeOnError:NO completion:^(BOOL errored) {
+        if (errored || controller.ctx_position != position) {
+            return;
+        }
+        [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
+            api->episodes().add_watched_episode(release_id, source_id, static_cast<int32_t>(position));
+            return NO;
+        } completion:^(BOOL update_errored) {
+            if (update_errored) {
+                return;
+            }
+            [[NSNotificationCenter defaultCenter] postNotificationName:AniLotEpisodeWatchedNotification object:nil userInfo:@{
+                @"release_id": @(release_value),
+                @"source_id": @(source_value),
+                @"position": @(position)
+            }];
         }];
     }];
-    
-    [self loadReleaseID:release_id sourceID:source_id position:position title:title controller:controller external:@"internal" closeOnError:NO completion:nil];
 }
 
 -(void)playWithURL:(NSURL*)url {

@@ -146,9 +146,24 @@ static void NoteDirectResult(BOOL success) {
 }
 
 static UIImage* PrepareImage(UIImage* image) {
-    // декодируем в фоновом потоке, чтобы не тормозила прокрутка
-    UIImage* prepared = [image imageByPreparingForDisplay];
-    return prepared ?: image;
+    if (!image) {
+        return nil;
+    }
+    // Оптимизированная подготовка изображения доступна начиная с iOS 15.
+    if (@available(iOS 15.0, *)) {
+        UIImage* prepared = [image imageByPreparingForDisplay];
+        if (prepared) {
+            return prepared;
+        }
+    }
+    // Совместимый с iOS 14 запасной путь: декодируем изображение в фоне рендерером.
+    UIGraphicsImageRendererFormat* format = [UIGraphicsImageRendererFormat defaultFormat];
+    format.scale = image.scale;
+    UIGraphicsImageRenderer* renderer = [[UIGraphicsImageRenderer alloc] initWithSize:image.size format:format];
+    UIImage* rendered = [renderer imageWithActions:^(UIGraphicsImageRendererContext* context) {
+        [image drawInRect:CGRectMake(0, 0, image.size.width, image.size.height)];
+    }];
+    return rendered ?: image;
 }
 
 @implementation LoadableImageRequest {

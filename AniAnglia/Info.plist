@@ -23,7 +23,7 @@
 	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoadsInMedia</key>
+		<key>NSAllowsArbitraryLoadsForMedia</key>
 		<true/>
 	</dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
