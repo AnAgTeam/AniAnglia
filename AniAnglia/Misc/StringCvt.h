@@ -9,7 +9,7 @@
 #import <math.h>
 #import <string>
 
-inline NSString* TO_NSSTRING(std::string& str) {
+inline NSString* TO_NSSTRING(const std::string& str) {
     return [NSString stringWithCString:str.c_str() encoding:NSUTF8StringEncoding];
 }
 inline std::string TO_STDSTRING(NSString* str) {
