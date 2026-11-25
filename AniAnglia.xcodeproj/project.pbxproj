@@ -25,6 +25,7 @@
 		EF4941042C72383500832A6C /* AppColor.h in Sources */ = {isa = PBXBuildFile; fileRef = EF4941032C72383500832A6C /* AppColor.h */; };
 		EF4941062C7238B700832A6C /* AppColor.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4941052C7238B700832A6C /* AppColor.mm */; };
 		EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941122C723F0700832A6C /* UIKit.framework */; };
+		A1B2C3D4E5F60718293A4B61 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B60 /* SafariServices.framework */; };
 		EF4941152C723F8600832A6C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF4941142C723F8600832A6C /* CoreGraphics.framework */; };
 		EF4C94892C7A252600CEF0BE /* LibanixartApi.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF4C94882C7A252500CEF0BE /* LibanixartApi.mm */; };
 		EF5A3CB32C7F92A300B4F637 /* AppDataController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */; };
@@ -1402,6 +1403,7 @@
 		EFDE6BCC2DF8D32900408CF0 /* CommentsPageableDataProvider.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommentsPageableDataProvider.mm; sourceTree = "<group>"; };
 		EFDE6BCE2DF8D36900408CF0 /* PageableDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PageableDataProvider.h; sourceTree = "<group>"; };
 		EFDE6BCF2DF8D38000408CF0 /* PageableDataProvider.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PageableDataProvider.mm; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B60 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
 		EFE474962CFA42B500508136 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		EFED8F552CE2985300C53C1C /* LoadableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadableView.h; sourceTree = "<group>"; };
 		EFED8F562CE2986300C53C1C /* LoadableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LoadableView.mm; sourceTree = "<group>"; };
@@ -1432,6 +1434,7 @@
 				EFD5CD742CDABD1700A1E057 /* boost_system.xcframework in Frameworks */,
 				EFD5CD722CDABD1700A1E057 /* boost_regex.xcframework in Frameworks */,
 				EF4941132C723F0700832A6C /* UIKit.framework in Frameworks */,
+				A1B2C3D4E5F60718293A4B61 /* SafariServices.framework in Frameworks */,
 				EF8097CE2D15CF85006F18DF /* SystemConfiguration.framework in Frameworks */,
 				EF875C802C78FB7400DAECB1 /* Security.framework in Frameworks */,
 				EFD5CD792CDABD3800A1E057 /* curlpp.xcframework in Frameworks */,
