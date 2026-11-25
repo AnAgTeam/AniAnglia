@@ -35,15 +35,14 @@ void AniLotSetSettingBool(NSString* key, BOOL value) {
 }
 
 NSArray<NSString*>* AniLotExternalPlayerIDs(void) {
-    return @[@"internal", @"vlc", @"outplayer", @"infuse", @"nplayer", @"share"];
+    return @[@"internal", @"vlc", @"outplayer", @"nplayer", @"share"];
 }
 
 NSString* AniLotExternalPlayerName(NSString* identifier) {
     NSDictionary<NSString*, NSString*>* names = @{
-        @"internal": L(@"app.player.external.internal", @"Встроенный плеер"),
+        @"internal": L(@"app.player.external.internal", @"Встроенный"),
         @"vlc": @"VLC",
         @"outplayer": @"OutPlayer",
-        @"infuse": @"Infuse",
         @"nplayer": @"nPlayer",
         @"share": L(@"app.player.external.share", @"Поделиться ссылкой…")
     };
@@ -328,6 +327,234 @@ static NSDictionary<NSString*, NSURL*>* ResolveLibriaStreams(NSString* target, N
     return streams.count ? streams : nil;
 }
 
+#pragma mark - Заголовки для потоков (Sibnet и др.)
+
+static NSMutableDictionary<NSString*, NSDictionary<NSString*, NSString*>*>* StreamHeadersStore(void) {
+    static NSMutableDictionary* store = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        store = [NSMutableDictionary new];
+    });
+    return store;
+}
+
+static void RememberStreamHeaders(NSURL* url, NSDictionary<NSString*, NSString*>* headers) {
+    if (!url.host.length || !headers.count) {
+        return;
+    }
+    NSMutableDictionary* store = StreamHeadersStore();
+    @synchronized (store) {
+        store[url.host] = headers;
+    }
+}
+
+static NSDictionary<NSString*, NSString*>* HeadersForStream(NSURL* url) {
+    NSMutableDictionary* store = StreamHeadersStore();
+    @synchronized (store) {
+        return url.host ? store[url.host] : nil;
+    }
+}
+
+static NSURLRequest* RequestForStream(NSURL* url) {
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+    NSDictionary<NSString*, NSString*>* headers = HeadersForStream(url);
+    for (NSString* key in headers) {
+        [request setValue:headers[key] forHTTPHeaderField:key];
+    }
+    return request;
+}
+
+/* Определяет конечный адрес после редиректов, не скачивая тело файла */
+@interface AniLotRedirectResolver : NSObject <NSURLSessionDataDelegate>
+@property(nonatomic, strong) NSURL* final_url;
+@property(nonatomic) NSInteger status;
+@end
+@implementation AniLotRedirectResolver
+-(void)URLSession:(NSURLSession*)session dataTask:(NSURLSessionDataTask*)task didReceiveResponse:(NSURLResponse*)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completion_handler {
+    _final_url = response.URL;
+    _status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse*)response).statusCode : 0;
+    completion_handler(NSURLSessionResponseCancel);
+}
+@end
+
+static NSURL* ResolveFinalURL(NSURL* url, NSDictionary<NSString*, NSString*>* headers, NSInteger* status) {
+    AniLotRedirectResolver* resolver = [AniLotRedirectResolver new];
+    NSURLSession* session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration] delegate:resolver delegateQueue:nil];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+    request.timeoutInterval = 15;
+    for (NSString* key in headers) {
+        [request setValue:headers[key] forHTTPHeaderField:key];
+    }
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    NSURLSessionDataTask* task = [session dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        dispatch_semaphore_signal(semaphore);
+    }];
+    [task resume];
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(18 * NSEC_PER_SEC)));
+    [session invalidateAndCancel];
+    if (status) *status = resolver.status;
+    return resolver.final_url;
+}
+
+#pragma mark - Sibnet
+
+/* Парсер Sibnet внутри libanixart устарел: страница плеера теперь отдаёт путь /v/<hash>/<id>.mp4,
+   который редиректит на CDN и требует Referer. Разбираем страницу сами. */
+static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, NSMutableString* detail) {
+    NSString* video_id = FirstMatch(@"videoid=(\\d+)", target) ?: FirstMatch(@"/video(\\d+)", target) ?: FirstMatch(@"embed/(\\d+)", target) ?: FirstMatch(@"[?&]id=(\\d+)", target);
+    [detail appendFormat:@"Sibnet: %@\n", target];
+    if (!video_id) {
+        [detail appendString:@"Не удалось определить id видео из ссылки\n"];
+        return nil;
+    }
+    NSString* shell = [NSString stringWithFormat:@"https://video.sibnet.ru/shell.php?videoid=%@", video_id];
+    NSString* user_agent = @"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+    NSDictionary* page_headers = @{@"User-Agent": user_agent, @"Referer": @"https://video.sibnet.ru/", @"Accept": @"text/html,*/*"};
+    NSInteger status = 0;
+    NSString* error_text = nil;
+    NSData* data = SyncRequest([NSURL URLWithString:shell], page_headers, &status, &error_text);
+    [detail appendFormat:@"shell.php → HTTP %ld %@\n", (long)status, error_text ?: @""];
+    NSString* html = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+    if (!html) {
+        html = data ? [[NSString alloc] initWithData:data encoding:NSWindowsCP1251StringEncoding] : nil;
+    }
+    if (html.length == 0) {
+        return nil;
+    }
+    html = [html stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+    NSString* path = FirstMatch(@"src\\s*:\\s*[\"'](/v/[^\"']+?\\.mp4[^\"']*)[\"']", html) ?: FirstMatch(@"[\"'](/v/[^\"']+?\\.mp4[^\"']*)[\"']", html);
+    NSString* absolute = nil;
+    if (path) {
+        absolute = [@"https://video.sibnet.ru" stringByAppendingString:path];
+    } else {
+        absolute = FirstMatch(@"[\"'](https?://[^\"']+?\\.mp4[^\"']*)[\"']", html);
+    }
+    if (!absolute) {
+        NSString* compact = [[html componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] componentsJoinedByString:@" "];
+        [detail appendFormat:@"В странице нет ссылки на mp4 (%lu байт). Начало: %@\n", (unsigned long)html.length, [compact substringToIndex:MIN((NSUInteger)400, compact.length)]];
+        return nil;
+    }
+    NSDictionary* media_headers = @{@"User-Agent": user_agent, @"Referer": shell};
+    NSInteger final_status = 0;
+    NSURL* final_url = ResolveFinalURL([NSURL URLWithString:absolute], media_headers, &final_status);
+    [detail appendFormat:@"mp4 → %@ (HTTP %ld)\n", final_url.host ?: @"?", (long)final_status];
+    if (!final_url || (final_status >= 400)) {
+        return nil;
+    }
+    RememberStreamHeaders(final_url, media_headers);
+    RememberStreamHeaders([NSURL URLWithString:absolute], media_headers);
+    return @{@"720": final_url};
+}
+
+#pragma mark - AniSkip (метки опенингов и эндингов для любых источников)
+
+static NSString* const kMalIdsKey = @"anilot_mal_ids";
+
+static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSString* alt_title) {
+    NSString* cache_key = [NSString stringWithFormat:@"%lld", (long long)static_cast<int64_t>(release_id)];
+    NSDictionary* cache = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kMalIdsKey];
+    if (cache[cache_key]) {
+        return [cache[cache_key] description];
+    }
+    for (NSString* query in @[title ?: @"", alt_title ?: @""]) {
+        if (query.length == 0) {
+            continue;
+        }
+        NSString* encoded = [query stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.jikan.moe/v4/anime?q=%@&limit=5&order_by=popularity", encoded]];
+        NSInteger status = 0;
+        NSData* data = url ? SyncGET(url, &status, nil) : nil;
+        if (status != 200 || !data) {
+            continue;
+        }
+        NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        NSArray* items = [json isKindOfClass:[NSDictionary class]] ? json[@"data"] : nil;
+        NSDictionary* chosen = nil;
+        for (NSDictionary* item in items) {
+            if (![item isKindOfClass:[NSDictionary class]]) {
+                continue;
+            }
+            NSMutableArray<NSString*>* names = [NSMutableArray new];
+            for (NSString* key in @[@"title", @"title_english", @"title_japanese"]) {
+                if ([item[key] isKindOfClass:[NSString class]]) {
+                    [names addObject:[item[key] lowercaseString]];
+                }
+            }
+            for (NSDictionary* t in item[@"titles"]) {
+                if ([t isKindOfClass:[NSDictionary class]] && [t[@"title"] isKindOfClass:[NSString class]]) {
+                    [names addObject:[t[@"title"] lowercaseString]];
+                }
+            }
+            if ([names containsObject:query.lowercaseString]) {
+                chosen = item;
+                break;
+            }
+        }
+        if (!chosen && [items.firstObject isKindOfClass:[NSDictionary class]]) {
+            chosen = items.firstObject;
+        }
+        id mal_id = chosen[@"mal_id"];
+        if ([mal_id respondsToSelector:@selector(longLongValue)] && [mal_id longLongValue] > 0) {
+            NSMutableDictionary* updated = [cache mutableCopy] ?: [NSMutableDictionary new];
+            updated[cache_key] = [mal_id description];
+            [[NSUserDefaults standardUserDefaults] setObject:updated forKey:kMalIdsKey];
+            return [mal_id description];
+        }
+    }
+    return nil;
+}
+
+static NSDictionary<NSString*, NSArray<NSNumber*>*>* FetchAniSkipMarkers(NSString* mal_id, long episode) {
+    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.aniskip.com/v2/skip-times/%@/%ld?types=op&types=ed&types=mixed-op&types=mixed-ed&episodeLength=0", mal_id, episode]];
+    NSInteger status = 0;
+    NSData* data = url ? SyncGET(url, &status, nil) : nil;
+    if (status != 200 || !data) {
+        return nil;
+    }
+    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    NSArray* results = [json isKindOfClass:[NSDictionary class]] ? json[@"results"] : nil;
+    NSMutableDictionary<NSString*, NSArray<NSNumber*>*>* markers = [NSMutableDictionary new];
+    for (NSDictionary* item in results) {
+        if (![item isKindOfClass:[NSDictionary class]] || ![item[@"interval"] isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        NSString* type = [item[@"skipType"] description];
+        NSString* name = [type hasSuffix:@"op"] ? @"opening" : ([type hasSuffix:@"ed"] ? @"ending" : nil);
+        double start = [item[@"interval"][@"startTime"] doubleValue];
+        double end = [item[@"interval"][@"endTime"] doubleValue];
+        if (name && end > start && !markers[name]) {
+            markers[name] = @[@(start), @(end)];
+        }
+    }
+    return markers.count ? markers : nil;
+}
+
+static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, void (^completion)(NSDictionary<NSString*, NSArray<NSNumber*>*>* markers)) {
+    __block NSString* title = nil;
+    __block NSString* alt_title = nil;
+    [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
+        auto release = api->releases().get_release(release_id);
+        if (release) {
+            title = TO_NSSTRING(release->title_original);
+            alt_title = TO_NSSTRING(release->title_alt);
+        }
+        return NO;
+    } completion:^(BOOL errored) {
+        if (errored || (title.length == 0 && alt_title.length == 0)) {
+            return;
+        }
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            NSString* mal_id = LookupMalID(release_id, title, alt_title);
+            NSDictionary* markers = mal_id ? FetchAniSkipMarkers(mal_id, position) : nil;
+            if (markers.count) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(markers);
+                });
+            }
+        });
+    }];
+}
+
 static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, NSMutableDictionary* markers, void (^completion)(NSDictionary<NSString*, NSURL*>* urls, NSString* detail)) {
     LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
     __block NSDictionary<NSString*, NSURL*>* result = nil;
@@ -351,6 +578,12 @@ static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSource
                     result = ResolveIframeStreams(target, detail);
                 }
             }
+            if (result.count) {
+                return NO;
+            }
+        }
+        if ([lower containsString:@"sibnet"]) {
+            result = ResolveSibnetStreams(target, detail);
             if (result.count) {
                 return NO;
             }
@@ -386,6 +619,7 @@ static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSource
         completion((errored || result.count == 0) ? nil : result, [detail copy]);
     }];
 }
+
 
 static NSString* PreferredQuality(void) {
     return [[[AppDataController sharedInstance] getSettingsController] getPrefferedQuality];
@@ -424,8 +658,6 @@ static void OpenInExternalPlayer(NSString* identifier, NSURL* url) {
         link = [@"vlc-x-callback://x-callback-url/stream?url=" stringByAppendingString:encoded];
     } else if ([identifier isEqualToString:@"outplayer"]) {
         link = [@"outplayer://" stringByAppendingString:raw];
-    } else if ([identifier isEqualToString:@"infuse"]) {
-        link = [@"infuse://x-callback-url/play?url=" stringByAppendingString:encoded];
     } else if ([identifier isEqualToString:@"nplayer"]) {
         link = [@"nplayer-" stringByAppendingString:raw];
     }
@@ -475,6 +707,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 @property(nonatomic, copy) void (^pip_restore)(AniLotPlayerViewController* controller, void (^completion)(BOOL restored));
 @property(nonatomic, copy) void (^pip_did_stop)(AniLotPlayerViewController* controller);
 
+-(void)mergeMarkers:(NSDictionary<NSString*, NSArray<NSNumber*>*>*)markers overwrite:(BOOL)overwrite;
 -(void)startWithURL:(NSURL*)url;
 -(void)configureWithQualities:(NSDictionary<NSString*, NSURL*>*)urls preferred:(NSString*)preferred;
 -(void)showMessage:(NSString*)title message:(NSString*)message closeAfter:(BOOL)close_after;
@@ -738,6 +971,16 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 
 #pragma mark Воспроизведение
 
+-(void)mergeMarkers:(NSDictionary<NSString*, NSArray<NSNumber*>*>*)markers overwrite:(BOOL)overwrite {
+    NSMutableDictionary* merged = [(_markers ?: @{}) mutableCopy];
+    for (NSString* key in markers) {
+        if (overwrite || !merged[key]) {
+            merged[key] = markers[key];
+        }
+    }
+    self.markers = merged;
+}
+
 -(void)startWithURL:(NSURL*)url {
     if (self.isViewLoaded) {
         [self beginPlaybackWithURL:url];
@@ -768,7 +1011,12 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     if (url.isFileURL) {
         _player = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:[AVURLAsset URLAssetWithURL:url options:nil]]];
     } else {
-        _player = [AVPlayer playerWithURL:url];
+        NSDictionary<NSString*, NSString*>* headers = HeadersForStream(url);
+        if (headers.count) {
+            _player = [AVPlayer playerWithPlayerItem:[AVPlayerItem playerItemWithAsset:[AVURLAsset URLAssetWithURL:url options:@{@"AVURLAssetHTTPHeaderFieldsKey": headers}]]];
+        } else {
+            _player = [AVPlayer playerWithURL:url];
+        }
     }
     _video_view.playerLayer.player = _player;
     
@@ -917,11 +1165,6 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
             title = [name isEqualToString:@"opening"] ? L(@"app.player.skip_opening", @"Пропустить опенинг") : L(@"app.player.skip_ending", @"Пропустить эндинг");
             break;
         }
-    }
-    if (!marker_name && _markers.count == 0 && current > 3 && current < 270 && _skip_seconds > 0) {
-        // меток нет (источник их не отдаёт): кнопка перематывает на заданное время
-        title = [NSString stringWithFormat:@"%@ +%ld %@", L(@"app.player.skip", @"Пропустить"), (long)_skip_seconds, L(@"app.common.seconds_short", @"сек.")];
-        target = current + _skip_seconds;
     }
     if (marker_name && auto_skip && ![_auto_skipped containsObject:marker_name]) {
         [_auto_skipped addObject:marker_name];
@@ -1182,6 +1425,12 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     }
     
     NSMutableDictionary* markers = [NSMutableDictionary new];
+    if (controller && (AniLotSettingBool(AniLotSettingSkipButtonsKey, YES) || AniLotSettingBool(AniLotSettingAutoSkipKey, NO))) {
+        __weak AniLotPlayerViewController* weak_controller = controller;
+        LoadAniSkipMarkers(release_id, position, ^(NSDictionary<NSString*, NSArray<NSNumber*>*>* found) {
+            [weak_controller mergeMarkers:found overwrite:NO];
+        });
+    }
     ResolveStreams(release_id, source_id, static_cast<int32_t>(position), markers, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         BOOL errored = (urls == nil);
         if (completion_handler) {
@@ -1200,7 +1449,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
             [controller showMessage:NSLocalizedString(@"app.player.stream_not_found_error.title", "") message:error_message closeAfter:YES];
             return;
         }
-        controller.markers = markers;
+        [controller mergeMarkers:markers overwrite:YES];
         [controller configureWithQualities:urls preferred:PreferredQuality()];
     });
 }
@@ -1495,7 +1744,7 @@ static NSURL* ResolveRelativeURL(NSString* reference, NSURL* base) {
         return;
     }
     
-    NSURLSessionTask* task = [_file_session downloadTaskWithURL:url];
+    NSURLSessionTask* task = [_file_session downloadTaskWithRequest:RequestForStream(url)];
     task.taskDescription = item.identifier;
     _tasks[item.identifier] = task;
     item.state = DownloadStateDownloading;

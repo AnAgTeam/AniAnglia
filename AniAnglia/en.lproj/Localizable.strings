@@ -361,3 +361,23 @@
 "app.loadable.reload.title" = "Retry";
 "app.common.named_section.show_all" = "Show all";
 "app.common.load_empty" = "Nothing found :C";
+
+/* AniLot additions */
+"app.settings.playback.player" = "Player";
+"app.main_tab_bar.feed_tab.title" = "Feed";
+"app.feed.title" = "Feed";
+"app.feed.empty" = "The feed is empty";
+"app.feed.error" = "Couldn't load the feed. Pull down to retry.";
+"app.feed.images" = "images";
+"app.release.videos.title" = "Videos";
+"app.release.videos.empty" = "No videos yet";
+"app.release.videos.error" = "Couldn't load videos";
+"app.release.videos.open" = "Open video";
+"app.release.videos.preview" = "Preview (gallery)";
+"app.release.videos.copy" = "Copy link";
+"app.gallery.saved" = "Saved to Photos";
+"app.gallery.save_error" = "Couldn't save (no Photos access)";
+"app.gallery.not_loaded" = "Image is still loading";
+"app.settings.appearance.accent" = "Accent color";
+"app.settings.appearance.accent.reset" = "Reset to orange";
+"app.settings.appearance.accent.footer" = "Color of buttons, switches and accents. Orange by default.";

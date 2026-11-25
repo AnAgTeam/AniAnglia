@@ -11,7 +11,7 @@
 #import "AppColor.h"
 #import "AppDataController.h"
 
-@interface SettingsAppearanceViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface SettingsAppearanceViewController () <UITableViewDataSource, UITableViewDelegate, UIColorPickerViewControllerDelegate>
 @property(nonatomic, strong) AppSettingsDataController* settings_data_controller;
 @property(nonatomic, retain) UITableView* content_table_view;
 @end
@@ -49,11 +49,13 @@
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)table_view {
-    return 1;
+    return 2;
 }
 -(NSInteger)tableView:(UITableView *)table_view numberOfRowsInSection:(NSInteger)section {
     switch(section) {
         case 0:
+            return 2;
+        case 1:
             return 2;
     }
     return 0;
@@ -63,7 +65,9 @@
     return 50;
 }
 -(NSString *)tableView:(UITableView *)table_view titleForFooterInSection:(NSInteger)section {
-
+    if (section == 1) {
+        return NSLocalizedStringWithDefaultValue(@"app.settings.appearance.accent.footer", nil, [NSBundle mainBundle], @"Цвет кнопок, переключателей и акцентов. По умолчанию — оранжевый.", @"");
+    }
     return nil;
 }
 -(UITableViewCell *)tableView:(UITableView *)table_view cellForRowAtIndexPath:(NSIndexPath *)index_path {
@@ -104,6 +108,24 @@
             return cell;
         }
     }
+    if (section == 1) {
+        UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+        cell.backgroundColor = [AppColorProvider foregroundColor1];
+        cell.textLabel.textColor = [AppColorProvider textColor];
+        if (row == 0) {
+            cell.textLabel.text = NSLocalizedStringWithDefaultValue(@"app.settings.appearance.accent", nil, [NSBundle mainBundle], @"Акцентный цвет", @"");
+            UIView* swatch = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 28, 28)];
+            swatch.backgroundColor = [AppColorProvider accentColor];
+            swatch.layer.cornerRadius = 14;
+            swatch.layer.borderWidth = 1;
+            swatch.layer.borderColor = [UIColor whiteColor].CGColor;
+            cell.accessoryView = swatch;
+        } else {
+            cell.textLabel.text = NSLocalizedStringWithDefaultValue(@"app.settings.appearance.accent.reset", nil, [NSBundle mainBundle], @"Сбросить на оранжевый", @"");
+            cell.textLabel.textColor = [AppColorProvider primaryColor];
+        }
+        return cell;
+    }
     
     return nil;
 }
@@ -132,7 +154,27 @@
     NSInteger row = index_path.row;
     [table_view deselectRowAtIndexPath:index_path animated:YES];
     
-    // TODO
+    if (section == 1) {
+        if (row == 0) {
+            UIColorPickerViewController* picker = [UIColorPickerViewController new];
+            picker.selectedColor = [AppColorProvider accentColor];
+            picker.supportsAlpha = NO;
+            picker.delegate = self;
+            [self presentViewController:picker animated:YES completion:nil];
+        } else {
+            [AppColorProvider setAccentColor:nil];
+            [_content_table_view reloadData];
+        }
+    }
+}
+
+-(void)colorPickerViewControllerDidSelectColor:(UIColorPickerViewController*)picker {
+    [AppColorProvider setAccentColor:picker.selectedColor];
+    [_content_table_view reloadData];
+}
+-(void)colorPickerViewControllerDidFinish:(UIColorPickerViewController*)picker {
+    [AppColorProvider setAccentColor:picker.selectedColor];
+    [_content_table_view reloadData];
 }
 
 -(void)onThemeMenuItemSelected:(app_settings::Appearance::Theme)theme {

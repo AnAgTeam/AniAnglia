@@ -39,7 +39,7 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
         return [UIColor systemRedColor];
     }
     else {
-        return [UIColor systemGrayColor];
+        return [AppColorProvider textShyColor];
     }
 }
 
@@ -117,7 +117,7 @@ static const CGFloat RATING_BADGE_HEIGHT = 35;
     _description_label.textColor = [AppColorProvider textSecondaryColor];
     _ep_count_label.textColor = [AppColorProvider textSecondaryColor];
     _rating_label.textColor = [AppColorProvider textColor];
-    _rating_label.backgroundColor = [UIColor systemGrayColor];
+    _rating_label.backgroundColor = [AppColorProvider foregroundColor2];
 }
 
 -(void)setImageUrl:(NSURL*)image_url {

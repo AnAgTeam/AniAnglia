@@ -16,3 +16,9 @@
 -(instancetype)initWithRandomCollectionRelease:(anixart::CollectionID)collection_id;
 
 @end
+
+// Лента Anixart (посты каналов) для отдельной вкладки
+#ifdef __cplusplus
+extern "C"
+#endif
+UIViewController* AniLotMakeFeedViewController(void);

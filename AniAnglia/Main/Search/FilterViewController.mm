@@ -314,7 +314,7 @@
 
 -(void)setupLayout {
     self.backgroundColor = [UIColor clearColor];
-    _checkbox_image_view.tintColor = [UIColor systemGrayColor];
+    _checkbox_image_view.tintColor = [AppColorProvider textShyColor];
     _name_label.textColor = [AppColorProvider textColor];
 }
 
@@ -324,7 +324,7 @@
         _checkbox_image_view.tintColor = [AppColorProvider primaryColor];
     } else {
         _checkbox_image_view.image = [UIImage systemImageNamed:@"square"];
-        _checkbox_image_view.tintColor = [UIColor systemGrayColor];
+        _checkbox_image_view.tintColor = [AppColorProvider textShyColor];
     }
 }
 -(void)setName:(NSString*)name {
@@ -500,7 +500,7 @@
 -(void)updateSelectedCount {
     if (_selected_count <= 0) {
         [_select_all_button setImage:[UIImage systemImageNamed:@"square"] forState:UIControlStateNormal];
-        _select_all_button.tintColor = [UIColor systemGrayColor];
+        _select_all_button.tintColor = [AppColorProvider textShyColor];
     }
     else if (_selected_count >= [_actions count]) {
         [_select_all_button setImage:[UIImage systemImageNamed:@"checkmark.square"] forState:UIControlStateNormal];
@@ -828,7 +828,7 @@
     if (_filter_request.is_genres_exclude_mode) {
         _genres_exclude_mode_button.tintColor = [AppColorProvider primaryColor];
     } else {
-        _genres_exclude_mode_button.tintColor = [UIColor systemGrayColor];
+        _genres_exclude_mode_button.tintColor = [AppColorProvider textShyColor];
     }
 }
 

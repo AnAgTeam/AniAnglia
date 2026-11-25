@@ -8,18 +8,36 @@
 #import <Foundation/Foundation.h>
 #import "AppColor.h"
 
+
+#pragma mark - Акцентный цвет (по умолчанию оранжевый)
+
+static NSString* const kAccentColorKey = @"anilot_accent_color";
+
+static UIColor* DefaultAccentColor(void) {
+    return [UIColor colorWithRed:242/255. green:139/255. blue:48/255. alpha:1];
+}
+
+static UIColor* CurrentAccentColor(void) {
+    NSArray<NSNumber*>* components = [[NSUserDefaults standardUserDefaults] arrayForKey:kAccentColorKey];
+    if (components.count == 3) {
+        return [UIColor colorWithRed:components[0].doubleValue green:components[1].doubleValue blue:components[2].doubleValue alpha:1];
+    }
+    return DefaultAccentColor();
+}
+
 @implementation AppDefaultDarkTheme
 -(UIColor*)backgroundColor {
-    return [UIColor colorWithRed:24/255. green:24/255. blue:26/255. alpha:1];
+    return [UIColor blackColor];
 }
 -(UIColor*)foregroundColor1 {
-    return [UIColor colorWithRed:36/255. green:36/255. blue:39/255. alpha:1];
+    // почти чёрный с лёгким тёплым оттенком акцента, без серого
+    return [UIColor colorWithRed:12/255. green:9/255. blue:6/255. alpha:1];
 }
 -(UIColor*)foregroundColor2 {
-    return [UIColor colorWithRed:47/255. green:47/255. blue:51/255. alpha:1];
+    return [UIColor colorWithRed:22/255. green:16/255. blue:10/255. alpha:1];
 }
 -(UIColor*)primaryColor {
-    return [UIColor colorWithRed:242/255. green:139/255. blue:48/255. alpha:1];
+    return CurrentAccentColor();
 }
 -(UIColor*)secondaryColor {
     return [UIColor systemRedColor];
@@ -31,16 +49,16 @@
     return [UIColor colorWithRed:76/255. green:175/255. blue:80/255. alpha:1];
 }
 -(UIColor*)idleColor {
-    return [UIColor systemOrangeColor];
+    return CurrentAccentColor();
 }
 -(UIColor*)textColor {
     return [UIColor whiteColor];
 }
 -(UIColor*)textSecondaryColor {
-    return [UIColor colorWithRed:160/255. green:160/255. blue:168/255. alpha:1];
+    return [CurrentAccentColor() colorWithAlphaComponent:0.8];
 }
 -(UIColor*)textShyColor {
-    return [UIColor colorWithRed:119/255. green:119/255. blue:127/255. alpha:1];
+    return [CurrentAccentColor() colorWithAlphaComponent:0.55];
 }
 @end
 
@@ -55,7 +73,7 @@
     return [UIColor tertiarySystemBackgroundColor];
 }
 -(UIColor*)primaryColor {
-    return [UIColor systemBlueColor];
+    return CurrentAccentColor();
 }
 -(UIColor*)secondaryColor {
     return [UIColor systemRedColor];
@@ -126,6 +144,38 @@ static AppThemes app_themes = {
         id<AppColorTheme> theme = [self getThemeForStyle:trait_collection.userInterfaceStyle];
         return getter(theme);
     }];
+}
+
++(UIColor*)accentColor {
+    return CurrentAccentColor();
+}
++(UIColor*)defaultAccentColor {
+    return DefaultAccentColor();
+}
++(void)setAccentColor:(UIColor*)color {
+    if (color) {
+        CGFloat r = 0, g = 0, b = 0, a = 0;
+        [color getRed:&r green:&g blue:&b alpha:&a];
+        [[NSUserDefaults standardUserDefaults] setObject:@[@(r), @(g), @(b)] forKey:kAccentColorKey];
+    } else {
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:kAccentColorKey];
+    }
+    [self refreshAllWindows];
+}
++(void)refreshAllWindows {
+    // динамические цвета пересчитываются при смене traitCollection: кратко переключаем стиль окна
+    for (UIScene* scene in [UIApplication sharedApplication].connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+        for (UIWindow* window in ((UIWindowScene*)scene).windows) {
+            UIUserInterfaceStyle original = window.overrideUserInterfaceStyle;
+            window.overrideUserInterfaceStyle = (window.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) ? UIUserInterfaceStyleLight : UIUserInterfaceStyleDark;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                window.overrideUserInterfaceStyle = original;
+            });
+        }
+    }
 }
 
 +(UIColor*)backgroundColor {

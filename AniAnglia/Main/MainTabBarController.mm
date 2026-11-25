@@ -21,6 +21,7 @@
 #import "SettingsViewController.h"
 #import "ReleasesViewController.h"
 #import "ProfilesTableViewController.h"
+#import "ReleaseViewController.h"
 
 @interface ReleasesSearchController : UIViewController <SearchViewControllerDataSource, SearchViewControllerDelegate, ReleasesSearchHistoryTableViewControllerDelegate>
 @property(nonatomic, strong) AppDataController* app_data_controller;
@@ -257,6 +258,11 @@
     _bookmarks_nav_controller = [[UINavigationController alloc] initWithRootViewController:_bookmarks_search_view_controller];
     _profile_nav_controller = [[UINavigationController alloc] initWithRootViewController:_profile_search_view_controller];
     
+    UINavigationController* feed_nav_controller = [[UINavigationController alloc] initWithRootViewController:AniLotMakeFeedViewController()];
+    feed_nav_controller.tabBarItem.title = NSLocalizedStringWithDefaultValue(@"app.main_tab_bar.feed_tab.title", nil, [NSBundle mainBundle], @"Лента", @"");
+    feed_nav_controller.tabBarItem.image = [UIImage systemImageNamed:@"newspaper"];
+    feed_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"newspaper.fill"];
+    
     _main_nav_controller.tabBarItem.title = NSLocalizedString(@"app.main_tab_bar.main_tab.title", "");
     _main_nav_controller.tabBarItem.image = [UIImage systemImageNamed:@"house"];
     _main_nav_controller.tabBarItem.selectedImage = [UIImage systemImageNamed:@"house.fill"];
@@ -273,6 +279,7 @@
     [self setViewControllers:@[
         _main_nav_controller,
         _discover_nav_controller,
+        feed_nav_controller,
         _bookmarks_nav_controller,
         _profile_nav_controller
     ]];
@@ -280,7 +287,7 @@
 
 -(void)setupLayout {
     self.view.backgroundColor = [AppColorProvider backgroundColor];
-    self.tabBar.unselectedItemTintColor = [UIColor systemGrayColor];
+    self.tabBar.unselectedItemTintColor = [AppColorProvider textShyColor];
     self.tabBar.tintColor = [AppColorProvider primaryColor];
     self.tabBar.backgroundColor = [AppColorProvider backgroundColor];
 }

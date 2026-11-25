@@ -70,4 +70,9 @@ typedef UIColor*(^app_theme_color_getter_t)(id<AppColorTheme>);
 +(UIColor*)textColor;
 +(UIColor*)textSecondaryColor;
 +(UIColor*)textShyColor;
+
+// Акцентный цвет (по умолчанию оранжевый), хранится в NSUserDefaults. nil — сбросить на оранжевый.
++(UIColor*)accentColor;
++(UIColor*)defaultAccentColor;
++(void)setAccentColor:(UIColor*)color;
 @end

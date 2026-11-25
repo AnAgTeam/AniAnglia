@@ -20,9 +20,8 @@
 
 #define L(key, def) NSLocalizedStringWithDefaultValue(key, nil, [NSBundle mainBundle], def, @"")
 
-static NSString* const kTelegramURL = @"https://t.me/AnAgTeam";
-static NSString* const kGithubURL = @"https://github.com/AnAgTeam/AniAnglia";
-static NSString* const kGithubIssuesURL = @"https://github.com/AnAgTeam/AniAnglia/issues";
+static NSString* const kGithubURL = @"https://github.com/vilefex/AniLot";
+static NSString* const kGithubIssuesURL = @"https://github.com/vilefex/AniLot/issues";
 
 @class SettingsListViewController;
 typedef void (^SettingsAction)(SettingsListViewController* from);
@@ -244,7 +243,7 @@ static SettingsListViewController* MakeNotificationsPage(void) {
     return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.notifications.name", @"Уведомления") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
         return @[
             MakeSection(nil, L(@"app.settings.notifications.footer", @"Разрешения на уведомления управляются в системных настройках iOS."), @[
-                NavRow(L(@"app.settings.notifications.system", @"Системные настройки уведомлений"), @"bell.badge.fill", [UIColor systemPurpleColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.notifications.system", @"Системные настройки уведомлений"), @"bell.badge.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     OpenURL(UIApplicationOpenSettingsURLString);
                 })
             ])
@@ -303,18 +302,6 @@ static SettingsListViewController* MakePlaybackPage(void) {
     NSArray<NSString*>* qualities = @[@"360", @"480", @"720", @"1080"];
     NSArray<NSNumber*>* skips = @[@10, @30, @60, @85, @90, @120];
     return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.playback.name", @"Воспроизведение") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
-        SettingsRow* player_row = ValueRow(L(@"app.settings.playback.player", @"Плеер по умолчанию"), ^NSString*{
-            return [settings getDefaultPlayer] == app_settings::Playback::DefaultPlayer::Internal
-                ? L(@"app.settings.playback.player.internal", @"Встроенный")
-                : L(@"app.settings.playback.player.ask", @"Спрашивать каждый раз");
-        }, ^(SettingsListViewController* from) {
-            NSArray<NSString*>* names = @[L(@"app.settings.playback.player.ask", @"Спрашивать каждый раз"), L(@"app.settings.playback.player.internal", @"Встроенный")];
-            NSInteger selected = (NSInteger)[settings getDefaultPlayer];
-            PresentChoices(from, L(@"app.settings.playback.player", @"Плеер по умолчанию"), names, selected, ^(NSInteger index) {
-                [settings setDefaultPlayer:static_cast<app_settings::Playback::DefaultPlayer>(index)];
-                [from reload];
-            });
-        });
         SettingsRow* quality_row = ValueRow(L(@"app.settings.playback.quality", @"Предпочитаемое качество"), ^NSString*{
             NSString* q = [settings getPrefferedQuality];
             return q.length ? [q stringByAppendingString:@"p"] : @"—";
@@ -352,7 +339,7 @@ static SettingsListViewController* MakePlaybackPage(void) {
         }, ^(BOOL on) {
             [settings setRememberSource:on];
         });
-        SettingsRow* external_row = ValueRow(L(@"app.settings.playback.external", @"Внешний плеер"), ^NSString*{
+        SettingsRow* external_row = ValueRow(L(@"app.settings.playback.player", @"Плеер"), ^NSString*{
             return AniLotExternalPlayerName(AniLotExternalPlayerID());
         }, ^(SettingsListViewController* from) {
             NSArray<NSString*>* ids = AniLotExternalPlayerIDs();
@@ -361,7 +348,7 @@ static SettingsListViewController* MakePlaybackPage(void) {
                 [names addObject:AniLotExternalPlayerName(identifier)];
             }
             NSInteger selected = (NSInteger)[ids indexOfObject:AniLotExternalPlayerID()];
-            PresentChoices(from, L(@"app.settings.playback.external", @"Внешний плеер"), names, selected, ^(NSInteger index) {
+            PresentChoices(from, L(@"app.settings.playback.player", @"Плеер"), names, selected, ^(NSInteger index) {
                 AniLotSetExternalPlayerID(ids[index]);
                 [from reload];
             });
@@ -382,10 +369,9 @@ static SettingsListViewController* MakePlaybackPage(void) {
             AniLotSetSettingBool(AniLotSettingAutoSkipKey, on);
         });
         return @[
-            MakeSection(nil, nil, @[player_row, quality_row, skip_row]),
+            MakeSection(nil, L(@"app.settings.playback.player.footer", @"Серия откроется в выбранном плеере. Скачанные серии всегда играют во встроенном плеере."), @[external_row, quality_row, skip_row]),
             MakeSection(nil, nil, @[next_row, source_row, resume_row]),
-            MakeSection(L(@"app.settings.playback.skip.header", @"Опенинги и эндинги"), L(@"app.settings.playback.skip.footer", @"Метки опенингов и эндингов приходят из источника Libria/Liberty. Если меток нет, кнопка перематывает на заданное время."), @[skip_buttons_row, auto_skip_row]),
-            MakeSection(L(@"app.settings.playback.external.header", @"Внешний плеер"), L(@"app.settings.playback.external.footer", @"Серия откроется в выбранном приложении. Скачанные серии всегда играют во встроенном плеере."), @[external_row])
+            MakeSection(L(@"app.settings.playback.skip.header", @"Опенинги и эндинги"), L(@"app.settings.playback.skip.footer", @"Метки опенингов и эндингов берутся из Libria/Liberty и базы AniSkip. Кнопка появляется только во время опенинга или эндинга; если меток для серии нет, она не показывается."), @[skip_buttons_row, auto_skip_row])
         ];
     }];
 }
@@ -480,10 +466,7 @@ static SettingsListViewController* MakeHelpPage(void) {
     return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.help.name", @"Помощь") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
         return @[
             MakeSection(nil, L(@"app.settings.help.footer", @"При проблемах и идеях создайте issue и максимально подробно опишите вопрос."), @[
-                NavRow(L(@"app.settings.help.telegram", @"Telegram-канал"), @"paperplane.fill", [UIColor systemBlueColor], ^(SettingsListViewController* from) {
-                    OpenURL(kTelegramURL);
-                }),
-                NavRow(L(@"app.settings.help.issue", @"Сообщить о проблеме"), @"exclamationmark.bubble.fill", [UIColor systemOrangeColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.help.issue", @"Сообщить о проблеме"), @"exclamationmark.bubble.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     OpenURL(kGithubIssuesURL);
                 })
             ])
@@ -498,7 +481,7 @@ static SettingsListViewController* MakeAboutPage(void) {
         return @[
             MakeSection(nil, L(@"app.settings.about.footer", @"AniLot — неофициальный клиент Anixart для iOS, форк проекта AniAnglia."), @[
                 ValueRow(L(@"app.settings.about.version", @"Версия"), ^NSString*{ return version; }, nil),
-                NavRow(L(@"app.settings.about.source", @"Исходный код оригинала (AniAnglia)"), @"chevron.left.forwardslash.chevron.right", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.about.source", @"Репозиторий AniLot"), @"chevron.left.forwardslash.chevron.right", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     OpenURL(kGithubURL);
                 })
             ])
@@ -529,36 +512,36 @@ static SettingsListViewController* MakeAboutPage(void) {
         });
         return @[
             MakeSection(nil, nil, @[
-                NavRow(L(@"app.settings.profile.name", @"Профиль"), @"person.fill", [UIColor systemRedColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.profile.name", @"Профиль"), @"person.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:[SettingsProfileViewController new] animated:YES];
                 }),
-                NavRow(L(@"app.settings.privacy_and_security.name", @"Приватность и безопасность"), @"lock.fill", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.privacy_and_security.name", @"Приватность и безопасность"), @"lock.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:[SettingsSecurityViewController new] animated:YES];
                 })
             ]),
             MakeSection(nil, nil, @[
-                NavRow(L(@"app.settings.appearance.name", @"Внешний вид"), @"eye.fill", [UIColor systemIndigoColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.appearance.name", @"Внешний вид"), @"eye.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:[SettingsAppearanceViewController new] animated:YES];
                 }),
-                NavRow(L(@"app.settings.notifications.name", @"Уведомления"), @"bell.fill", [UIColor systemPurpleColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.notifications.name", @"Уведомления"), @"bell.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakeNotificationsPage() animated:YES];
                 }),
-                NavRow(L(@"app.settings.data_control.name", @"Управление данными"), @"externaldrive.fill", [UIColor systemGreenColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.data_control.name", @"Управление данными"), @"externaldrive.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakeDataControlPage() animated:YES];
                 }),
-                NavRow(L(@"app.settings.playback.name", @"Воспроизведение"), @"play.fill", [UIColor systemBlueColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.playback.name", @"Воспроизведение"), @"play.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakePlaybackPage() animated:YES];
                 }),
-                NavRow(L(@"app.downloads.title", @"Загрузки"), @"arrow.down.circle.fill", [UIColor systemTealColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.downloads.title", @"Загрузки"), @"arrow.down.circle.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakeDownloadsPage() animated:YES];
                 })
             ]),
             MakeSection(nil, L(@"app.settings.alternative_connection.footer", @"Активируйте только если испытываете проблемы с работой приложения, связанные с блокировкой в вашей стране"), @[alt_row]),
             MakeSection(nil, nil, @[
-                NavRow(L(@"app.settings.help.name", @"Помощь"), @"questionmark", [UIColor systemGrayColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.help.name", @"Помощь"), @"questionmark", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakeHelpPage() animated:YES];
                 }),
-                NavRow(L(@"app.settings.about.name", @"О приложении"), @"info.circle.fill", [UIColor systemPinkColor], ^(SettingsListViewController* from) {
+                NavRow(L(@"app.settings.about.name", @"О приложении"), @"info.circle.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakeAboutPage() animated:YES];
                 })
             ])

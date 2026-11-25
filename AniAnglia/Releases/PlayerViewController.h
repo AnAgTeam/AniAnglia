@@ -35,7 +35,7 @@ extern NSString* const AniLotSettingAutoSkipKey;     // автоматическ
 BOOL AniLotSettingBool(NSString* key, BOOL default_value);
 void AniLotSetSettingBool(NSString* key, BOOL value);
 
-/* Идентификаторы: internal, vlc, outplayer, infuse, nplayer, share */
+/* Идентификаторы: internal, vlc, outplayer, nplayer, share */
 NSArray<NSString*>* AniLotExternalPlayerIDs(void);
 NSString* AniLotExternalPlayerName(NSString* identifier);
 NSString* AniLotExternalPlayerID(void);

@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <SafariServices/SafariServices.h>
 #import "ReleaseViewController.h"
 #import "LibanixartApi.h"
 #import "AppColor.h"
@@ -735,6 +736,790 @@
 }
 @end
 
+#pragma mark - AniLot: галерея изображений и список видео
+
+#define AL(key, def) NSLocalizedStringWithDefaultValue(key, nil, [NSBundle mainBundle], def, @"")
+
+static UIViewController* AniLotTopController(UIViewController* from) {
+    UIViewController* controller = from;
+    while (controller.presentedViewController) {
+        controller = controller.presentedViewController;
+    }
+    return controller;
+}
+
+static void AniLotOpenExternalLink(UIViewController* from, NSString* string) {
+    NSURL* url = [NSURL URLWithString:string];
+    if (!url) {
+        return;
+    }
+    if ([url.scheme isEqualToString:@"http"] || [url.scheme isEqualToString:@"https"]) {
+        SFSafariViewController* safari = [[SFSafariViewController alloc] initWithURL:url];
+        [AniLotTopController(from) presentViewController:safari animated:YES completion:nil];
+    } else {
+        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    }
+}
+
+/* Одна страница галереи: изображение с зумом (щипок и двойное касание) */
+@interface AniLotGalleryPageView : UIScrollView <UIScrollViewDelegate>
+@property(nonatomic, strong) UIImageView* page_image_view;
+@property(nonatomic, strong) UIActivityIndicatorView* page_spinner;
+@property(nonatomic, strong) NSURL* page_url;
+@property(nonatomic, readonly) UIImage* loaded_image;
+-(void)loadIfNeeded;
+@end
+
+@implementation AniLotGalleryPageView
+
+-(instancetype)initWithURL:(NSURL*)url {
+    self = [super initWithFrame:CGRectZero];
+    _page_url = url;
+    self.delegate = self;
+    self.minimumZoomScale = 1;
+    self.maximumZoomScale = 4;
+    self.showsHorizontalScrollIndicator = NO;
+    self.showsVerticalScrollIndicator = NO;
+    
+    _page_image_view = [UIImageView new];
+    _page_image_view.contentMode = UIViewContentModeScaleAspectFit;
+    [self addSubview:_page_image_view];
+    
+    _page_spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
+    _page_spinner.color = [AppColorProvider primaryColor];
+    _page_spinner.hidesWhenStopped = YES;
+    [self addSubview:_page_spinner];
+    
+    UITapGestureRecognizer* double_tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onDoubleTap:)];
+    double_tap.numberOfTapsRequired = 2;
+    [self addGestureRecognizer:double_tap];
+    return self;
+}
+
+-(UIImage*)loaded_image {
+    return _page_image_view.image;
+}
+
+-(void)layoutSubviews {
+    [super layoutSubviews];
+    _page_spinner.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
+    if (self.zoomScale == 1) {
+        _page_image_view.frame = self.bounds;
+    }
+}
+
+-(UIView*)viewForZoomingInScrollView:(UIScrollView*)scroll_view {
+    return _page_image_view;
+}
+
+-(void)scrollViewDidZoom:(UIScrollView*)scroll_view {
+    CGFloat offset_x = MAX((scroll_view.bounds.size.width - scroll_view.contentSize.width) / 2, 0);
+    CGFloat offset_y = MAX((scroll_view.bounds.size.height - scroll_view.contentSize.height) / 2, 0);
+    _page_image_view.center = CGPointMake(scroll_view.contentSize.width / 2 + offset_x, scroll_view.contentSize.height / 2 + offset_y);
+}
+
+-(void)onDoubleTap:(UITapGestureRecognizer*)recognizer {
+    if (self.zoomScale > 1) {
+        [self setZoomScale:1 animated:YES];
+        return;
+    }
+    CGPoint point = [recognizer locationInView:_page_image_view];
+    CGFloat scale = 2.5;
+    CGSize size = CGSizeMake(self.bounds.size.width / scale, self.bounds.size.height / scale);
+    [self zoomToRect:CGRectMake(point.x - size.width / 2, point.y - size.height / 2, size.width, size.height) animated:YES];
+}
+
+-(void)loadIfNeeded {
+    if (_page_image_view.image || !_page_url) {
+        return;
+    }
+    [_page_spinner startAnimating];
+    __weak AniLotGalleryPageView* weak_self = self;
+    [[[NSURLSession sharedSession] dataTaskWithURL:_page_url completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        UIImage* image = data ? [UIImage imageWithData:data] : nil;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            AniLotGalleryPageView* strong_self = weak_self;
+            [strong_self.page_spinner stopAnimating];
+            if (image) {
+                strong_self.page_image_view.image = image;
+            }
+        });
+    }] resume];
+}
+
+@end
+
+/* Полноэкранная галерея: листание, зум, сохранение в «Фото» и «Поделиться» */
+@interface AniLotGalleryViewController : UIViewController <UIScrollViewDelegate>
+-(instancetype)initWithURLs:(NSArray<NSURL*>*)urls startIndex:(NSInteger)index;
+@end
+
+@implementation AniLotGalleryViewController {
+    NSArray<NSURL*>* _urls;
+    NSInteger _start_index;
+    UIScrollView* _pager;
+    NSMutableArray<AniLotGalleryPageView*>* _pages;
+    UILabel* _counter_label;
+    UILabel* _toast_label;
+    UIView* _top_bar;
+    BOOL _did_initial_scroll;
+}
+
+-(instancetype)initWithURLs:(NSArray<NSURL*>*)urls startIndex:(NSInteger)index {
+    self = [super init];
+    _urls = [urls copy];
+    _start_index = MAX(0, MIN(index, (NSInteger)urls.count - 1));
+    _pages = [NSMutableArray new];
+    self.modalPresentationStyle = UIModalPresentationFullScreen;
+    return self;
+}
+
+-(BOOL)prefersStatusBarHidden {
+    return YES;
+}
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [UIColor blackColor];
+    
+    _pager = [UIScrollView new];
+    _pager.pagingEnabled = YES;
+    _pager.delegate = self;
+    _pager.showsHorizontalScrollIndicator = NO;
+    [self.view addSubview:_pager];
+    for (NSURL* url in _urls) {
+        AniLotGalleryPageView* page = [[AniLotGalleryPageView alloc] initWithURL:url];
+        [_pager addSubview:page];
+        [_pages addObject:page];
+    }
+    
+    _top_bar = [UIView new];
+    _top_bar.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.6];
+    [self.view addSubview:_top_bar];
+    
+    UIButton* close_button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [close_button setImage:[UIImage systemImageNamed:@"xmark"] forState:UIControlStateNormal];
+    close_button.tintColor = [AppColorProvider primaryColor];
+    [close_button addTarget:self action:@selector(onClose) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIButton* download_button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [download_button setImage:[UIImage systemImageNamed:@"arrow.down.circle"] forState:UIControlStateNormal];
+    download_button.tintColor = [AppColorProvider primaryColor];
+    [download_button addTarget:self action:@selector(onDownload) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIButton* share_button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [share_button setImage:[UIImage systemImageNamed:@"square.and.arrow.up"] forState:UIControlStateNormal];
+    share_button.tintColor = [AppColorProvider primaryColor];
+    [share_button addTarget:self action:@selector(onShare:) forControlEvents:UIControlEventTouchUpInside];
+    
+    _counter_label = [UILabel new];
+    _counter_label.textColor = [UIColor whiteColor];
+    _counter_label.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
+    _counter_label.textAlignment = NSTextAlignmentCenter;
+    
+    UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[close_button, _counter_label, download_button, share_button]];
+    stack.alignment = UIStackViewAlignmentCenter;
+    stack.spacing = 20;
+    [_top_bar addSubview:stack];
+    stack.translatesAutoresizingMaskIntoConstraints = NO;
+    _top_bar.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_top_bar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [_top_bar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [_top_bar.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [stack.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:6],
+        [stack.bottomAnchor constraintEqualToAnchor:_top_bar.bottomAnchor constant:-6],
+        [stack.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor constant:16],
+        [stack.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor constant:-16],
+        [stack.heightAnchor constraintEqualToConstant:40]
+    ]];
+    
+    _toast_label = [UILabel new];
+    _toast_label.textColor = [UIColor whiteColor];
+    _toast_label.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.8];
+    _toast_label.textAlignment = NSTextAlignmentCenter;
+    _toast_label.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+    _toast_label.layer.cornerRadius = 12;
+    _toast_label.layer.masksToBounds = YES;
+    _toast_label.layer.borderWidth = 1;
+    _toast_label.layer.borderColor = [AppColorProvider primaryColor].CGColor;
+    _toast_label.alpha = 0;
+    _toast_label.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:_toast_label];
+    [NSLayoutConstraint activateConstraints:@[
+        [_toast_label.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_toast_label.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-30],
+        [_toast_label.heightAnchor constraintEqualToConstant:36],
+        [_toast_label.widthAnchor constraintGreaterThanOrEqualToConstant:180]
+    ]];
+}
+
+-(void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    _pager.frame = self.view.bounds;
+    CGFloat width = _pager.bounds.size.width, height = _pager.bounds.size.height;
+    _pager.contentSize = CGSizeMake(width * _pages.count, height);
+    for (NSUInteger i = 0; i < _pages.count; i++) {
+        AniLotGalleryPageView* page = _pages[i];
+        if (page.zoomScale == 1) {
+            page.frame = CGRectMake(width * i, 0, width, height);
+        }
+    }
+    if (!_did_initial_scroll && width > 0) {
+        _did_initial_scroll = YES;
+        [_pager setContentOffset:CGPointMake(width * _start_index, 0) animated:NO];
+        [self updateCurrentPage];
+    }
+}
+
+-(NSInteger)currentIndex {
+    CGFloat width = _pager.bounds.size.width;
+    if (width <= 0) {
+        return 0;
+    }
+    return MAX(0, MIN((NSInteger)llround(_pager.contentOffset.x / width), (NSInteger)_pages.count - 1));
+}
+
+-(void)updateCurrentPage {
+    NSInteger index = [self currentIndex];
+    _counter_label.text = [NSString stringWithFormat:@"%ld / %lu", (long)index + 1, (unsigned long)_pages.count];
+    for (NSInteger i = index - 1; i <= index + 1; i++) {
+        if (i >= 0 && i < (NSInteger)_pages.count) {
+            [_pages[i] loadIfNeeded];
+        }
+    }
+}
+
+-(void)scrollViewDidScroll:(UIScrollView*)scroll_view {
+    if (scroll_view == _pager) {
+        [self updateCurrentPage];
+    }
+}
+
+-(void)showToast:(NSString*)text {
+    _toast_label.text = [NSString stringWithFormat:@"  %@  ", text];
+    [UIView animateWithDuration:0.2 animations:^{
+        self->_toast_label.alpha = 1;
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.3 delay:1.6 options:0 animations:^{
+            self->_toast_label.alpha = 0;
+        } completion:nil];
+    }];
+}
+
+-(void)onClose {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+-(void)onDownload {
+    UIImage* image = _pages[[self currentIndex]].loaded_image;
+    if (!image) {
+        [self showToast:AL(@"app.gallery.not_loaded", @"Изображение ещё загружается")];
+        return;
+    }
+    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), NULL);
+}
+
+-(void)image:(UIImage*)image didFinishSavingWithError:(NSError*)error contextInfo:(void*)context_info {
+    [self showToast:error ? AL(@"app.gallery.save_error", @"Не удалось сохранить (нет доступа к Фото)") : AL(@"app.gallery.saved", @"Сохранено в Фото")];
+}
+
+-(void)onShare:(UIButton*)sender {
+    UIImage* image = _pages[[self currentIndex]].loaded_image;
+    if (!image) {
+        [self showToast:AL(@"app.gallery.not_loaded", @"Изображение ещё загружается")];
+        return;
+    }
+    UIActivityViewController* sheet = [[UIActivityViewController alloc] initWithActivityItems:@[image] applicationActivities:nil];
+    sheet.popoverPresentationController.sourceView = sender;
+    [self presentViewController:sheet animated:YES completion:nil];
+}
+
+@end
+
+static void AniLotShowGallery(UIViewController* from, NSArray<NSURL*>* urls, NSInteger index) {
+    if (urls.count == 0) {
+        return;
+    }
+    AniLotGalleryViewController* gallery = [[AniLotGalleryViewController alloc] initWithURLs:urls startIndex:index];
+    [AniLotTopController(from) presentViewController:gallery animated:YES completion:nil];
+}
+
+/* Ячейка видео: превью + название + площадка */
+@interface AniLotVideoCell : UITableViewCell
+@property(nonatomic, strong) LoadableImageView* thumb_view;
+@property(nonatomic, strong) UILabel* name_label;
+@property(nonatomic, strong) UILabel* host_label;
+@end
+
+@implementation AniLotVideoCell
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString*)reuse_identifier {
+    self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
+    self.backgroundColor = [AppColorProvider foregroundColor1];
+    
+    _thumb_view = [LoadableImageView new];
+    _thumb_view.contentMode = UIViewContentModeScaleAspectFill;
+    _thumb_view.clipsToBounds = YES;
+    _thumb_view.layer.cornerRadius = 8;
+    _thumb_view.backgroundColor = [AppColorProvider foregroundColor2];
+    
+    _name_label = [UILabel new];
+    _name_label.numberOfLines = 3;
+    _name_label.textColor = [AppColorProvider textColor];
+    _name_label.font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
+    
+    _host_label = [UILabel new];
+    _host_label.textColor = [AppColorProvider textSecondaryColor];
+    _host_label.font = [UIFont systemFontOfSize:13];
+    
+    UIStackView* texts = [[UIStackView alloc] initWithArrangedSubviews:@[_name_label, _host_label]];
+    texts.axis = UILayoutConstraintAxisVertical;
+    texts.spacing = 4;
+    [self.contentView addSubview:_thumb_view];
+    [self.contentView addSubview:texts];
+    _thumb_view.translatesAutoresizingMaskIntoConstraints = NO;
+    texts.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+        [_thumb_view.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
+        [_thumb_view.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:10],
+        [_thumb_view.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-10],
+        [_thumb_view.widthAnchor constraintEqualToConstant:128],
+        [_thumb_view.heightAnchor constraintEqualToConstant:72],
+        [texts.leadingAnchor constraintEqualToAnchor:_thumb_view.trailingAnchor constant:12],
+        [texts.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16],
+        [texts.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor]
+    ]];
+    return self;
+}
+@end
+
+/* Экран видео аниме: трейлеры, опенинги, эндинги, клипы и т.д., сгруппированы по категориям */
+@interface AniLotReleaseVideosViewController : UITableViewController
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id focusCategory:(NSString*)category_id;
+@end
+
+@implementation AniLotReleaseVideosViewController {
+    anixart::ReleaseID _release_id;
+    NSString* _focus_category;
+    std::vector<anixart::ReleaseVideoBlock::Ptr> _blocks;
+    UIActivityIndicatorView* _spinner;
+    UILabel* _empty_label;
+}
+
+-(instancetype)initWithReleaseID:(anixart::ReleaseID)release_id focusCategory:(NSString*)category_id {
+    self = [super initWithStyle:UITableViewStyleInsetGrouped];
+    _release_id = release_id;
+    _focus_category = [category_id copy];
+    self.title = AL(@"app.release.videos.title", @"Видео");
+    return self;
+}
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+    self.tableView.backgroundColor = [AppColorProvider backgroundColor];
+    self.tableView.separatorColor = [AppColorProvider textShyColor];
+    [self.tableView registerClass:AniLotVideoCell.class forCellReuseIdentifier:@"AniLotVideoCell"];
+    
+    _spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
+    _spinner.color = [AppColorProvider primaryColor];
+    _spinner.hidesWhenStopped = YES;
+    self.tableView.backgroundView = _spinner;
+    [_spinner startAnimating];
+    
+    __weak AniLotReleaseVideosViewController* weak_self = self;
+    __block std::vector<anixart::ReleaseVideoBlock::Ptr> blocks;
+    anixart::ReleaseID release_id = _release_id;
+    [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
+        blocks = api->releases().release_video_main(release_id);
+        return NO;
+    } completion:^(BOOL errored) {
+        AniLotReleaseVideosViewController* strong_self = weak_self;
+        if (!strong_self) {
+            return;
+        }
+        [strong_self->_spinner stopAnimating];
+        if (!errored) {
+            strong_self->_blocks = blocks;
+        }
+        if (strong_self->_blocks.empty()) {
+            UILabel* label = [UILabel new];
+            label.text = errored ? AL(@"app.release.videos.error", @"Не удалось загрузить видео") : AL(@"app.release.videos.empty", @"Видео пока нет");
+            label.textColor = [AppColorProvider textSecondaryColor];
+            label.textAlignment = NSTextAlignmentCenter;
+            strong_self.tableView.backgroundView = label;
+        }
+        [strong_self.tableView reloadData];
+        if (strong_self->_focus_category.length) {
+            for (NSUInteger i = 0; i < strong_self->_blocks.size(); i++) {
+                auto& block = strong_self->_blocks[i];
+                if (block->category && [TO_NSSTRING(std::to_string(static_cast<int64_t>(block->category->id))) isEqualToString:strong_self->_focus_category] && block->videos.size()) {
+                    [strong_self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:i] atScrollPosition:UITableViewScrollPositionTop animated:NO];
+                    break;
+                }
+            }
+        }
+    }];
+}
+
+-(NSInteger)numberOfSectionsInTableView:(UITableView*)table_view {
+    return _blocks.size();
+}
+-(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
+    return _blocks[section]->videos.size();
+}
+-(NSString*)tableView:(UITableView*)table_view titleForHeaderInSection:(NSInteger)section {
+    auto& block = _blocks[section];
+    return block->category ? TO_NSSTRING(block->category->name) : nil;
+}
+
+-(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
+    AniLotVideoCell* cell = [table_view dequeueReusableCellWithIdentifier:@"AniLotVideoCell" forIndexPath:index_path];
+    anixart::ReleaseVideo::Ptr video = _blocks[index_path.section]->videos[index_path.row];
+    cell.name_label.text = TO_NSSTRING(video->title);
+    cell.host_label.text = video->hosting ? TO_NSSTRING(video->hosting->name) : @"";
+    [cell.thumb_view tryLoadImageWithURL:[NSURL URLWithString:TO_NSSTRING(video->image_url)]];
+    return cell;
+}
+
+-(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
+    [table_view deselectRowAtIndexPath:index_path animated:YES];
+    anixart::ReleaseVideo::Ptr video = _blocks[index_path.section]->videos[index_path.row];
+    NSString* link = TO_NSSTRING(video->url);
+    if (link.length == 0) {
+        link = TO_NSSTRING(video->player_url);
+    }
+    AniLotOpenExternalLink(self, link);
+}
+
+-(UIContextMenuConfiguration*)tableView:(UITableView*)table_view contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)index_path point:(CGPoint)point {
+    anixart::ReleaseVideo::Ptr video = _blocks[index_path.section]->videos[index_path.row];
+    NSString* link = TO_NSSTRING(video->url);
+    NSMutableArray<NSURL*>* thumbs = [NSMutableArray new];
+    NSInteger start = 0;
+    for (NSUInteger i = 0; i < _blocks[index_path.section]->videos.size(); i++) {
+        NSURL* thumb = [NSURL URLWithString:TO_NSSTRING(_blocks[index_path.section]->videos[i]->image_url)];
+        if (thumb) {
+            if ((NSInteger)i == index_path.row) {
+                start = thumbs.count;
+            }
+            [thumbs addObject:thumb];
+        }
+    }
+    __weak AniLotReleaseVideosViewController* weak_self = self;
+    return [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:nil actionProvider:^UIMenu*(NSArray<UIMenuElement*>* suggested) {
+        return [UIMenu menuWithChildren:@[
+            [UIAction actionWithTitle:AL(@"app.release.videos.open", @"Открыть видео") image:[UIImage systemImageNamed:@"play.rectangle"] identifier:nil handler:^(UIAction* action) {
+                AniLotOpenExternalLink(weak_self, link);
+            }],
+            [UIAction actionWithTitle:AL(@"app.release.videos.preview", @"Превью (галерея)") image:[UIImage systemImageNamed:@"photo.on.rectangle"] identifier:nil handler:^(UIAction* action) {
+                AniLotShowGallery(weak_self, thumbs, start);
+            }],
+            [UIAction actionWithTitle:AL(@"app.release.videos.copy", @"Скопировать ссылку") image:[UIImage systemImageNamed:@"doc.on.doc"] identifier:nil handler:^(UIAction* action) {
+                [UIPasteboard generalPasteboard].string = link;
+            }]
+        ]];
+    }];
+}
+
+@end
+
+#pragma mark - AniLot: лента Anixart
+
+static NSString* StripArticleMarkup(NSString* text) {
+    if (text.length == 0) {
+        return @"";
+    }
+    NSString* result = [text stringByReplacingOccurrencesOfString:@"<br>" withString:@"\n"];
+    result = [result stringByReplacingOccurrencesOfString:@"<br/>" withString:@"\n"];
+    result = [result stringByReplacingOccurrencesOfString:@"</p>" withString:@"\n"];
+    NSRegularExpression* tags = [NSRegularExpression regularExpressionWithPattern:@"<[^>]+>" options:0 error:nil];
+    result = [tags stringByReplacingMatchesInString:result options:0 range:NSMakeRange(0, result.length) withTemplate:@""];
+    result = [result stringByReplacingOccurrencesOfString:@"&nbsp;" withString:@" "];
+    result = [result stringByReplacingOccurrencesOfString:@"&amp;" withString:@"&"];
+    result = [result stringByReplacingOccurrencesOfString:@"&quot;" withString:@"\""];
+    result = [result stringByReplacingOccurrencesOfString:@"&lt;" withString:@"<"];
+    result = [result stringByReplacingOccurrencesOfString:@"&gt;" withString:@">"];
+    return [result stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+
+/* Собирает текст поста и ссылки на картинки из блоков статьи */
+static NSString* ArticleTextAndImages(anixart::Article::Ptr article, NSMutableArray<NSURL*>* images) {
+    NSMutableArray<NSString*>* parts = [NSMutableArray new];
+    if (!article || !article->payload) {
+        return @"";
+    }
+    for (auto& block : article->payload->blocks) {
+        if (auto paragraph = boost::get<anixart::ArticleParagraphBlock::Ptr>(&block)) {
+            [parts addObject:StripArticleMarkup(TO_NSSTRING((*paragraph)->text))];
+        } else if (auto header = boost::get<anixart::ArticleHeaderBlock::Ptr>(&block)) {
+            [parts addObject:StripArticleMarkup(TO_NSSTRING((*header)->text))];
+        } else if (auto list = boost::get<anixart::ArticleListBlock::Ptr>(&block)) {
+            for (const std::string& item : (*list)->items) {
+                [parts addObject:[@"• " stringByAppendingString:StripArticleMarkup(TO_NSSTRING(item))]];
+            }
+        } else if (auto quote = boost::get<anixart::ArticleQuoteBlock::Ptr>(&block)) {
+            [parts addObject:[NSString stringWithFormat:@"«%@»", StripArticleMarkup(TO_NSSTRING((*quote)->text))]];
+        } else if (auto media = boost::get<anixart::ArticleMediaBlock::Ptr>(&block)) {
+            for (auto& file : (*media)->items) {
+                NSURL* url = [NSURL URLWithString:TO_NSSTRING(file->url)];
+                if (url) {
+                    [images addObject:url];
+                }
+            }
+        } else if (auto embed = boost::get<anixart::ArticleEmbedBlock::Ptr>(&block)) {
+            NSURL* url = [NSURL URLWithString:TO_NSSTRING((*embed)->image_url)];
+            if (url) {
+                [images addObject:url];
+            }
+        }
+    }
+    NSMutableArray<NSString*>* non_empty = [NSMutableArray new];
+    for (NSString* part in parts) {
+        if (part.length) {
+            [non_empty addObject:part];
+        }
+    }
+    return [non_empty componentsJoinedByString:@"\n\n"];
+}
+
+@interface AniLotFeedCell : UITableViewCell
+@property(nonatomic, strong) UILabel* header_label;
+@property(nonatomic, strong) UILabel* text_label;
+@property(nonatomic, strong) UILabel* footer_label;
+@property(nonatomic, strong) LoadableImageView* media_view;
+@property(nonatomic, strong) NSLayoutConstraint* media_height;
+@end
+
+@implementation AniLotFeedCell
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString*)reuse_identifier {
+    self = [super initWithStyle:style reuseIdentifier:reuse_identifier];
+    self.backgroundColor = [AppColorProvider foregroundColor1];
+    
+    _header_label = [UILabel new];
+    _header_label.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
+    _header_label.textColor = [AppColorProvider primaryColor];
+    _header_label.numberOfLines = 2;
+    
+    _text_label = [UILabel new];
+    _text_label.font = [UIFont systemFontOfSize:15];
+    _text_label.textColor = [AppColorProvider textColor];
+    _text_label.numberOfLines = 10;
+    
+    _media_view = [LoadableImageView new];
+    _media_view.contentMode = UIViewContentModeScaleAspectFill;
+    _media_view.clipsToBounds = YES;
+    _media_view.layer.cornerRadius = 10;
+    _media_view.backgroundColor = [AppColorProvider foregroundColor2];
+    
+    _footer_label = [UILabel new];
+    _footer_label.font = [UIFont systemFontOfSize:13];
+    _footer_label.textColor = [AppColorProvider textSecondaryColor];
+    
+    UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[_header_label, _text_label, _media_view, _footer_label]];
+    stack.axis = UILayoutConstraintAxisVertical;
+    stack.spacing = 8;
+    [self.contentView addSubview:stack];
+    stack.translatesAutoresizingMaskIntoConstraints = NO;
+    _media_view.translatesAutoresizingMaskIntoConstraints = NO;
+    _media_height = [_media_view.heightAnchor constraintEqualToConstant:190];
+    _media_height.priority = UILayoutPriorityRequired - 1;
+    [NSLayoutConstraint activateConstraints:@[
+        [stack.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:12],
+        [stack.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-12],
+        [stack.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
+        [stack.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16],
+        _media_height
+    ]];
+    return self;
+}
+@end
+
+@interface AniLotFeedViewController : UITableViewController
+@end
+
+@implementation AniLotFeedViewController {
+    std::shared_ptr<anixart::Pageable<anixart::Article>> _pages;
+    std::vector<anixart::Article::Ptr> _articles;
+    BOOL _loading;
+    BOOL _finished;
+    BOOL _use_latest;
+    UIActivityIndicatorView* _spinner;
+}
+
+-(instancetype)init {
+    self = [super initWithStyle:UITableViewStyleInsetGrouped];
+    self.title = AL(@"app.feed.title", @"Лента");
+    return self;
+}
+
+-(void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [AppColorProvider backgroundColor];
+    self.tableView.backgroundColor = [AppColorProvider backgroundColor];
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedRowHeight = 260;
+    [self.tableView registerClass:AniLotFeedCell.class forCellReuseIdentifier:@"AniLotFeedCell"];
+    self.refreshControl = [UIRefreshControl new];
+    self.refreshControl.tintColor = [AppColorProvider primaryColor];
+    [self.refreshControl addTarget:self action:@selector(onRefresh) forControlEvents:UIControlEventValueChanged];
+    _spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
+    _spinner.color = [AppColorProvider primaryColor];
+    _spinner.hidesWhenStopped = YES;
+    self.tableView.backgroundView = _spinner;
+    [self reloadFeed];
+}
+
+-(void)onRefresh {
+    [self reloadFeed];
+}
+
+-(void)reloadFeed {
+    if (_loading) {
+        [self.refreshControl endRefreshing];
+        return;
+    }
+    _loading = YES;
+    _finished = NO;
+    _pages.reset();
+    if (_articles.empty()) {
+        [_spinner startAnimating];
+    }
+    __weak AniLotFeedViewController* weak_self = self;
+    __block std::shared_ptr<anixart::Pageable<anixart::Article>> pages;
+    __block std::vector<anixart::Article::Ptr> first;
+    BOOL use_latest = _use_latest;
+    [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
+        if (!use_latest) {
+            try {
+                anixart::requests::ArticlesFilterRequest request;
+                request.channel_id = anixart::ChannelID(0);
+                request.date_filter = anixart::requests::ArticlesFilterRequest::DateFilter::AllTime;
+                pages = api->articles().get_articles(request, 0);
+                first = pages->get();
+            } catch (...) {
+                first.clear();
+            }
+        }
+        if (first.empty()) {
+            pages = api->articles().get_latest_articles(0);
+            first = pages->get();
+        }
+        return NO;
+    } completion:^(BOOL errored) {
+        AniLotFeedViewController* strong_self = weak_self;
+        if (!strong_self) {
+            return;
+        }
+        strong_self->_loading = NO;
+        [strong_self->_spinner stopAnimating];
+        [strong_self.refreshControl endRefreshing];
+        if (!errored) {
+            strong_self->_pages = pages;
+            strong_self->_articles = first;
+            strong_self->_finished = pages ? pages->is_end() : YES;
+        }
+        if (strong_self->_articles.empty()) {
+            UILabel* label = [UILabel new];
+            label.text = errored ? AL(@"app.feed.error", @"Не удалось загрузить ленту. Потяните вниз, чтобы повторить.") : AL(@"app.feed.empty", @"В ленте пока пусто");
+            label.numberOfLines = 0;
+            label.textAlignment = NSTextAlignmentCenter;
+            label.textColor = [AppColorProvider textSecondaryColor];
+            strong_self.tableView.backgroundView = label;
+        } else {
+            strong_self.tableView.backgroundView = nil;
+        }
+        [strong_self.tableView reloadData];
+    }];
+}
+
+-(void)loadMore {
+    if (_loading || _finished || !_pages) {
+        return;
+    }
+    _loading = YES;
+    __weak AniLotFeedViewController* weak_self = self;
+    __block std::vector<anixart::Article::Ptr> more;
+    std::shared_ptr<anixart::Pageable<anixart::Article>> pages = _pages;
+    [[LibanixartApi sharedInstance] asyncCall:^BOOL(anixart::Api* api) {
+        more = pages->next();
+        return NO;
+    } completion:^(BOOL errored) {
+        AniLotFeedViewController* strong_self = weak_self;
+        if (!strong_self) {
+            return;
+        }
+        strong_self->_loading = NO;
+        if (errored || more.empty()) {
+            strong_self->_finished = YES;
+            return;
+        }
+        strong_self->_finished = pages->is_end();
+        NSUInteger start = strong_self->_articles.size();
+        strong_self->_articles.insert(strong_self->_articles.end(), more.begin(), more.end());
+        NSMutableArray<NSIndexPath*>* paths = [NSMutableArray new];
+        for (NSUInteger i = 0; i < more.size(); i++) {
+            [paths addObject:[NSIndexPath indexPathForRow:0 inSection:start + i]];
+        }
+        [strong_self.tableView performBatchUpdates:^{
+            [strong_self.tableView insertSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(start, more.size())] withRowAnimation:UITableViewRowAnimationNone];
+        } completion:nil];
+    }];
+}
+
+-(NSInteger)numberOfSectionsInTableView:(UITableView*)table_view {
+    return _articles.size();
+}
+-(NSInteger)tableView:(UITableView*)table_view numberOfRowsInSection:(NSInteger)section {
+    return 1;
+}
+
+-(UITableViewCell*)tableView:(UITableView*)table_view cellForRowAtIndexPath:(NSIndexPath*)index_path {
+    AniLotFeedCell* cell = [table_view dequeueReusableCellWithIdentifier:@"AniLotFeedCell" forIndexPath:index_path];
+    anixart::Article::Ptr article = _articles[index_path.section];
+    NSMutableArray<NSURL*>* images = [NSMutableArray new];
+    NSString* text = ArticleTextAndImages(article, images);
+    
+    NSString* channel = article->channel ? TO_NSSTRING(article->channel->title) : @"";
+    NSString* date_text = @"";
+    NSDate* date = anix_time_point_to_nsdate(article->creation_date);
+    if (date) {
+        NSDateFormatter* formatter = [NSDateFormatter new];
+        formatter.dateStyle = NSDateFormatterMediumStyle;
+        formatter.timeStyle = NSDateFormatterShortStyle;
+        date_text = [formatter stringFromDate:date];
+    }
+    cell.header_label.text = channel.length ? [NSString stringWithFormat:@"%@ · %@", channel, date_text] : date_text;
+    cell.text_label.text = text;
+    cell.text_label.hidden = text.length == 0;
+    if (images.count) {
+        cell.media_view.hidden = NO;
+        [cell.media_view tryLoadImageWithURL:images.firstObject];
+    } else {
+        cell.media_view.hidden = YES;
+    }
+    NSString* images_info = images.count > 1 ? [NSString stringWithFormat:@"  ·  %lu %@", (unsigned long)images.count, AL(@"app.feed.images", @"изображ.")] : @"";
+    cell.footer_label.text = [NSString stringWithFormat:@"▲ %d%@", article->vote_count, images_info];
+    
+    if ((NSUInteger)index_path.section + 3 >= _articles.size()) {
+        [self loadMore];
+    }
+    return cell;
+}
+
+-(void)tableView:(UITableView*)table_view didSelectRowAtIndexPath:(NSIndexPath*)index_path {
+    [table_view deselectRowAtIndexPath:index_path animated:YES];
+    NSMutableArray<NSURL*>* images = [NSMutableArray new];
+    ArticleTextAndImages(_articles[index_path.section], images);
+    AniLotShowGallery(self, images, 0);
+}
+
+@end
+
+UIViewController* AniLotMakeFeedViewController(void) {
+    return [AniLotFeedViewController new];
+}
+
 @implementation ReleaseViewController
 
 -(instancetype)initWithRelease:(anixart::Release::Ptr)release {
@@ -841,6 +1626,8 @@
     _release_image_view.layer.cornerRadius = 13.0;
     _release_image_view.layer.masksToBounds = YES;
     _release_image_view.contentMode = UIViewContentModeScaleAspectFill;
+    _release_image_view.userInteractionEnabled = YES;
+    [_release_image_view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onCoverTapped)]];
 
     _title_label = [UILabel new];
     _title_label.numberOfLines = 0;
@@ -1255,7 +2042,7 @@
 }
 
 -(void)onVideoBlockShowAllPressed {
-    // TODO
+    [self.navigationController pushViewController:[[AniLotReleaseVideosViewController alloc] initWithReleaseID:_release->id focusCategory:nil] animated:YES];
 }
 
 -(void)onRelatedShowAllPressed {
@@ -1291,11 +2078,35 @@
 }
 
 -(void)releaseVideoBlocksView:(ReleaseVideoBlocksView *)release_video_blocks didSelectBanner:(anixart::ReleaseVideoBanner::Ptr)block {
-    // TODO
+    NSString* value = TO_NSSTRING(block->value);
+    if (block->action_id == anixart::ReleaseVideoBanner::Action::Url && value.length) {
+        AniLotOpenExternalLink(self, value);
+        return;
+    }
+    [self.navigationController pushViewController:[[AniLotReleaseVideosViewController alloc] initWithReleaseID:_release->id focusCategory:(block->action_id == anixart::ReleaseVideoBanner::Action::VideoCategory ? value : nil)] animated:YES];
 }
 
 -(void)releasePreviewView:(ReleasePreviewsView *)release_preview_view didSelectPreviewWithUrl:(NSURL *)url {
-    // TODO
+    NSMutableArray<NSURL*>* urls = [NSMutableArray new];
+    NSInteger start = 0;
+    for (const std::string& screenshot : _release->screenshot_image_urls) {
+        NSURL* screenshot_url = [NSURL URLWithString:TO_NSSTRING(screenshot)];
+        if (!screenshot_url) {
+            continue;
+        }
+        if ([screenshot_url isEqual:url]) {
+            start = urls.count;
+        }
+        [urls addObject:screenshot_url];
+    }
+    AniLotShowGallery(self, urls, start);
+}
+
+-(void)onCoverTapped {
+    NSURL* cover_url = [NSURL URLWithString:TO_NSSTRING(_release->image_url)];
+    if (cover_url) {
+        AniLotShowGallery(self, @[cover_url], 0);
+    }
 }
 
 -(void)releaseRelatedView:(ReleaseRelatedView *)release_related__view didSelectRelease:(anixart::Release::Ptr)release {
