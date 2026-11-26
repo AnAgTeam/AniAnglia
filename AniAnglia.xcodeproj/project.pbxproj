@@ -78,6 +78,9 @@
 		EFCE61232DFB3614008431CA /* ProfileListsPageViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFCE61222DFB3614008431CA /* ProfileListsPageViewController.mm */; };
 		EFD505DE2CAB4B2900E87BF1 /* TypeSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */; };
 		EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E02CAC401700E87BF1 /* StringCvt.mm */; };
+		AF1A00000000000000010002 /* AniLotVersion.mm in Sources */ = {isa = PBXBuildFile; fileRef = AF1A00000000000000000002 /* AniLotVersion.mm */; };
+		AF1A00000000000000010004 /* AniLotSubtitles.mm in Sources */ = {isa = PBXBuildFile; fileRef = AF1A00000000000000000004 /* AniLotSubtitles.mm */; };
+		AF1A00000000000000010006 /* ShikimoriSync.mm in Sources */ = {isa = PBXBuildFile; fileRef = AF1A00000000000000000006 /* ShikimoriSync.mm */; };
 		EFD505E42CB0764700E87BF1 /* SourceSelectViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */; };
 		EFD5CD6E2CDABD1700A1E057 /* boost_container.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD42CCE956700EA11BB /* boost_container.xcframework */; };
 		EFD5CD702CDABD1700A1E057 /* boost_json.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF5FFDD52CCE956700EA11BB /* boost_json.xcframework */; };
@@ -1395,6 +1398,12 @@
 		EFD505DD2CAB4B2900E87BF1 /* TypeSelectViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TypeSelectViewController.mm; sourceTree = "<group>"; };
 		EFD505DF2CAB4B4D00E87BF1 /* TypeSelectViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TypeSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E02CAC401700E87BF1 /* StringCvt.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StringCvt.mm; sourceTree = "<group>"; };
+		AF1A00000000000000000001 /* AniLotVersion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AniLotVersion.h; sourceTree = "<group>"; };
+		AF1A00000000000000000002 /* AniLotVersion.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AniLotVersion.mm; sourceTree = "<group>"; };
+		AF1A00000000000000000003 /* AniLotSubtitles.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AniLotSubtitles.h; sourceTree = "<group>"; };
+		AF1A00000000000000000004 /* AniLotSubtitles.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AniLotSubtitles.mm; sourceTree = "<group>"; };
+		AF1A00000000000000000005 /* ShikimoriSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShikimoriSync.h; sourceTree = "<group>"; };
+		AF1A00000000000000000006 /* ShikimoriSync.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ShikimoriSync.mm; sourceTree = "<group>"; };
 		EFD505E22CB0764600E87BF1 /* SourceSelectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceSelectViewController.h; sourceTree = "<group>"; };
 		EFD505E32CB0764700E87BF1 /* SourceSelectViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SourceSelectViewController.mm; sourceTree = "<group>"; };
 		EFD7F7AE2DAFBF5100D0FBC0 /* ReleaseTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReleaseTableViewCell.h; sourceTree = "<group>"; };
@@ -1537,6 +1546,12 @@
 				EF5A3CB22C7F92A300B4F637 /* AppDataController.mm */,
 				EF5A3CB42C7F99A200B4F637 /* StringCvt.h */,
 				EFD505E02CAC401700E87BF1 /* StringCvt.mm */,
+				AF1A00000000000000000001 /* AniLotVersion.h */,
+				AF1A00000000000000000002 /* AniLotVersion.mm */,
+				AF1A00000000000000000003 /* AniLotSubtitles.h */,
+				AF1A00000000000000000004 /* AniLotSubtitles.mm */,
+				AF1A00000000000000000005 /* ShikimoriSync.h */,
+				AF1A00000000000000000006 /* ShikimoriSync.mm */,
 				EF7CD28A2DA03C3F00F88227 /* TimeCvt.h */,
 				EF3568A62DA84F2A00086593 /* SharedRunningData.h */,
 				EF3568A42DA84F1D00086593 /* SharedRunningData.mm */,
@@ -3753,6 +3768,9 @@
 				EFF6D03F2DFF75370014FFEB /* ReleasesPopularPageViewController.mm in Sources */,
 				EF7CD28E2DA0400F00F88227 /* DynamicTableView.mm in Sources */,
 				EFD505E12CAC401700E87BF1 /* StringCvt.mm in Sources */,
+				AF1A00000000000000010002 /* AniLotVersion.mm in Sources */,
+				AF1A00000000000000010004 /* AniLotSubtitles.mm in Sources */,
+				AF1A00000000000000010006 /* ShikimoriSync.mm in Sources */,
 				EF3568A92DA87AB700086593 /* SettingsAppearanceViewController.mm in Sources */,
 				EF2330682DAD9293008B0A2A /* TextEnterView.mm in Sources */,
 				EF928F392DFCAACB00A5CD85 /* StarsVoteView.m in Sources */,

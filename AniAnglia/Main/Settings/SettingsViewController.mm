@@ -17,11 +17,14 @@
 #import "SettingsProfileViewController.h"
 #import "SettingsAppearanceViewController.h"
 #import "SettingsSecurityViewController.h"
+#import "AniLotVersion.h"
+#import "ShikimoriSync.h"
 
 #define L(key, def) NSLocalizedStringWithDefaultValue(key, nil, [NSBundle mainBundle], def, @"")
 
 static NSString* const kGithubURL = @"https://github.com/vilefex/AniLot";
 static NSString* const kGithubIssuesURL = @"https://github.com/vilefex/AniLot/issues";
+static NSString* const kShikimoriAppsURL = @"https://shikimori.one/oauth/applications";
 
 @class SettingsListViewController;
 typedef void (^SettingsAction)(SettingsListViewController* from);
@@ -474,15 +477,272 @@ static SettingsListViewController* MakeHelpPage(void) {
     }];
 }
 
+#pragma mark - Проверка обновлений
+
+static void PresentUpdateResult(UIViewController* from, AniLotUpdateInfo* info, NSString* error) {
+    NSString* current = AniLotReleaseName();
+    UIAlertController* alert = nil;
+    if (!info) {
+        alert = [UIAlertController alertControllerWithTitle:L(@"app.update.failed", @"Не удалось проверить обновления") message:error preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.update.open_releases", @"Открыть релизы") style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            OpenURL(ANILOT_RELEASES_PAGE_URL);
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleCancel handler:nil]];
+    } else if (info.is_newer) {
+        NSString* notes = [info.notes stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (notes.length > 700) {
+            notes = [[notes substringToIndex:700] stringByAppendingString:@"…"];
+        }
+        NSString* message = [NSString stringWithFormat:L(@"app.update.available.message", @"Установлена: %@\nНовая: %@"), current, [info displayName]];
+        if (notes.length) {
+            message = [message stringByAppendingFormat:@"\n\n%@", notes];
+        }
+        alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:L(@"app.update.available.title", @"Доступна версия %@"), [info displayName]] message:message preferredStyle:UIAlertControllerStyleAlert];
+        if (info.download_url.length) {
+            NSString* download_url = info.download_url;
+            [alert addAction:[UIAlertAction actionWithTitle:L(@"app.update.download", @"Скачать AniLot.ipa") style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+                OpenURL(download_url);
+            }]];
+        }
+        NSString* page_url = info.page_url.length ? info.page_url : ANILOT_RELEASES_PAGE_URL;
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.update.open_release", @"Страница релиза") style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            OpenURL(page_url);
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.update.later", @"Позже") style:UIAlertActionStyleCancel handler:nil]];
+    } else if (info.number == 0) {
+        alert = [UIAlertController alertControllerWithTitle:L(@"app.update.unknown.title", @"Версия релиза не определена") message:[NSString stringWithFormat:L(@"app.update.unknown.message", @"Последний релиз на GitHub: «%@». Не удалось определить его номер — сравните вручную."), info.name.length ? info.name : info.tag] preferredStyle:UIAlertControllerStyleAlert];
+        NSString* page_url = info.page_url.length ? info.page_url : ANILOT_RELEASES_PAGE_URL;
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.update.open_release", @"Страница релиза") style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            OpenURL(page_url);
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleCancel handler:nil]];
+    } else if (info.is_older) {
+        alert = [UIAlertController alertControllerWithTitle:L(@"app.update.newer_local.title", @"У вас более новая сборка") message:[NSString stringWithFormat:L(@"app.update.newer_local.message", @"Установлена %@, последний опубликованный релиз — %@."), current, [info displayName]] preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleCancel handler:nil]];
+    } else {
+        alert = [UIAlertController alertControllerWithTitle:L(@"app.update.latest.title", @"Обновлений нет") message:[NSString stringWithFormat:L(@"app.update.latest.message", @"Установлена актуальная версия — %@."), current] preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleCancel handler:nil]];
+    }
+    [from presentViewController:alert animated:YES completion:nil];
+}
+
+static void CheckForUpdates(SettingsListViewController* from) {
+    UIAlertController* checking = [UIAlertController alertControllerWithTitle:L(@"app.update.checking", @"Проверка обновлений…") message:@"\n\n" preferredStyle:UIAlertControllerStyleAlert];
+    UIActivityIndicatorView* spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+    spinner.translatesAutoresizingMaskIntoConstraints = NO;
+    [checking.view addSubview:spinner];
+    [NSLayoutConstraint activateConstraints:@[
+        [spinner.centerXAnchor constraintEqualToAnchor:checking.view.centerXAnchor],
+        [spinner.bottomAnchor constraintEqualToAnchor:checking.view.bottomAnchor constant:-24]
+    ]];
+    [spinner startAnimating];
+    [from presentViewController:checking animated:YES completion:^{
+        [AniLotUpdateChecker checkWithCompletion:^(AniLotUpdateInfo* info, NSString* error) {
+            [checking dismissViewControllerAnimated:YES completion:^{
+                [from reload];
+                PresentUpdateResult(from, info, error);
+            }];
+        }];
+    }];
+}
+
+#pragma mark - Shikimori
+
+static void PresentMessage(UIViewController* from, NSString* title, NSString* message) {
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleDefault handler:nil]];
+    [from presentViewController:alert animated:YES completion:nil];
+}
+
+static void PresentTextPrompt(UIViewController* from, NSString* title, NSString* message, NSString* placeholder, NSString* initial, BOOL secure, void (^done)(NSString* text)) {
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField* field) {
+        field.placeholder = placeholder;
+        field.text = initial;
+        field.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        field.autocorrectionType = UITextAutocorrectionTypeNo;
+        field.secureTextEntry = secure;
+        field.clearButtonMode = UITextFieldViewModeWhileEditing;
+    }];
+    [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.cancel", @"Отмена") style:UIAlertActionStyleCancel handler:nil]];
+    __weak UIAlertController* weak_alert = alert;
+    [alert addAction:[UIAlertAction actionWithTitle:L(@"app.common.ok", @"OK") style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+        done(weak_alert.textFields.firstObject.text ?: @"");
+    }]];
+    [from presentViewController:alert animated:YES completion:nil];
+}
+
+/* Окно с ходом синхронизации; по завершении показывает отчёт */
+static void RunShikimoriSync(UIViewController* from, NSString* title, void (^start)(void (^progress)(NSString* text, double fraction), void (^completion)(ShikimoriSyncReport* report))) {
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:L(@"app.shikimori.progress.starting", @"Подготовка…") preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:L(@"app.shikimori.stop", @"Остановить") style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+        [[ShikimoriSync sharedInstance] cancel];
+    }]];
+    __weak UIAlertController* weak_alert = alert;
+    [from presentViewController:alert animated:YES completion:^{
+        start(^(NSString* text, double fraction) {
+            UIAlertController* strong_alert = weak_alert;
+            if (strong_alert.presentingViewController) {
+                strong_alert.message = [NSString stringWithFormat:@"%@\n%d%%", text, (int)(fraction * 100)];
+            }
+        }, ^(ShikimoriSyncReport* report) {
+            void (^show_report)(void) = ^{
+                NSString* report_title = report.fatal_error.length ? L(@"app.shikimori.report.error", @"Ошибка синхронизации") : (report.cancelled ? L(@"app.shikimori.report.stopped", @"Остановлено") : L(@"app.shikimori.report.done", @"Синхронизация завершена"));
+                PresentMessage(from, report_title, [report summary]);
+            };
+            UIAlertController* strong_alert = weak_alert;
+            if (strong_alert.presentingViewController) {
+                [strong_alert dismissViewControllerAnimated:YES completion:show_report];
+            } else {
+                show_report();
+            }
+        });
+    }];
+}
+
+static BOOL EnsureAnixartLogin(UIViewController* from) {
+    if ([[AppDataController sharedInstance] getToken].length == 0) {
+        PresentMessage(from, L(@"app.shikimori.anixart_login.title", @"Нужен вход в Anixart"), L(@"app.shikimori.anixart_login.message", @"Войдите в аккаунт Anixart, чтобы синхронизировать списки."));
+        return NO;
+    }
+    return YES;
+}
+
+static SettingsListViewController* MakeShikimoriPage(void) {
+    ShikimoriSync* sync = [ShikimoriSync sharedInstance];
+    SettingsListViewController* page = [[SettingsListViewController alloc] initWithTitle:L(@"app.shikimori.name", @"Shikimori") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
+        NSMutableArray<SettingsSection*>* sections = [NSMutableArray new];
+        UIColor* accent = [AppColorProvider primaryColor];
+
+        // --- аккаунт
+        NSMutableArray<SettingsRow*>* account_rows = [NSMutableArray new];
+        [account_rows addObject:ValueRow(L(@"app.shikimori.account", @"Аккаунт"), ^NSString*{
+            return sync.isAuthorized ? sync.nickname : L(@"app.shikimori.not_connected", @"Не подключён");
+        }, nil)];
+        NSString* account_footer = nil;
+        if (sync.isAuthorized) {
+            [account_rows addObject:ButtonRow(L(@"app.shikimori.sign_out", @"Выйти из аккаунта"), YES, ^(SettingsListViewController* from) {
+                PresentConfirm(from, L(@"app.shikimori.sign_out", @"Выйти из аккаунта"), L(@"app.shikimori.sign_out.message", @"Токены доступа будут удалены с устройства."), L(@"app.shikimori.sign_out.button", @"Выйти"), ^{
+                    [sync signOut];
+                });
+            })];
+        } else {
+            [account_rows addObject:ValueRow(L(@"app.shikimori.client_id", @"Client ID"), ^NSString*{
+                return sync.client_id.length ? sync.client_id : L(@"app.shikimori.not_set", @"Не задан");
+            }, ^(SettingsListViewController* from) {
+                PresentTextPrompt(from, L(@"app.shikimori.client_id", @"Client ID"), L(@"app.shikimori.client_id.message", @"Из приложения на shikimori.one/oauth/applications"), @"Client ID", sync.client_id, NO, ^(NSString* text) {
+                    sync.client_id = text;
+                    [from reload];
+                });
+            })];
+            [account_rows addObject:ValueRow(L(@"app.shikimori.client_secret", @"Client Secret"), ^NSString*{
+                return sync.client_secret.length ? @"••••••••" : L(@"app.shikimori.not_set", @"Не задан");
+            }, ^(SettingsListViewController* from) {
+                PresentTextPrompt(from, L(@"app.shikimori.client_secret", @"Client Secret"), L(@"app.shikimori.client_id.message", @"Из приложения на shikimori.one/oauth/applications"), @"Client Secret", sync.client_secret, YES, ^(NSString* text) {
+                    sync.client_secret = text;
+                    [from reload];
+                });
+            })];
+            [account_rows addObject:ValueRow(L(@"app.shikimori.redirect_uri", @"Redirect URI"), ^NSString*{
+                return sync.redirect_uri;
+            }, ^(SettingsListViewController* from) {
+                [UIPasteboard generalPasteboard].string = sync.redirect_uri;
+                PresentMessage(from, L(@"app.shikimori.copied", @"Скопировано"), sync.redirect_uri);
+            })];
+            [account_rows addObject:NavRow(L(@"app.shikimori.create_app", @"Создать приложение на Shikimori"), @"safari.fill", accent, ^(SettingsListViewController* from) {
+                OpenURL(kShikimoriAppsURL);
+            })];
+            [account_rows addObject:ButtonRow(L(@"app.shikimori.sign_in", @"Войти через Shikimori"), NO, ^(SettingsListViewController* from) {
+                [sync authorizeFromViewController:from completion:^(NSString* error) {
+                    if (error == nil) {
+                        [from reload];
+                        PresentMessage(from, L(@"app.shikimori.connected", @"Аккаунт подключён"), sync.nickname);
+                    } else if (error.length > 0) {
+                        PresentMessage(from, L(@"app.shikimori.error.auth.title", @"Не удалось войти"), error);
+                    }
+                }];
+            })];
+            account_footer = L(@"app.shikimori.account.footer", @"Для входа создайте приложение на shikimori.one/oauth/applications: Redirect URI — anilot://shikimori, права — user_rates. Затем введите Client ID и Client Secret. Для импорта публичного списка вход не нужен.");
+        }
+        [sections addObject:MakeSection(L(@"app.shikimori.account", @"Аккаунт"), account_footer, account_rows)];
+
+        // --- параметры
+        [sections addObject:MakeSection(nil, L(@"app.shikimori.progress.footer", @"Если выключить, переносятся только списки (смотрю, в планах, просмотрено…)."), @[
+            SwitchRow(L(@"app.shikimori.sync_progress", @"Переносить прогресс просмотра"), ^BOOL{
+                return sync.sync_progress;
+            }, ^(BOOL on) {
+                sync.sync_progress = on;
+            })
+        ])];
+
+        // --- импорт / экспорт
+        SettingsRow* import_row = ButtonRow(L(@"app.shikimori.import", @"Импорт из Shikimori"), NO, ^(SettingsListViewController* from) {
+            if (sync.isRunning) {
+                PresentMessage(from, L(@"app.shikimori.busy", @"Синхронизация уже выполняется"), nil);
+                return;
+            }
+            if (!EnsureAnixartLogin(from)) return;
+            NSString* initial = sync.last_import_nickname.length ? sync.last_import_nickname : sync.nickname;
+            PresentTextPrompt(from, L(@"app.shikimori.import", @"Импорт из Shikimori"), L(@"app.shikimori.import.message", @"Ник на Shikimori. Списки и просмотренные серии добавятся в ваши списки Anixart."), L(@"app.shikimori.nickname", @"Ник"), initial, NO, ^(NSString* text) {
+                NSString* nick = [text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                if (nick.length == 0) return;
+                sync.last_import_nickname = nick;
+                RunShikimoriSync(from, L(@"app.shikimori.import", @"Импорт из Shikimori"), ^(void (^progress)(NSString*, double), void (^completion)(ShikimoriSyncReport*)) {
+                    [sync importListsForNickname:nick progress:progress completion:completion];
+                });
+            });
+        });
+        SettingsRow* export_row = ButtonRow(L(@"app.shikimori.export", @"Экспорт в Shikimori"), NO, ^(SettingsListViewController* from) {
+            if (sync.isRunning) {
+                PresentMessage(from, L(@"app.shikimori.busy", @"Синхронизация уже выполняется"), nil);
+                return;
+            }
+            if (!sync.isAuthorized) {
+                PresentMessage(from, L(@"app.shikimori.export.need_login.title", @"Нужен вход в Shikimori"), L(@"app.shikimori.export.need_login.message", @"Подключите аккаунт Shikimori, чтобы отправить свои списки."));
+                return;
+            }
+            if (!EnsureAnixartLogin(from)) return;
+            PresentConfirm(from, L(@"app.shikimori.export", @"Экспорт в Shikimori"), [NSString stringWithFormat:L(@"app.shikimori.export.message", @"Списки Anixart будут отправлены в аккаунт %@. Статусы и количество просмотренных серий в Shikimori будут обновлены."), sync.nickname], L(@"app.shikimori.export.button", @"Экспортировать"), ^{
+                RunShikimoriSync(from, L(@"app.shikimori.export", @"Экспорт в Shikimori"), ^(void (^progress)(NSString*, double), void (^completion)(ShikimoriSyncReport*)) {
+                    [sync exportListsWithProgress:progress completion:completion];
+                });
+            });
+        });
+        [sections addObject:MakeSection(L(@"app.shikimori.sync", @"Синхронизация"), L(@"app.shikimori.sync.footer", @"Соответствие аниме ищется по названию, году и числу серий. Тайтлы, которые не удалось сопоставить, будут перечислены в отчёте. Большие списки переносятся несколько минут — из-за ограничений Shikimori на частоту запросов."), @[import_row, export_row])];
+
+        [sections addObject:MakeSection(nil, nil, @[
+            ValueRow(L(@"app.shikimori.last_sync.title", @"Последняя синхронизация"), ^NSString*{
+                return sync.last_sync_text.length ? sync.last_sync_text : @"—";
+            }, nil)
+        ])];
+        return sections;
+    }];
+    page.reload_notification_name = AniLotShikimoriDidChangeNotification;
+    return page;
+}
+
 static SettingsListViewController* MakeAboutPage(void) {
     return [[SettingsListViewController alloc] initWithTitle:L(@"app.settings.about.name", @"О приложении") builder:^NSArray<SettingsSection*>*(SettingsListViewController* vc) {
-        NSDictionary* info = [NSBundle mainBundle].infoDictionary;
-        NSString* version = [NSString stringWithFormat:@"%@ (%@)", info[@"CFBundleShortVersionString"] ?: @"?", info[@"CFBundleVersion"] ?: @"?"];
+        AniLotUpdateInfo* latest = [AniLotUpdateChecker lastKnownInfo];
+        SettingsRow* latest_row = ValueRow(L(@"app.settings.about.latest_release", @"Последний релиз на GitHub"), ^NSString*{
+            return latest ? [latest displayName] : @"—";
+        }, nil);
         return @[
             MakeSection(nil, L(@"app.settings.about.footer", @"AniLot — неофициальный клиент Anixart для iOS, форк проекта AniAnglia."), @[
-                ValueRow(L(@"app.settings.about.version", @"Версия"), ^NSString*{ return version; }, nil),
+                ValueRow(L(@"app.settings.about.version", @"Версия"), ^NSString*{ return AniLotReleaseName(); }, nil)
+            ]),
+            MakeSection(L(@"app.update.section", @"Обновления"), [AniLotUpdateChecker statusSummary], @[
+                ButtonRow(L(@"app.update.check", @"Проверить обновления"), NO, ^(SettingsListViewController* from) {
+                    CheckForUpdates(from);
+                }),
+                latest_row
+            ]),
+            MakeSection(nil, nil, @[
                 NavRow(L(@"app.settings.about.source", @"Репозиторий AniLot"), @"chevron.left.forwardslash.chevron.right", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     OpenURL(kGithubURL);
+                }),
+                NavRow(L(@"app.settings.about.releases", @"Все релизы"), @"shippingbox.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
+                    OpenURL([kGithubURL stringByAppendingString:@"/releases"]);
                 })
             ])
         ];
@@ -534,6 +794,9 @@ static SettingsListViewController* MakeAboutPage(void) {
                 }),
                 NavRow(L(@"app.downloads.title", @"Загрузки"), @"arrow.down.circle.fill", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
                     [from.navigationController pushViewController:MakeDownloadsPage() animated:YES];
+                }),
+                NavRow(L(@"app.shikimori.name", @"Shikimori"), @"arrow.triangle.2.circlepath", [AppColorProvider primaryColor], ^(SettingsListViewController* from) {
+                    [from.navigationController pushViewController:MakeShikimoriPage() animated:YES];
                 })
             ]),
             MakeSection(nil, L(@"app.settings.alternative_connection.footer", @"Активируйте только если испытываете проблемы с работой приложения, связанные с блокировкой в вашей стране"), @[alt_row]),

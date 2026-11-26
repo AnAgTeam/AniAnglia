@@ -44,6 +44,13 @@ NSString* AniLotExternalPlayerName(NSString* identifier);
 NSString* AniLotExternalPlayerID(void);
 void AniLotSetExternalPlayerID(NSString* identifier);
 
+#pragma mark - MAL ID (используется синхронизацией с Shikimori: id аниме в Shikimori = MAL ID)
+
+/* MAL ID релиза. Берёт из кэша или ищет через Shikimori; nil — не найден. Блокирует поток — вызывать не из главного. */
+NSString* AniLotLookupMalID(long long release_id, NSString* title, NSInteger year, NSInteger episodes_total);
+/* Релиз Anixart, для которого MAL ID уже известен из кэша (0 — неизвестно) */
+long long AniLotKnownReleaseIDForMalID(long long mal_id);
+
 #pragma mark - Загрузки
 
 extern NSString* const DownloadManagerDidUpdateNotification;

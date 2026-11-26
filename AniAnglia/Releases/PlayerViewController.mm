@@ -16,6 +16,7 @@
 #import "AppDataController.h"
 #import "LibanixartApi.h"
 #import "StringCvt.h"
+#import "AniLotSubtitles.h"
 
 #define L(key, def) NSLocalizedStringWithDefaultValue(key, nil, [NSBundle mainBundle], def, @"")
 
@@ -27,6 +28,7 @@ NSString* const AniLotSettingSkipButtonsKey = @"anilot_skip_buttons";
 NSString* const AniLotSettingAutoSkipKey = @"anilot_auto_skip";
 static NSString* const kExternalPlayerKey = @"anilot_external_player";
 static NSString* const kPositionsKey = @"anilot_positions";
+static NSString* const kSubtitleLabelKey = @"anilot_subtitle_label"; // последняя выбранная дорожка субтитров («» — выключены)
 
 BOOL AniLotSettingBool(NSString* key, BOOL default_value) {
     id value = [[NSUserDefaults standardUserDefaults] objectForKey:key];
@@ -186,7 +188,7 @@ static NSString* QualityFromKey(NSString* key) {
 
 /* Источник Liberty отдаёт ссылку на iframe-страницу (anixart.libria.fun/public/iframe.php?...).
    Загружаем страницу и достаём из неё HLS-ссылки. */
-static NSDictionary<NSString*, NSURL*>* ResolveIframeStreams(NSString* target, NSMutableString* detail) {
+static NSDictionary<NSString*, NSURL*>* ResolveIframeStreams(NSString* target, NSMutableString* detail, NSMutableArray<AniLotSubtitleTrack*>* subtitles) {
     NSURL* url = [NSURL URLWithString:target];
     if (!url) {
         return nil;
@@ -205,6 +207,15 @@ static NSDictionary<NSString*, NSURL*>* ResolveIframeStreams(NSString* target, N
         return nil;
     }
     html = [html stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+    
+    // Субтитры, которые отдаёт страница плеера (<track>, playerjs "subtitle", ссылки .vtt/.srt/.ass)
+    if (subtitles) {
+        NSArray<AniLotSubtitleTrack*>* found = AniLotFindSubtitleTracks(html, url);
+        [subtitles addObjectsFromArray:found];
+        if (found.count) {
+            [detail appendFormat:@"Субтитры: найдено %lu\n", (unsigned long)found.count];
+        }
+    }
     
     NSMutableDictionary<NSString*, NSURL*>* streams = [NSMutableDictionary new];
     void (^add)(NSString*, NSString*) = ^(NSString* quality, NSString* link) {
@@ -464,7 +475,7 @@ static NSURL* ResolveFinalURL(NSURL* url, NSDictionary<NSString*, NSString*>* he
 
 /* Парсер Sibnet внутри libanixart устарел: страница плеера теперь отдаёт путь /v/<hash>/<id>.mp4,
    который редиректит на CDN и требует Referer. Разбираем страницу сами. */
-static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, NSMutableString* detail) {
+static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, NSMutableString* detail, NSMutableArray<AniLotSubtitleTrack*>* subtitles) {
     [detail appendFormat:@"Sibnet: %@\n", target ?: @""];
 
     NSString* user_agent = @"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
@@ -523,6 +534,9 @@ static NSDictionary<NSString*, NSURL*>* ResolveSibnetStreams(NSString* target, N
         }
 
         html = [html stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
+        if (subtitles) {
+            [subtitles addObjectsFromArray:AniLotFindSubtitleTracks(html, [NSURL URLWithString:shell])];
+        }
         NSString* media = FirstMatch(@"((?:https?:)?//[^\"'\\s<>]+?\\.mp4(?:\\?[^\"'\\s<>]*)?)", html)
             ?: FirstMatch(@"(/v/[^\"'\\s<>]+?\\.mp4(?:\\?[^\"'\\s<>]*)?)", html);
         if (!media) {
@@ -807,6 +821,22 @@ static NSString* LookupMalID(anixart::ReleaseID release_id, NSString* title, NSI
     return nil;
 }
 
+/* Доступ к кэшу MAL ID для синхронизации с Shikimori (anime id в Shikimori совпадает с MAL ID) */
+NSString* AniLotLookupMalID(long long release_id, NSString* title, NSInteger year, NSInteger episodes_total) {
+    return LookupMalID(anixart::ReleaseID{release_id}, title, year, episodes_total);
+}
+
+long long AniLotKnownReleaseIDForMalID(long long mal_id) {
+    NSDictionary* cache = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kMalIdsKey];
+    for (NSString* key in cache) {
+        id value = cache[key];
+        if ([value respondsToSelector:@selector(longLongValue)] && [value longLongValue] == mal_id) {
+            return key.longLongValue;
+        }
+    }
+    return 0;
+}
+
 /* Кэш меток: пропуск работает у скачанных серий без сети и не дёргает AniSkip при каждом запуске. */
 static NSDictionary* SkipMarkersCacheEntry(NSString* mal_id, long episode) {
     NSDictionary* cache = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSkipMarkersKey];
@@ -997,7 +1027,7 @@ static void LoadAniSkipMarkers(anixart::ReleaseID release_id, long position, NSS
     }];
 }
 
-static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, NSMutableDictionary* markers, void (^completion)(NSDictionary<NSString*, NSURL*>* urls, NSString* detail)) {
+static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSourceID source_id, int32_t position, NSMutableDictionary* markers, NSMutableArray<AniLotSubtitleTrack*>* subtitles, void (^completion)(NSDictionary<NSString*, NSURL*>* urls, NSString* detail)) {
     LibanixartApi* api_proxy = [LibanixartApi sharedInstance];
     __block NSDictionary<NSString*, NSURL*>* result = nil;
     NSMutableString* detail = [NSMutableString new];
@@ -1010,14 +1040,14 @@ static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSource
         if ([lower containsString:@"libria"] || [lower containsString:@"libert"]) {
             BOOL is_fun = [lower containsString:@"libria.fun"] || [lower containsString:@"iframe.php"];
             if (is_fun) {
-                result = ResolveIframeStreams(target, detail);
+                result = ResolveIframeStreams(target, detail, subtitles);
                 if (!result.count) {
                     result = ResolveLibriaStreams(target, detail, markers);
                 }
             } else {
                 result = ResolveLibriaStreams(target, detail, markers);
                 if (!result.count) {
-                    result = ResolveIframeStreams(target, detail);
+                    result = ResolveIframeStreams(target, detail, subtitles);
                 }
             }
             if (result.count) {
@@ -1025,7 +1055,7 @@ static void ResolveStreams(anixart::ReleaseID release_id, anixart::EpisodeSource
             }
         }
         if ([lower containsString:@"sibnet"]) {
-            result = ResolveSibnetStreams(target, detail);
+            result = ResolveSibnetStreams(target, detail, subtitles);
             if (result.count) {
                 return NO;
             }
@@ -1154,17 +1184,20 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 @property(nonatomic) long ctx_position;
 @property(nonatomic, copy) NSArray<NSDictionary*>* playlist; // @{position, title}, по возрастанию
 @property(nonatomic, copy) void (^on_finished)(AniLotPlayerViewController* controller);
+/* внешние дорожки субтитров, найденные в источнике (файлы .vtt/.srt/.ass) */
+@property(nonatomic, copy) NSArray<AniLotSubtitleTrack*>* external_subtitles;
 
 -(void)prepareForNextEpisodeWithTitle:(NSString*)title resumeKey:(NSString*)resume_key;
 -(void)showToast:(NSString*)text;
 -(void)mergeMarkers:(NSDictionary<NSString*, NSArray<NSNumber*>*>*)markers overwrite:(BOOL)overwrite;
 -(void)startWithURL:(NSURL*)url;
 -(void)configureWithQualities:(NSDictionary<NSString*, NSURL*>*)urls preferred:(NSString*)preferred;
+-(void)configureSubtitles:(NSArray<AniLotSubtitleTrack*>*)tracks;
 -(void)showMessage:(NSString*)title message:(NSString*)message closeAfter:(BOOL)close_after;
 -(void)stopPlayback;
 @end
 
-@interface AniLotPlayerViewController () <AVPictureInPictureControllerDelegate> {
+@interface AniLotPlayerViewController () <AVPictureInPictureControllerDelegate, AVPlayerItemLegibleOutputPushDelegate> {
     AVPictureInPictureController* _pip;
     double _skip_target;
     double _last_saved;
@@ -1178,6 +1211,15 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     BOOL _error_shown;
     NSTimer* _poll_timer;
     NSURL* _pending_url;
+    // субтитры
+    AVPlayerItemLegibleOutput* _legible_output;
+    AVMediaSelectionGroup* _legible_group;
+    NSArray<AVMediaSelectionOption*>* _legible_options;
+    AVMediaSelectionOption* _selected_embedded;
+    AniLotSubtitleTrack* _active_external;
+    id _subtitle_observer;
+    NSString* _last_subtitle_text;
+    NSLayoutConstraint* _subtitle_bottom;
 }
 @property(nonatomic, strong) PlayerLayerView* video_view;
 @property(nonatomic, strong) UIView* overlay;
@@ -1195,6 +1237,8 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 @property(nonatomic, strong) UIButton* pip_button;
 @property(nonatomic, strong) UIButton* skip_button;
 @property(nonatomic, strong) UILabel* toast_label;
+@property(nonatomic, strong) UIButton* subtitle_button;
+@property(nonatomic, strong) UILabel* subtitle_label;
 @end
 
 @implementation AniLotPlayerViewController
@@ -1270,6 +1314,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     _pip_button = IconButton(@"pip.enter", 20);
     [_pip_button addTarget:self action:@selector(onPiP) forControlEvents:UIControlEventTouchUpInside];
     _pip_button.hidden = ![AVPictureInPictureController isPictureInPictureSupported];
+    _subtitle_button = IconButton(@"captions.bubble", 20);
+    _subtitle_button.showsMenuAsPrimaryAction = YES;
+    _subtitle_button.hidden = YES;
     
     // центр
     _back_button = IconButton(@"gobackward", 34);
@@ -1315,6 +1362,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     [_overlay addSubview:_title_label];
     [_overlay addSubview:_speed_button];
     [_overlay addSubview:_pip_button];
+    [_overlay addSubview:_subtitle_button];
     [_overlay addSubview:_quality_button];
     [_overlay addSubview:center_stack];
     [_overlay addSubview:_current_label];
@@ -1344,6 +1392,15 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     _toast_label.layer.masksToBounds = YES;
     _toast_label.alpha = 0;
     [self.view addSubview:_toast_label];
+    
+    // Субтитры рисуем сами: AVPlayerLayer не показывает дорожки субтитров
+    _subtitle_label = [UILabel new];
+    _subtitle_label.translatesAutoresizingMaskIntoConstraints = NO;
+    _subtitle_label.numberOfLines = 0;
+    _subtitle_label.textAlignment = NSTextAlignmentCenter;
+    _subtitle_label.userInteractionEnabled = NO;
+    _subtitle_label.hidden = YES;
+    [self.view addSubview:_subtitle_label];
     
     UILayoutGuide* safe = self.view.safeAreaLayoutGuide;
     [NSLayoutConstraint activateConstraints:@[
@@ -1376,7 +1433,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         
         [_title_label.centerYAnchor constraintEqualToAnchor:_close_button.centerYAnchor],
         [_title_label.leadingAnchor constraintEqualToAnchor:_close_button.trailingAnchor constant:8],
-        [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:_pip_button.leadingAnchor constant:-8],
+        [_title_label.trailingAnchor constraintLessThanOrEqualToAnchor:_subtitle_button.leadingAnchor constant:-8],
         
         [center_stack.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
         [center_stack.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
@@ -1394,6 +1451,15 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         [_pip_button.widthAnchor constraintEqualToConstant:44],
         [_pip_button.heightAnchor constraintEqualToConstant:44],
         
+        [_subtitle_button.centerYAnchor constraintEqualToAnchor:_close_button.centerYAnchor],
+        [_subtitle_button.trailingAnchor constraintEqualToAnchor:_pip_button.leadingAnchor constant:-4],
+        [_subtitle_button.widthAnchor constraintEqualToConstant:44],
+        [_subtitle_button.heightAnchor constraintEqualToConstant:44],
+        
+        [_subtitle_label.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+        [_subtitle_label.leadingAnchor constraintGreaterThanOrEqualToAnchor:safe.leadingAnchor constant:48],
+        [_subtitle_label.trailingAnchor constraintLessThanOrEqualToAnchor:safe.trailingAnchor constant:-48],
+        
         [_skip_button.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-16],
         [_skip_button.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-68],
         [_skip_button.heightAnchor constraintEqualToConstant:36],
@@ -1403,6 +1469,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         [_toast_label.heightAnchor constraintEqualToConstant:28],
         [_toast_label.widthAnchor constraintGreaterThanOrEqualToConstant:120]
     ]];
+    
+    _subtitle_bottom = [_subtitle_label.bottomAnchor constraintEqualToAnchor:safe.bottomAnchor constant:-72];
+    _subtitle_bottom.active = YES;
     
     UITapGestureRecognizer* double_tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onDoubleTap:)];
     double_tap.numberOfTapsRequired = 2;
@@ -1469,6 +1538,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
         }
     }
     _video_view.playerLayer.player = _player;
+    [self setupSubtitlesForCurrentItem];
     
     _pip = nil;
     if ([AVPictureInPictureController isPictureInPictureSupported]) {
@@ -1483,6 +1553,9 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     __weak AniLotPlayerViewController* weak_self = self;
     _time_observer = [_player addPeriodicTimeObserverForInterval:CMTimeMake(1, 2) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
         [weak_self updateUI];
+    }];
+    _subtitle_observer = [_player addPeriodicTimeObserverForInterval:CMTimeMake(1, 10) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
+        [weak_self refreshExternalSubtitleAtTime:CMTimeGetSeconds(time)];
     }];
     _end_observer = [[NSNotificationCenter defaultCenter] addObserverForName:AVPlayerItemDidPlayToEndTimeNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification* note) {
         AniLotPlayerViewController* strong_self = weak_self;
@@ -1514,6 +1587,7 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     _title_label.text = title;
     self.resume_key = resume_key;
     self.markers = @{};
+    [self resetSubtitles];
     [_auto_skipped removeAllObjects];
     _skip_button.hidden = YES;
     _slider.value = 0;
@@ -1539,6 +1613,10 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     if (_time_observer) {
         [_player removeTimeObserver:_time_observer];
         _time_observer = nil;
+    }
+    if (_subtitle_observer) {
+        [_player removeTimeObserver:_subtitle_observer];
+        _subtitle_observer = nil;
     }
     if (_end_observer) {
         [[NSNotificationCenter defaultCenter] removeObserver:_end_observer];
@@ -1734,6 +1812,33 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     }
     _quality_button.hidden = quality_actions.count < 2;
     _quality_button.menu = [UIMenu menuWithTitle:L(@"app.player.quality", @"Качество") children:quality_actions];
+    
+    // субтитры: дорожки из HLS-манифеста и внешние файлы источника
+    NSMutableArray<UIMenuElement*>* subtitle_actions = [NSMutableArray new];
+    UIAction* off_action = [UIAction actionWithTitle:L(@"app.player.subtitles.off", @"Выключены") image:nil identifier:nil handler:^(UIAction* a) {
+        [weak_self selectEmbeddedSubtitle:nil external:nil];
+    }];
+    off_action.state = (!_selected_embedded && !_active_external) ? UIMenuElementStateOn : UIMenuElementStateOff;
+    [subtitle_actions addObject:off_action];
+    for (AVMediaSelectionOption* option in _legible_options) {
+        UIAction* action = [UIAction actionWithTitle:option.displayName ?: L(@"app.player.subtitles.generic", @"Субтитры") image:nil identifier:nil handler:^(UIAction* a) {
+            [weak_self selectEmbeddedSubtitle:option external:nil];
+        }];
+        action.state = (_selected_embedded == option) ? UIMenuElementStateOn : UIMenuElementStateOff;
+        [subtitle_actions addObject:action];
+    }
+    for (AniLotSubtitleTrack* track in _external_subtitles) {
+        UIAction* action = [UIAction actionWithTitle:track.label image:nil identifier:nil handler:^(UIAction* a) {
+            [weak_self selectEmbeddedSubtitle:nil external:track];
+        }];
+        action.state = (_active_external == track) ? UIMenuElementStateOn : UIMenuElementStateOff;
+        [subtitle_actions addObject:action];
+    }
+    _subtitle_button.hidden = (_legible_options.count + _external_subtitles.count) == 0;
+    _subtitle_button.menu = [UIMenu menuWithTitle:L(@"app.player.subtitles", @"Субтитры") children:subtitle_actions];
+    BOOL subtitles_on = (_selected_embedded != nil || _active_external != nil);
+    UIImageSymbolConfiguration* subtitle_conf = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightSemibold];
+    [_subtitle_button setImage:[UIImage systemImageNamed:subtitles_on ? @"captions.bubble.fill" : @"captions.bubble" withConfiguration:subtitle_conf] forState:UIControlStateNormal];
 }
 
 -(void)switchToQuality:(NSString*)name {
@@ -1746,11 +1851,191 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
     _current_quality = name;
     _error_shown = NO;
     [_player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithURL:url]];
+    [self setupSubtitlesForCurrentItem];
     [_player seekToTime:time];
     if (!was_paused) {
         [_player playImmediatelyAtRate:_rate];
     }
     [self rebuildMenus];
+}
+
+#pragma mark Субтитры
+
+-(void)configureSubtitles:(NSArray<AniLotSubtitleTrack*>*)tracks {
+    _external_subtitles = [tracks copy] ?: @[];
+    if (_active_external && ![_external_subtitles containsObject:_active_external]) {
+        _active_external = nil;
+    }
+    if (self.isViewLoaded) {
+        [self autoSelectSubtitleIfNeeded];
+        [self rebuildMenus];
+    }
+}
+
+-(void)resetSubtitles {
+    _external_subtitles = @[];
+    _active_external = nil;
+    _selected_embedded = nil;
+    _legible_group = nil;
+    _legible_options = @[];
+    _legible_output = nil;
+    [self setSubtitleText:nil];
+    if (self.isViewLoaded) {
+        [self rebuildMenus];
+    }
+}
+
+/* Подключает вывод субтитров к текущему элементу и ищет в нём встроенные дорожки (HLS EXT-X-MEDIA TYPE=SUBTITLES) */
+-(void)setupSubtitlesForCurrentItem {
+    _legible_group = nil;
+    _legible_options = @[];
+    _selected_embedded = nil;
+    _legible_output = nil;
+    [self setSubtitleText:nil];
+    AVPlayerItem* item = _player.currentItem;
+    if (!item) {
+        return;
+    }
+    _legible_output = [[AVPlayerItemLegibleOutput alloc] initWithMediaSubtypesForNativeRepresentation:@[]];
+    _legible_output.suppressesPlayerRendering = YES;
+    [_legible_output setDelegate:self queue:dispatch_get_main_queue()];
+    [item addOutput:_legible_output];
+    
+    __weak AniLotPlayerViewController* weak_self = self;
+    __weak AVPlayerItem* weak_item = item;
+    void (^handle_group)(AVMediaSelectionGroup*) = ^(AVMediaSelectionGroup* group) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            AniLotPlayerViewController* strong_self = weak_self;
+            if (!strong_self || strong_self.player.currentItem != weak_item || !group) {
+                return;
+            }
+            strong_self->_legible_group = group;
+            strong_self->_legible_options = [AVMediaSelectionGroup mediaSelectionOptionsFromArray:group.options withoutMediaCharacteristics:@[AVMediaCharacteristicContainsOnlyForcedSubtitles]];
+            [strong_self autoSelectSubtitleIfNeeded];
+            [strong_self rebuildMenus];
+        });
+    };
+    AVAsset* asset = item.asset;
+    if (@available(iOS 15.0, *)) {
+        [asset loadMediaSelectionGroupForMediaCharacteristic:AVMediaCharacteristicLegible completionHandler:^(AVMediaSelectionGroup* group, NSError* error) {
+            handle_group(group);
+        }];
+    } else {
+        [asset loadValuesAsynchronouslyForKeys:@[@"availableMediaCharacteristicsWithMediaSelectionOptions"] completionHandler:^{
+            handle_group([asset mediaSelectionGroupForMediaCharacteristic:AVMediaCharacteristicLegible]);
+        }];
+    }
+    [self autoSelectSubtitleIfNeeded];
+    [self rebuildMenus];
+}
+
+/* Если пользователь раньше выбрал дорожку (например, «Русский»), включаем такую же в следующих сериях */
+-(void)autoSelectSubtitleIfNeeded {
+    if (_active_external || _selected_embedded) {
+        return;
+    }
+    NSString* wanted = [[NSUserDefaults standardUserDefaults] stringForKey:kSubtitleLabelKey];
+    if (wanted.length == 0) {
+        return;
+    }
+    for (AVMediaSelectionOption* option in _legible_options) {
+        if ([option.displayName isEqualToString:wanted]) {
+            [self applySubtitleEmbedded:option external:nil remember:NO];
+            return;
+        }
+    }
+    for (AniLotSubtitleTrack* track in _external_subtitles) {
+        if ([track.label isEqualToString:wanted]) {
+            [self applySubtitleEmbedded:nil external:track remember:NO];
+            return;
+        }
+    }
+}
+
+-(void)selectEmbeddedSubtitle:(AVMediaSelectionOption*)option external:(AniLotSubtitleTrack*)track {
+    [self applySubtitleEmbedded:option external:track remember:YES];
+}
+
+-(void)applySubtitleEmbedded:(AVMediaSelectionOption*)option external:(AniLotSubtitleTrack*)track remember:(BOOL)remember {
+    _selected_embedded = option;
+    _active_external = track;
+    AVPlayerItem* item = _player.currentItem;
+    if (item && _legible_group) {
+        [item selectMediaOption:option inMediaSelectionGroup:_legible_group];
+    }
+    [self setSubtitleText:nil];
+    if (remember) {
+        NSString* label = option ? option.displayName : track.label;
+        [[NSUserDefaults standardUserDefaults] setObject:label ?: @"" forKey:kSubtitleLabelKey];
+    }
+    if (track && track.cues == nil) {
+        [self showToast:L(@"app.player.subtitles.loading", @"Загрузка субтитров…")];
+        __weak AniLotPlayerViewController* weak_self = self;
+        [track loadWithCompletion:^(BOOL ok) {
+            AniLotPlayerViewController* strong_self = weak_self;
+            if (!strong_self || strong_self->_active_external != track) {
+                return;
+            }
+            if (!ok) {
+                strong_self->_active_external = nil;
+                [strong_self showToast:L(@"app.player.subtitles.failed", @"Не удалось загрузить субтитры")];
+                [strong_self rebuildMenus];
+                return;
+            }
+            [strong_self refreshExternalSubtitleAtTime:CMTimeGetSeconds(strong_self.player.currentTime)];
+        }];
+    }
+    [self rebuildMenus];
+    [self scheduleHide];
+}
+
+-(void)refreshExternalSubtitleAtTime:(double)time {
+    if (!_active_external) {
+        return;
+    }
+    [self setSubtitleText:[_active_external textAtTime:time]];
+}
+
+-(void)setSubtitleText:(NSString*)text {
+    NSString* trimmed = [text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (trimmed.length == 0) {
+        if (_last_subtitle_text != nil || !_subtitle_label.hidden) {
+            _last_subtitle_text = nil;
+            _subtitle_label.attributedText = nil;
+            _subtitle_label.hidden = YES;
+        }
+        return;
+    }
+    if ([trimmed isEqualToString:_last_subtitle_text]) {
+        return;
+    }
+    _last_subtitle_text = trimmed;
+    NSMutableParagraphStyle* paragraph = [NSMutableParagraphStyle new];
+    paragraph.alignment = NSTextAlignmentCenter;
+    NSDictionary* attributes = @{
+        NSFontAttributeName: [UIFont systemFontOfSize:20 weight:UIFontWeightSemibold],
+        NSForegroundColorAttributeName: [UIColor whiteColor],
+        NSStrokeColorAttributeName: [UIColor blackColor],
+        NSStrokeWidthAttributeName: @(-4.0),
+        NSParagraphStyleAttributeName: paragraph
+    };
+    _subtitle_label.attributedText = [[NSAttributedString alloc] initWithString:trimmed attributes:attributes];
+    _subtitle_label.hidden = NO;
+}
+
+/* Встроенные субтитры (HLS): AVPlayerLayer сам их не рисует, получаем текст и показываем в subtitle_label */
+-(void)legibleOutput:(AVPlayerItemLegibleOutput*)output didOutputAttributedStrings:(NSArray<NSAttributedString*>*)strings nativeSampleBuffers:(NSArray*)native_samples forItemTime:(CMTime)item_time {
+    if (output != _legible_output || _active_external || !_selected_embedded) {
+        return;
+    }
+    NSMutableArray<NSString*>* lines = [NSMutableArray new];
+    for (NSAttributedString* string in strings) {
+        NSString* line = [string.string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (line.length) {
+            [lines addObject:line];
+        }
+    }
+    [self setSubtitleText:[lines componentsJoinedByString:@"\n"]];
 }
 
 #pragma mark Действия
@@ -1806,8 +2091,10 @@ static UIButton* IconButton(NSString* symbol, CGFloat point_size) {
 
 -(void)setOverlayVisible:(BOOL)visible {
     _overlay_visible = visible;
+    _subtitle_bottom.constant = visible ? -72 : -28;
     [UIView animateWithDuration:0.2 animations:^{
         self.overlay.alpha = visible ? 1 : 0;
+        [self.view layoutIfNeeded];
     }];
     if (visible) {
         [self scheduleHide];
@@ -1949,7 +2236,8 @@ static void LoadMarkersForLocalPlayback(AniLotPlayerViewController* controller, 
             }
         });
     }
-    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), markers, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
+    NSMutableArray<AniLotSubtitleTrack*>* subtitles = [NSMutableArray new];
+    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), markers, subtitles, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         BOOL errored = (urls == nil);
         if (completion_handler) {
             completion_handler(errored);
@@ -1971,6 +2259,7 @@ static void LoadMarkersForLocalPlayback(AniLotPlayerViewController* controller, 
             return;
         }
         [controller mergeMarkers:markers overwrite:YES];
+        [controller configureSubtitles:subtitles];
         [controller configureWithQualities:urls preferred:(controller.current_quality.length ? controller.current_quality : PreferredQuality())];
     });
 }
@@ -2268,7 +2557,7 @@ static NSURL* ResolveRelativeURL(NSString* reference, NSURL* base) {
     [self saveAndNotify];
     [self fetchReleaseTitleForItem:item releaseID:release_id];
     
-    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), nil, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
+    ResolveStreams(release_id, source_id, static_cast<int32_t>(position), nil, nil, ^(NSDictionary<NSString*, NSURL*>* urls, NSString* detail) {
         if (!urls) {
             item.state = DownloadStateFailed;
             item.error_text = [@"Не найден источник серии\n" stringByAppendingString:detail ?: @""];
