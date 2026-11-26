@@ -12,7 +12,7 @@
 #import <Foundation/Foundation.h>
 
 #ifndef ANILOT_RELEASE_NUMBER
-#define ANILOT_RELEASE_NUMBER 8
+#define ANILOT_RELEASE_NUMBER v9
 #endif
 
 #define ANILOT_RELEASES_API_URL @"https://api.github.com/repos/vilefex/AniLot/releases/latest"
