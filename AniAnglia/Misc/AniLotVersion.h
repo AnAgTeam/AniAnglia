@@ -4,7 +4,7 @@
 //
 //  Версия установленного релиза AniLot и проверка новых релизов на GitHub.
 //
-//  Номер релиза совпадает с номером релиза на GitHub: релиз «AniLot v8» (тег anilot-8) → 8.
+//  Номер релиза совпадает с номером релиза на GitHub: релиз «AniLot v9» (тег anilot-9) → 9.
 //  При выпуске нового релиза достаточно поднять ANILOT_RELEASE_NUMBER (либо передать
 //  -DANILOT_RELEASE_NUMBER=N при сборке).
 //
@@ -12,15 +12,15 @@
 #import <Foundation/Foundation.h>
 
 #ifndef ANILOT_RELEASE_NUMBER
-#define ANILOT_RELEASE_NUMBER v9
+#define ANILOT_RELEASE_NUMBER 9
 #endif
 
 #define ANILOT_RELEASES_API_URL @"https://api.github.com/repos/vilefex/AniLot/releases/latest"
 #define ANILOT_RELEASES_PAGE_URL @"https://github.com/vilefex/AniLot/releases/latest"
 
-/* Номер установленного релиза (8) */
+/* Номер установленного релиза (9) */
 NSInteger AniLotReleaseNumber(void);
-/* Название установленного релиза: «v8» */
+/* Название установленного релиза: «v9» */
 NSString* AniLotReleaseName(void);
 /* Служебная версия сборки из Info.plist: «0.10 (1)» */
 NSString* AniLotBuildString(void);
