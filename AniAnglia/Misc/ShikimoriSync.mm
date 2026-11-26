@@ -18,7 +18,7 @@
 
 NSString* const AniLotShikimoriDidChangeNotification = @"AniLotShikimoriDidChange";
 
-static NSString* const kShikiBase = @"https://shikimori.one";
+static NSString* const kShikiBase = @"https://shikimori.io";
 static NSString* const kCallbackScheme = @"anilot";
 static NSString* const kRedirectURI = @"anilot://shikimori";
 
